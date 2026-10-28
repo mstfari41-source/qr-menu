@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MA Coffee Yönetim Paneli</title>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ef;--card:#fff;--ink:#1f1a17;--muted:#7a7068;--line:#e9e2da;--accent:#f08a24;--soft:#fff3e6;--bad:#c62828;--ok:#2e7d32;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17120e;--card:#221b16;--ink:#f3ece5;--muted:#a39a91;--line:#3a3028;--soft:#3a2a1a;--bad:#ef6c6c;--ok:#7fcf84}}
+:root[data-theme="dark"]{--bg:#17120e;--card:#221b16;--ink:#f3ece5;--muted:#a39a91;--line:#3a3028;--soft:#3a2a1a;--bad:#ef6c6c;--ok:#7fcf84}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Urbanist',system-ui,sans-serif;font-size:15px}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:210px 1fr;min-height:100%}
+.side{background:var(--card);border-right:1px solid var(--line);padding:20px 12px;position:sticky;top:0;align-self:start;height:100vh}
+.logo{font-weight:700;font-size:18px;padding:0 10px 18px}.logo small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{text-align:left;border:0;background:none;padding:11px 12px;border-radius:12px;cursor:pointer;font-weight:500;color:var(--muted)}
+.nav button[aria-current="true"]{background:var(--soft);color:var(--accent);font-weight:600}
+main{padding:20px;min-width:0;max-width:980px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.top h1{margin:0;font-size:22px}
+.acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-size:13px;padding:5px 10px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.pill.bad{color:var(--bad)}.pill.ok{color:var(--ok)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 16px;cursor:pointer;font-weight:600;min-height:44px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.del{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 12px;font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+.f input,.f select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;min-height:44px;color:var(--ink);width:100%}
+.f input[readonly]{opacity:.65}
+.f input:focus-visible,.f select:focus-visible,textarea:focus-visible,.btn:focus-visible,.nav button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.f.chk{flex-direction:row;align-items:center;gap:8px;min-height:44px}.f.chk input{width:20px;min-height:0}
+.err{color:var(--bad);min-height:0;font-size:12px}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:12px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+textarea{min-height:300px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.toast{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:9;background:#1f1a17;color:#fff;padding:16px 22px;border-radius:18px;max-width:80%;text-align:center;pointer-events:none}
+@media (max-width:720px){
+.app{grid-template-columns:1fr}
+.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}
+.logo{padding-bottom:8px}.nav{flex-direction:row;overflow-x:auto}.nav button{white-space:nowrap}
+main{padding:14px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side"><div class="logo">MA Coffee<small>Yönetim paneli</small></div><nav class="nav" id="nav" aria-label="Bölümler"></nav></aside>
+<main><header class="top"><h1 id="title"></h1><div class="acts" id="acts"></div></header><section id="view"></section></main>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+'use strict';
+/* =====================================================================
+   KATMANLAR (her katman yalnızca bir altındakini bilir)
+   1 DEFAULTS   varsayılan veri        4 STORE   durum + undo + kayıt
+   2 SCHEMA     doğrulama (saf)        5 VIEWS   HTML üreten saf fonksiyonlar
+   3 STORAGE    kalıcılık adaptörü     6 CONTROLLER  olaylar -> store
+   Kural: veri tek yerde (store.draft), arayüz ondan çizilir, hatalı veri kaydedilmez.
+   ===================================================================== */
+
+/* 1 ─ DEFAULTS */
+const DEFAULTS = {"brand":{"name":"MA Coffee"},"waiter":{"url":"","cooldown":60},"toastMs":3500,"categories":[{"id":"kahvalti","n":"Kahvaltı","s":"Güne taze bir başlangıç"},{"id":"kahve","n":"Kahve","s":"Sıcak ve soğuk seçenekler"},{"id":"burger","n":"Burger","s":"El yapımı köfteli burgerler"},{"id":"pizza","n":"Pizza","s":"Elde açılmış hamur, bol malzeme"},{"id":"tatli","n":"Tatlı","s":"Tatlı bir mola için"},{"id":"icecek","n":"İçecek","s":"Serinleten seçenekler"}],"products":[{"id":"kahvalti-serpme","c":"kahvalti","n":"Serpme kahvaltı","d":"2 kişilik, sınırsız çay","p":650,"r":4.9,"pop":false},{"id":"kahvalti-menemen","c":"kahvalti","n":"Menemen","d":"Domates, biber, peynir","p":170,"r":4.7,"pop":false},{"id":"kahvalti-sucuklu","c":"kahvalti","n":"Sucuklu yumurta","d":"Tereyağında, sıcak servis","p":185,"r":4.6,"pop":false},{"id":"kahve-latte","c":"kahve","n":"Latte","d":"Çift shot espresso, sıcak süt","p":95,"r":4.9,"pop":true},{"id":"kahve-americano","c":"kahve","n":"Americano","d":"Yumuşak içimli filtre","p":80,"r":4.5,"pop":false},{"id":"kahve-turk","c":"kahve","n":"Türk kahvesi","d":"Közde, lokum ile","p":70,"r":4.8,"pop":false},{"id":"burger-smash","c":"burger","n":"Smash burger","d":"Çift köfte, cheddar, turşu","p":240,"r":4.8,"pop":true},{"id":"burger-aci","c":"burger","n":"Acılı burger","d":"Jalapeño, acı sos","p":255,"r":4.6,"pop":false},{"id":"burger-tavuk","c":"burger","n":"Tavuk burger","d":"Çıtır tavuk, marul, mayonez","p":215,"r":4.4,"pop":false},{"id":"pizza-margherita","c":"pizza","n":"Margherita","d":"Domates, mozzarella, fesleğen","p":210,"r":4.7,"pop":true},{"id":"pizza-karisik","c":"pizza","n":"Karışık pizza","d":"Mantar, biber, zeytin, sosis","p":245,"r":4.5,"pop":false},{"id":"pizza-sucuklu","c":"pizza","n":"Sucuklu pizza","d":"Sucuk, kaşar, közlenmiş biber","p":235,"r":4.6,"pop":false},{"id":"tatli-kunefe","c":"tatli","n":"Fıstıklı künefe","d":"Sıcak servis, kaymak ile","p":220,"r":4.9,"pop":true},{"id":"tatli-cheesecake","c":"tatli","n":"San Sebastian","d":"Yumuşak iç, karamel sos","p":190,"r":4.8,"pop":false},{"id":"tatli-sutlac","c":"tatli","n":"Fırın sütlaç","d":"Üzeri kızarmış, geleneksel","p":130,"r":4.5,"pop":false},{"id":"icecek-limonata","c":"icecek","n":"Ev yapımı limonata","d":"Taze nane, buz","p":85,"r":4.6,"pop":false},{"id":"icecek-ayran","c":"icecek","n":"Ayran","d":"Bakır kasede, köpüklü","p":35,"r":4.3,"pop":false},{"id":"icecek-soguk-cay","c":"icecek","n":"Soğuk çay","d":"Şeftali veya limon","p":60,"r":4.2,"pop":false}]};
+
+/* 2 ─ SCHEMA: tüm kurallar burada; arayüz ve içe aktarma aynı fonksiyonu kullanır */
+const ID_RE = /^[a-z0-9-]+$/;
+const num = v => typeof v === 'number' && Number.isFinite(v);
+function validate(d) {
+  const e = {};
+  const fail = (path, msg) => { if (!e[path]) e[path] = msg; };
+  if (!d || typeof d !== 'object') return { root: 'Geçersiz veri' };
+  const name = d.brand && d.brand.name;
+  if (typeof name !== 'string' || !name.trim() || name.length > 40) fail('brand.name', '1–40 karakter olmalı');
+  const url = d.waiter && d.waiter.url;
+  if (typeof url !== 'string') fail('waiter.url', 'Metin olmalı');
+  else if (url && !/^https?:\/\/\S+$/.test(url)) fail('waiter.url', 'http(s):// ile başlayan adres girin');
+  const cd = d.waiter && d.waiter.cooldown;
+  if (!num(cd) || cd < 0 || cd > 3600) fail('waiter.cooldown', '0–3600 sn arası sayı');
+  if (!num(d.toastMs) || d.toastMs < 1000 || d.toastMs > 10000) fail('toastMs', '1000–10000 ms arası sayı');
+  if (!Array.isArray(d.categories) || !d.categories.length) { fail('categories', 'En az bir kategori gerekli'); d = { ...d, categories: [] }; }
+  const catIds = new Set();
+  d.categories.forEach((c, i) => {
+    const k = `categories.${i}`;
+    if (!c.id || !ID_RE.test(c.id)) fail(k + '.id', 'Yalnızca a-z, 0-9 ve -');
+    else if (catIds.has(c.id)) fail(k + '.id', 'Bu kod başka kategoride var');
+    catIds.add(c.id);
+    if (typeof c.n !== 'string' || !c.n.trim()) fail(k + '.n', 'Ad boş olamaz');
+    if (typeof c.s !== 'string' || c.s.length > 60) fail(k + '.s', 'En fazla 60 karakter');
+  });
+  const ids = new Set();
+  (Array.isArray(d.products) ? d.products : []).forEach((p, i) => {
+    const k = `products.${i}`;
+    if (!p.id || !ID_RE.test(p.id)) fail(k + '.id', 'Yalnızca a-z, 0-9 ve -');
+    else if (ids.has(p.id)) fail(k + '.id', 'Bu kod başka üründe var');
+    ids.add(p.id);
+    if (!catIds.has(p.c)) fail(k + '.c', 'Kategori seçin');
+    if (typeof p.n !== 'string' || !p.n.trim()) fail(k + '.n', 'Ad boş olamaz');
+    if (typeof p.d !== 'string' || p.d.length > 80) fail(k + '.d', 'En fazla 80 karakter');
+    if (!num(p.p) || p.p < 0) fail(k + '.p', '0 veya büyük sayı');
+    if (!num(p.r) || p.r < 0 || p.r > 5) fail(k + '.r', '0–5 arası');
+    if (typeof p.pop !== 'boolean') fail(k + '.pop', 'Geçersiz');
+  });
+  return e;
+}
+
+/* 3 ─ STORAGE: tarayıcı belleğine erişen tek yer; sürümlü, bozuksa varsayılana döner */
+const Storage = {
+  KEY: 'ma-menu-admin', VERSION: 1,
+  load() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(this.KEY));
+      if (raw && raw.v === this.VERSION && !Object.keys(validate(raw.data)).length) return { data: raw.data, ok: true };
+    } catch (err) { /* bozuk kayıt: aşağıda varsayılana dön */ }
+    return { data: structuredClone(DEFAULTS), ok: false };
+  },
+  save(data) {
+    try { localStorage.setItem(this.KEY, JSON.stringify({ v: this.VERSION, data })); return true; }
+    catch (err) { return false; }
+  }
+};
+
+/* 4 ─ STORE: tek doğru kaynak. Değişiklikler yalnızca dispatch ile, yeni nesne üreten reducer'larla */
+const getIn = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
+function setIn(o, p, v) {
+  const [k, ...rest] = p.split('.');
+  const copy = Array.isArray(o) ? o.slice() : { ...o };
+  copy[k] = rest.length ? setIn(o[k], rest.join('.'), v) : v;
+  return copy;
+}
+const slug = s => s.toLowerCase().replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'yeni';
+const uniq = (base, taken) => { let id = base, n = 2; while (taken.includes(id)) id = base + '-' + n++; return id; };
+
+const reducers = {
+  set: (d, { path, value }) => setIn(d, path, value),
+  addCategory: d => {
+    const id = uniq('yeni-kategori', d.categories.map(c => c.id));
+    return { ...d, categories: [...d.categories, { id, n: 'Yeni kategori', s: '' }] };
+  },
+  removeCategory: (d, { i }) => ({ ...d, categories: d.categories.filter((_, x) => x !== i) }),
+  addProduct: (d, { c }) => {
+    const cat = c || d.categories[0].id;
+    const id = uniq(cat + '-yeni-urun', d.products.map(p => p.id));
+    return { ...d, products: [...d.products, { id, c: cat, n: 'Yeni ürün', d: '', p: 0, r: 5, pop: false }] };
+  },
+  removeProduct: (d, { i }) => ({ ...d, products: d.products.filter((_, x) => x !== i) }),
+  replace: (d, { data }) => data
+};
+
+const store = (() => {
+  const loaded = Storage.load();
+  let s = { draft: loaded.data, saved: JSON.stringify(loaded.data), past: [], errors: {}, freshStart: !loaded.ok };
+  s.errors = validate(s.draft);
+  return {
+    get: () => s,
+    dispatch(type, payload = {}) {
+      const next = reducers[type](s.draft, payload);
+      s = { ...s, past: [...s.past.slice(-29), s.draft], draft: next, errors: validate(next) };
+    },
+    undo() { if (s.past.length) { const d = s.past[s.past.length - 1]; s = { ...s, past: s.past.slice(0, -1), draft: d, errors: validate(d) }; } },
+    save() {
+      if (Object.keys(s.errors).length) return 'invalid';
+      if (!Storage.save(s.draft)) return 'storage';
+      s = { ...s, saved: JSON.stringify(s.draft) }; return 'ok';
+    },
+    reset() { this.dispatch('replace', { data: structuredClone(DEFAULTS) }); },
+    dirty: () => JSON.stringify(s.draft) !== s.saved
+  };
+})();
+
+/* 5 ─ VIEWS: yalnızca string üretir, durum değiştirmez. Her kullanıcı metni esc() ile temizlenir */
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const ui = { tab: 'general', cat: 'all', confirm: '', json: null, jsonMsg: '' };
+const TABS = { general: 'Genel', categories: 'Kategoriler', products: 'Ürünler', data: 'Veri' };
+
+const field = (path, label, o = {}) => {
+  const v = getIn(store.get().draft, path);
+  const t = o.type || 'text';
+  const attrs = `data-path="${path}" data-t="${t}" ${o.ro ? 'readonly' : ''} ${o.attrs || ''}`;
+  if (t === 'checkbox') return `<label class="f chk"><input type="checkbox" ${attrs} ${v ? 'checked' : ''}>${label}</label>`;
+  const ctl = t === 'select'
+    ? `<select ${attrs}>${o.opts.map(([val, txt]) => `<option value="${esc(val)}" ${val === v ? 'selected' : ''}>${esc(txt)}</option>`).join('')}</select>`
+    : `<input type="${t === 'number' ? 'text' : t}" ${t === 'number' ? 'inputmode="decimal"' : ''} value="${esc(v)}" ${attrs}>`;
+  return `<label class="f"><span>${label}</span>${ctl}<small class="err" data-err="${path}">${esc(store.get().errors[path] || '')}</small></label>`;
+};
+const delBtn = (key, act, extra = '') => ui.confirm === key
+  ? `<button class="btn del" data-act="${act}" ${extra}>Emin misiniz? Sil</button>`
+  : `<button class="btn del" data-act="ask" data-key="${key}">Sil</button>`;
+
+const views = {
+  general: d => `
+    <div class="card"><h2>İşletme</h2><div class="grid">${field('brand.name', 'İşletme adı')}</div></div>
+    <div class="card"><h2>Garson çağırma</h2>
+      <p class="hint">Adres boşsa çağrı sunucuya gönderilmez, müşteriye yalnızca bildirim gösterilir.</p>
+      <div class="grid">${field('waiter.url', 'Bildirim adresi (isteğe bağlı)', { type: 'url' })}${field('waiter.cooldown', 'Tekrar çağırma bekleme süresi (sn)', { type: 'number' })}</div></div>
+    <div class="card"><h2>Bildirim popup’ı</h2><div class="grid">${field('toastMs', 'Ekranda kalma süresi (ms)', { type: 'number' })}</div></div>`,
+
+  categories: d => `
+    ${d.categories.map((c, i) => {
+      const used = d.products.filter(p => p.c === c.id).length;
+      return `<div class="card"><div class="grid">
+        ${field(`categories.${i}.n`, 'Ad')}${field(`categories.${i}.s`, 'Alt başlık')}${field(`categories.${i}.id`, 'Kod (değiştirilemez)', { ro: true })}</div>
+        <div class="row"><span class="hint">${used} ürün</span>
+        ${used ? '<span class="hint">Silmek için önce ürünleri taşıyın</span>' : delBtn('c' + i, 'delcat', `data-i="${i}"`)}</div></div>`;
+    }).join('')}
+    <button class="btn pri" data-act="addcat">+ Kategori ekle</button>`,
+
+  products: d => {
+    const opts = d.categories.map(c => [c.id, c.n]);
+    const list = d.products.map((p, i) => [p, i]).filter(([p]) => ui.cat === 'all' || p.c === ui.cat);
+    return `<div class="card"><label class="f"><span>Kategoriye göre göster</span>
+      <select data-act="filter">${[['all', 'Tümü'], ...opts].map(([v, t]) => `<option value="${esc(v)}" ${v === ui.cat ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label></div>
+    ${list.map(([p, i]) => `<div class="card"><div class="grid">
+      ${field(`products.${i}.n`, 'Ürün adı')}${field(`products.${i}.c`, 'Kategori', { type: 'select', opts })}
+      ${field(`products.${i}.p`, 'Fiyat (₺)', { type: 'number' })}${field(`products.${i}.r`, 'Puan (0–5)', { type: 'number' })}
+      ${field(`products.${i}.d`, 'Kısa açıklama')}${field(`products.${i}.id`, 'Kod (görsel adı)')}</div>
+      <div class="row">${field(`products.${i}.pop`, 'Popüler’de göster', { type: 'checkbox' })}${delBtn('p' + i, 'delprod', `data-i="${i}"`)}</div></div>`).join('') || '<p class="hint">Bu kategoride ürün yok.</p>'}
+    <button class="btn pri" data-act="addprod">+ Ürün ekle</button>`;
+  },
+
+  data: d => `<div class="card"><h2>Menü verisi (JSON)</h2>
+    <p class="hint">Menü sayfasının okuyacağı veri budur. Başka yerde düzenleyip yapıştırırsanız “Uygula” önce doğrular, hatalıysa hiçbir şeyi değiştirmez.</p>
+    <textarea id="json" aria-label="Menü JSON" spellcheck="false">${esc(ui.json ?? JSON.stringify(d, null, 2))}</textarea>
+    <p class="err" id="jsonmsg">${esc(ui.jsonMsg)}</p>
+    <div class="row"><div class="acts"><button class="btn" data-act="copy">Kopyala</button><button class="btn" data-act="apply">Uygula</button></div>
+    ${ui.confirm === 'reset' ? '<button class="btn del" data-act="reset">Emin misiniz? Varsayılana dön</button>' : '<button class="btn del" data-act="ask" data-key="reset">Varsayılana dön</button>'}</div></div>`
+};
+
+function chrome() {
+  const s = store.get(), n = Object.keys(s.errors).length, dirty = store.dirty();
+  document.getElementById('acts').innerHTML =
+    `<span class="pill ${n ? 'bad' : dirty ? '' : 'ok'}" id="status">${n ? n + ' hata var' : dirty ? 'Kaydedilmemiş değişiklik' : 'Kaydedildi'}</span>
+     <button class="btn" data-act="undo" ${s.past.length ? '' : 'disabled'}>Geri al</button>
+     <button class="btn pri" data-act="save" ${n || !dirty ? 'disabled' : ''}>Kaydet</button>`;
+  document.querySelectorAll('[data-err]').forEach(el => { el.textContent = s.errors[el.dataset.err] || ''; });
+}
+function render() {
+  document.getElementById('nav').innerHTML = Object.entries(TABS).map(([k, t]) => `<button data-act="tab" data-tab="${k}" aria-current="${k === ui.tab}">${t}</button>`).join('');
+  document.getElementById('title').textContent = TABS[ui.tab];
+  document.getElementById('view').innerHTML = views[ui.tab](store.get().draft);
+  chrome();
+}
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2500);
+}
+
+/* 6 ─ CONTROLLER: olay -> store -> ekran. Yazarken tüm sayfa yeniden çizilmez (odak/tıklama kaybolmasın) */
+const parse = (el) => {
+  if (el.dataset.t === 'checkbox') return el.checked;
+  if (el.dataset.t !== 'number') return el.value;
+  const raw = el.value.trim().replace(',', '.');
+  return raw !== '' && Number.isFinite(Number(raw)) ? Number(raw) : raw;
+};
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.matches('[data-path]')) { store.dispatch('set', { path: el.dataset.path, value: parse(el) }); chrome(); }
+  else if (el.dataset.act === 'filter') { ui.cat = el.value; render(); }
+});
+const actions = {
+  tab: b => { ui.tab = b.dataset.tab; ui.confirm = ''; ui.json = null; ui.jsonMsg = ''; render(); },
+  ask: b => { ui.confirm = b.dataset.key; render(); },
+  undo: () => { store.undo(); render(); },
+  save: () => { const r = store.save(); chrome(); toast(r === 'ok' ? 'Kaydedildi' : r === 'storage' ? 'Tarayıcı kaydetmeye izin vermedi' : 'Önce hataları düzeltin'); },
+  addcat: () => { store.dispatch('addCategory'); render(); },
+  delcat: b => { ui.confirm = ''; store.dispatch('removeCategory', { i: +b.dataset.i }); render(); },
+  addprod: () => { store.dispatch('addProduct', { c: ui.cat === 'all' ? null : ui.cat }); render(); },
+  delprod: b => { ui.confirm = ''; store.dispatch('removeProduct', { i: +b.dataset.i }); render(); },
+  reset: () => { ui.confirm = ''; ui.json = null; store.reset(); render(); toast('Varsayılan veri yüklendi (kaydedilmedi)'); },
+  copy: async () => {
+    const ta = document.getElementById('json');
+    try { await navigator.clipboard.writeText(ta.value); toast('Kopyalandı'); } catch (err) { ta.select(); toast('Metni seçtim, kopyalayabilirsiniz'); }
+  },
+  apply: () => {
+    const ta = document.getElementById('json');
+    let data;
+    try { data = JSON.parse(ta.value); } catch (err) { ui.json = ta.value; ui.jsonMsg = 'JSON okunamadı: ' + err.message; render(); return; }
+    const errs = Object.entries(validate(data));
+    if (errs.length) { ui.json = ta.value; ui.jsonMsg = errs.slice(0, 3).map(([k, m]) => `${k}: ${m}`).join(' · ') + (errs.length > 3 ? ` (+${errs.length - 3})` : ''); render(); return; }
+    ui.json = null; ui.jsonMsg = ''; store.dispatch('replace', { data }); render(); toast('Uygulandı (kaydedilmedi)');
+  }
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('button[data-act]');
+  if (b && actions[b.dataset.act]) actions[b.dataset.act](b);
+});
+
+render();
+if (store.get().freshStart) toast('Varsayılan menü verisi yüklendi');
+</script>
+</body>
+</html>
