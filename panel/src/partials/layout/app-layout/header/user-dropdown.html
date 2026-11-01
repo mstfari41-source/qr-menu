@@ -1,0 +1,319 @@
+<!-- User Dropdown -->
+<div
+  class="relative"
+  x-data="dropdown({
+    placement: 'bottom-end',
+    offset: 8,
+    subPlacement: 'left-start',
+    subOffset: 4,
+
+    getMainItems() {
+      return Array.from(this.$refs.menu?.querySelectorAll('[role=menuitem]:not([data-submenu-item])') || []);
+    },
+
+    openMenu(focusFirst = true) {
+      this.open = true;
+      this.subOpen = false;
+      this.$nextTick(() => {
+        const items = this.getMainItems();
+        if (items.length) {
+          (focusFirst ? items[0] : items[items.length - 1]).focus();
+        }
+      });
+    },
+
+    closeMenu(returnFocus = true) {
+      if (!this.open) return;
+      this.open = false;
+      this.subOpen = false;
+      if (returnFocus) {
+        this.$nextTick(() => this.$refs.trigger?.focus());
+      }
+    },
+
+    toggleMenu() {
+      if (this.open) {
+        this.closeMenu(false);
+      } else {
+        this.openMenu(true);
+      }
+    },
+
+    navigate(e) {
+      const items = this.getMainItems();
+      const index = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = index < items.length - 1 ? index + 1 : 0;
+        items[next]?.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = index > 0 ? index - 1 : items.length - 1;
+        items[prev]?.focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        items[0]?.focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        items[items.length - 1]?.focus();
+      }
+    },
+
+    openSubmenu() {
+      this.subOpen = true;
+      this.$nextTick(() => {
+        const subItems = Array.from(this.$refs.submenu?.querySelectorAll('[role=menuitem]') || []);
+        if (subItems.length) subItems[0].focus();
+      });
+    },
+
+    closeSubmenu() {
+      this.subOpen = false;
+      this.$nextTick(() => this.$refs.subTrigger?.focus());
+    },
+
+    navigateSub(e) {
+      const subItems = Array.from(this.$refs.submenu?.querySelectorAll('[role=menuitem]') || []);
+      const index = subItems.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = index < subItems.length - 1 ? index + 1 : 0;
+        subItems[next]?.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = index > 0 ? index - 1 : subItems.length - 1;
+        subItems[prev]?.focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        subItems[0]?.focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        subItems[subItems.length - 1]?.focus();
+      }
+    }
+  })"
+  @click.outside="closeMenu(false)"
+  @keydown.escape.window="closeMenu(true)"
+>
+  <!-- Trigger Button -->
+  <button
+    type="button"
+    x-ref="trigger"
+    id="user-menu-button"
+    aria-haspopup="menu"
+    :aria-expanded="open.toString()"
+    aria-controls="user-menu"
+    aria-label="Profil menüsü"
+    @click="toggleMenu()"
+    @keydown.down.prevent="openMenu(true)"
+    @keydown.up.prevent="openMenu(false)"
+    class="dropdown-toggle flex items-center text-gray-700 dark:text-gray-400"
+  >
+    <span class="h-10 w-10 overflow-hidden rounded-full sm:me-3">
+      <img src="/images/user/owner.png" alt="Profil" class="size-10 object-cover" />
+    </span>
+
+    <span class="me-1 hidden text-sm font-medium sm:block">Ahmet Yılmaz</span>
+
+    <svg
+      class="size-5 text-gray-500 transition-transform duration-200 dark:text-gray-400"
+      :class="open ? 'rotate-180' : 'rotate-0'"
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M4.792 7.396L10 12.604l5.208-5.208"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </button>
+
+  <!-- Dropdown Menu Content -->
+  <div
+    x-cloak
+    x-show="open"
+    x-ref="menu"
+    id="user-menu"
+    role="menu"
+    aria-orientation="vertical"
+    aria-labelledby="user-menu-button"
+    tabindex="-1"
+    @keydown.tab="open = false; subOpen = false"
+    @keydown.escape.stop="closeMenu(true)"
+    @keydown="navigate($event)"
+    x-transition:enter="animate-in fade-in-0 zoom-in-95 duration-100"
+    x-transition:leave="animate-out fade-out-0 zoom-out-95 fill-mode-forwards duration-75"
+    class="fixed z-50 flex w-65 flex-col gap-1 rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg outline-none dark:border-gray-800 dark:bg-[#1E2635]"
+  >
+    <!-- User Info Header -->
+    <div class="px-3 py-2">
+      <span class="block text-sm font-medium text-gray-700 dark:text-gray-400">
+        Ahmet Yılmaz
+      </span>
+      <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">
+        ahmet@beecafe.com.tr
+      </span>
+    </div>
+
+    <div class="-mx-3 my-1.5 h-px bg-gray-100 dark:bg-gray-700"></div>
+
+    <!-- Panel shortcuts -->
+    <template
+      x-for="item in [
+        { href: 'profile.html', label: 'Profil', icon: 'M17.775 19.107v-.261a4.5 4.5 0 00-4.5-4.5h-2.55a4.5 4.5 0 00-4.5 4.5v.261M21.25 12a9.25 9.25 0 11-18.5 0 9.25 9.25 0 0118.5 0zm-6.483-2.732a2.768 2.768 0 11-5.536 0 2.768 2.768 0 015.536 0z' },
+        { href: 'menu-ayarlari.html', label: 'Menü Ayarları', icon: 'M4 7h10M18 7h2M4 17h4M12 17h8M18 7a2 2 0 11-4 0 2 2 0 014 0zM12 17a2 2 0 11-4 0 2 2 0 014 0z' },
+        { href: 'yapay-zeka.html', label: 'Yapay Zekâ Ayarları', icon: 'M10 3.75l1.6 4.65 4.65 1.6-4.65 1.6L10 16.25l-1.6-4.65L3.75 10l4.65-1.6zM17.5 14.25l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z' },
+        { href: 'qr-islemleri.html', label: 'QR İşlemleri', icon: 'M4.75 3.75h4.5a1 1 0 011 1v4.5a1 1 0 01-1 1h-4.5a1 1 0 01-1-1v-4.5a1 1 0 011-1zM14.75 3.75h4.5a1 1 0 011 1v4.5a1 1 0 01-1 1h-4.5a1 1 0 01-1-1v-4.5a1 1 0 011-1zM4.75 13.75h4.5a1 1 0 011 1v4.5a1 1 0 01-1 1h-4.5a1 1 0 01-1-1v-4.5a1 1 0 011-1zM13.75 13.75h2.5v2.5h-2.5zM17.75 17.75h2.5v2.5h-2.5zM17.75 13.75h2.5M13.75 20.25h2.5' }
+      ]"
+      :key="item.href"
+    >
+      <a
+        :href="item.href"
+        role="menuitem"
+        tabindex="-1"
+        class="group/dropdown-menu-item relative flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 outline-hidden transition-colors duration-200 select-none hover:bg-gray-100 hover:text-gray-700 focus:bg-gray-100 focus:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300 dark:focus:bg-white/5 dark:focus:text-gray-300"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          class="size-6 text-gray-500 group-hover/dropdown-menu-item:text-gray-700 dark:text-gray-400 dark:group-hover/dropdown-menu-item:text-gray-300"
+        >
+          <path :d="item.icon" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span x-text="item.label"></span>
+      </a>
+    </template>
+
+    <!-- Submenu: Language -->
+    <div
+      class="relative"
+      x-data="languageSwitcher()"
+      @mouseenter="subOpen = true"
+      @mouseleave="subOpen = false"
+    >
+      <button
+        type="button"
+        x-ref="subTrigger"
+        data-submenu-trigger
+        id="language-menu-button"
+        role="menuitem"
+        aria-haspopup="menu"
+        :aria-expanded="subOpen.toString()"
+        aria-controls="language-submenu"
+        tabindex="-1"
+        @click="subOpen = !subOpen"
+        @keydown.right.prevent="openSubmenu()"
+        @keydown.enter.prevent="openSubmenu()"
+        class="group/dropdown-menu-sub-trigger relative flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 outline-hidden transition-colors duration-200 select-none hover:bg-gray-100 hover:text-gray-700 focus:bg-gray-100 focus:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300 dark:focus:bg-white/5 dark:focus:text-gray-300"
+        :class="{ 'bg-gray-100 dark:bg-white/5': subOpen }"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          class="size-6 text-gray-500 group-hover/dropdown-menu-sub-trigger:text-gray-700 dark:text-gray-400 dark:group-hover/dropdown-menu-sub-trigger:text-gray-300"
+        >
+          <path
+            d="M12.001 2.75a9.25 9.25 0 019.25 9.25A9.25 9.25 0 0112 21.25m0-18.5A9.25 9.25 0 002.751 12a9.25 9.25 0 009.25 9.25m0-18.5c2.209 0 4 4.141 4 9.25 0 5.107-1.791 9.25-4 9.25m0-18.5c-2.209 0-3.999 4.141-3.999 9.25 0 5.107 1.79 9.25 3.999 9.25M3.246 9h17.508M3.246 15h17.508"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+
+        <span class="text-gray-700 dark:text-gray-300">Dil</span>
+
+        <!-- Current Language Badge -->
+        <span
+          class="ms-auto me-1 inline-flex h-auto items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-white/3 dark:text-gray-300"
+        >
+          <span x-text="currentLang.short"></span>
+          <span class="block h-3 w-4.5 shrink-0 overflow-hidden rounded-[2px] ring-1 ring-black/10" x-html="flag(current)"></span>
+        </span>
+      </button>
+
+      <!-- Nested Submenu Content (opens to left of dropdown in LTR, right in RTL) -->
+      <div
+        x-cloak
+        x-show="subOpen"
+        x-ref="submenu"
+        data-submenu
+        id="language-submenu"
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="language-menu-button"
+        tabindex="-1"
+        @keydown.tab="open = false; subOpen = false"
+        @keydown.left.prevent="closeSubmenu()"
+        @keydown.escape.stop="closeSubmenu()"
+        @keydown="navigateSub($event)"
+        x-transition:enter="animate-in fade-in-0 zoom-in-95 duration-100"
+        x-transition:leave="animate-out fade-out-0 zoom-out-95 fill-mode-forwards duration-75"
+        class="fixed z-50 flex w-56 flex-col gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-theme-lg outline-none dark:border-gray-800 dark:bg-[#1E2635]"
+      >
+        <template x-for="language in languages" :key="language.id">
+          <button
+            type="button"
+            role="menuitem"
+            tabindex="-1"
+            data-submenu-item="true"
+            @click.stop="choose(language.id); subOpen = false; closeMenu(true)"
+            class="group/dropdown-menu-item relative flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-start text-sm font-medium outline-hidden transition-colors duration-200 select-none hover:bg-gray-100 dark:hover:bg-white/5"
+            :class="current === language.id
+              ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400'
+              : 'text-gray-700 dark:text-gray-300'"
+          >
+            <span class="flex items-center gap-2">
+              <span
+                class="size-1.5 shrink-0 rounded-full transition-opacity"
+                :class="current === language.id ? 'bg-brand-500 opacity-100 dark:bg-brand-400' : 'opacity-0'"
+              ></span>
+              <span class="block h-3.5 w-5 shrink-0 overflow-hidden rounded-[3px] ring-1 ring-black/10" x-html="flag(language.id)"></span>
+              <span class="truncate" x-text="language.name"></span>
+            </span>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <div class="-mx-3 my-1.5 h-px bg-gray-100 dark:bg-gray-700"></div>
+
+    <!-- Sign Out (Destructive) -->
+    <a
+      href="signin.html"
+      role="menuitem"
+      tabindex="-1"
+      class="group/dropdown-menu-item relative flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-500 outline-hidden transition-colors duration-200 select-none hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:focus:bg-red-500/10 dark:focus:text-red-400"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        class="size-5 text-red-500 dark:text-red-400"
+      >
+        <path
+          d="M4 12h7.75M8 8l-3.998 4 3.997 4M9.75 4.996V4.25a1.5 1.5 0 011.5-1.5h6a1.5 1.5 0 011.5 1.5v15.5a1.5 1.5 0 01-1.5 1.5h-6a1.5 1.5 0 01-1.5-1.5V19"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <span>Çıkış Yap</span>
+    </a>
+  </div>
+</div>

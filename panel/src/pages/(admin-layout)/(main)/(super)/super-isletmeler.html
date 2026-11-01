@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>İşletmeler | Süper Panel</title>
+  </head>
+  <body
+    x-data="{ page: 'superBusinesses', 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
+    x-init="
+         darkMode = JSON.parse(localStorage.getItem('darkMode')) ?? false;
+         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+    :class="{'dark bg-gray-900': darkMode === true}"
+  >
+    <include src="./partials/common/preloader.html"></include>
+
+    <div class="flex h-screen overflow-hidden">
+      <include src="./partials/layout/super-layout/super-sidebar.html"></include>
+
+      <div class="relative flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+        <include src="./partials/layout/super-layout/super-header.html" />
+
+        <main id="main-content">
+          <div class="mx-auto max-w-(--breakpoint-2xl) p-4 pb-20 md:p-6 md:pb-6">
+            <h2 class="mb-6 text-xl font-semibold text-gray-800 dark:text-white/90">İşletmeler</h2>
+            <include src="./partials/main/super/super-businesses.html" />
+          </div>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

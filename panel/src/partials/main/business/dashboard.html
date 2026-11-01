@@ -1,0 +1,137 @@
+<div x-data="dashboard()" class="grid grid-cols-12 gap-4 md:gap-6">
+  <div class="col-span-12 space-y-6 xl:col-span-7">
+    <!-- Metrics -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
+      <template x-for="m in metrics" :key="m.label">
+        <div class="rounded-2xl border p-5 md:p-6" :class="statKinds[m.kind].theme.card">
+          <div class="flex items-center gap-3">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" :class="statKinds[m.kind].theme.badge" x-html="statIcon(m.kind)"></span>
+            <span class="text-sm text-gray-600 dark:text-gray-400" x-text="m.label"></span>
+          </div>
+          <div class="mt-4 flex items-end justify-between gap-2">
+            <h4 class="text-title-sm font-bold text-gray-800 dark:text-white/90" x-text="m.value"></h4>
+            <span
+              class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-white px-2 py-0.5 text-sm font-medium shadow-theme-xs dark:bg-gray-900"
+              :class="m.change >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'"
+              :title="m.note"
+              x-text="(m.change >= 0 ? '↑ %' : '↓ %') + Math.abs(m.change).toFixed(1)"
+            ></span>
+          </div>
+          <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400" x-text="m.note"></span>
+        </div>
+      </template>
+    </div>
+
+    <!-- Monthly revenue -->
+    <div class="rounded-2xl border border-gray-200 bg-white px-5 pt-5 sm:px-6 sm:pt-6 dark:border-gray-800 dark:bg-white/3">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Aylık Ciro</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Son 12 ayın tamamlanan satışları</p>
+      <div class="-ml-3 max-w-full overflow-x-auto">
+        <div x-ref="monthly" class="min-w-[560px]"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly target -->
+  <div class="col-span-12 xl:col-span-5">
+    <div class="flex h-full flex-col justify-between rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/3">
+      <div class="flex-1 rounded-2xl bg-white px-5 pt-5 pb-8 sm:px-6 sm:pt-6 dark:bg-gray-900">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Aylık Hedef</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Bu ay için belirlediğiniz ciro hedefi</p>
+          </div>
+          <label class="text-xs text-gray-500 dark:text-gray-400">
+            Hedef (₺)
+            <input
+              type="number"
+              min="0"
+              step="10000"
+              x-model.number="target"
+              class="mt-1 block h-9 w-28 rounded-lg border border-gray-300 bg-transparent px-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+            />
+          </label>
+        </div>
+        <div x-ref="target" class="mt-6"></div>
+        <p class="mx-auto -mt-4 max-w-72 text-center text-sm text-gray-500 dark:text-gray-400">
+          Bu ay hedefin <b class="text-gray-800 dark:text-white/90" x-text="'%' + progress"></b>'ine ulaştınız.
+          <span x-show="progress < 100">Hedefe <b class="text-gray-800 dark:text-white/90" x-text="formatPrice(Math.max(0, target - monthRevenue))"></b> kaldı.</span>
+        </p>
+      </div>
+      <div class="flex items-center justify-center gap-5 px-6 py-4 sm:gap-8">
+        <div class="text-center">
+          <p class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Hedef</p>
+          <p class="text-base font-semibold text-gray-800 dark:text-white/90" x-text="formatPrice(target)"></p>
+        </div>
+        <div class="h-7 w-px bg-gray-200 dark:bg-gray-800"></div>
+        <div class="text-center">
+          <p class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Bu ay</p>
+          <p class="text-base font-semibold text-gray-800 dark:text-white/90" x-text="formatPrice(monthRevenue)"></p>
+        </div>
+        <div class="h-7 w-px bg-gray-200 dark:bg-gray-800"></div>
+        <div class="text-center">
+          <p class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Bugün</p>
+          <p class="text-base font-semibold text-gray-800 dark:text-white/90" x-text="formatPrice(todayRevenue)"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="col-span-12">
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/3">
+      <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Satış İstatistikleri</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Ciro ve sipariş sayısı</p>
+        </div>
+        <div class="inline-flex w-fit rounded-lg bg-gray-100 p-1 dark:bg-gray-900">
+          <template x-for="r in [{ id: '7', name: 'Son 7 gün' }, { id: '30', name: 'Son 30 gün' }, { id: '12', name: '12 ay' }]" :key="r.id">
+            <button
+              type="button"
+              @click="range = r.id"
+              class="rounded-md px-3 py-2 text-sm font-medium transition"
+              :class="range === r.id ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400'"
+              x-text="r.name"
+            ></button>
+          </template>
+        </div>
+      </div>
+      <div class="max-w-full overflow-x-auto">
+        <div x-ref="statistics" class="min-w-[700px]"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top products -->
+  <div class="col-span-12 xl:col-span-5">
+    <div class="h-full rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/3">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">En Çok Satanlar</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Bu ay, satılan adede göre</p>
+      <ul class="mt-5 space-y-4">
+        <template x-for="(p, i) in topProducts" :key="p.name">
+          <li>
+            <div class="mb-1.5 flex items-center justify-between gap-3 text-sm">
+              <span class="font-medium text-gray-800 dark:text-white/90" x-text="(i + 1) + '. ' + p.name"></span>
+              <span class="text-gray-500 dark:text-gray-400"><span x-text="p.qty"></span> adet · <span x-text="formatPrice(p.revenue)"></span></span>
+            </div>
+            <div class="h-2 rounded-full bg-gray-100 dark:bg-gray-800">
+              <div class="h-2 rounded-full bg-brand-500" :style="'width:' + p.share + '%'"></div>
+            </div>
+          </li>
+        </template>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Hourly -->
+  <div class="col-span-12 xl:col-span-7">
+    <div class="h-full rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/3">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Saatlik Yoğunluk</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Son 30 günde saat başına ortalama sipariş</p>
+      <div class="max-w-full overflow-x-auto">
+        <div x-ref="hourly" class="min-w-[520px]"></div>
+      </div>
+    </div>
+  </div>
+</div>

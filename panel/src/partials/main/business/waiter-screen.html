@@ -1,0 +1,292 @@
+<div x-data="waiterScreen()" class="mx-auto max-w-md">
+  <!-- Phone frame -->
+  <div class="overflow-hidden rounded-[2rem] border border-gray-200 bg-gray-50 shadow-theme-lg dark:border-gray-800 dark:bg-gray-950">
+    <!-- Header -->
+    <header class="bg-gray-900 px-5 pt-5 pb-4 text-white">
+      <div class="flex items-center gap-3">
+        <img :src="me?.photo" :alt="me?.name" class="h-12 w-12 rounded-full object-cover ring-2 ring-white/30" />
+        <div class="min-w-0 flex-1">
+          <label class="sr-only" for="waiter-select">Garson</label>
+          <select
+            id="waiter-select"
+            x-model.number="meId"
+            class="w-full truncate rounded-md border-0 bg-transparent p-0 text-base font-semibold text-white focus:ring-0"
+          >
+            <template x-for="w in waiters" :key="w.id">
+              <option :value="w.id" x-text="w.name" class="text-gray-900" :selected="w.id === meId"></option>
+            </template>
+          </select>
+          <span class="block truncate text-xs text-white/60" x-text="onBreak ? 'Molada · ' + live.ago(me.breakSince).replace(' önce', '') : (me?.onShift ? 'Vardiyada · ' + (me.tables.length ? 'Masa ' + me.tables.join(', ') : 'Masa atanmadı') : 'İzinli · tüm masalar gösteriliyor')"></span>
+        </div>
+        <!-- Break toggle -->
+        <button
+          type="button"
+          @click="toggleBreak()"
+          :aria-pressed="onBreak"
+          class="flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition ring-inset"
+          :class="onBreak ? 'bg-amber-400 text-gray-900 ring-amber-400' : 'bg-white/10 text-white ring-white/20 hover:bg-white/15'"
+          x-text="onBreak ? 'Moladayım' : 'Molaya çık'"
+        ></button>
+        <!-- Online status: blinking green while working, amber on break -->
+        <span class="relative flex h-3 w-3 shrink-0" :title="onBreak ? 'Molada' : 'Çevrim içi'">
+          <span x-show="!onBreak" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex h-3 w-3 rounded-full" :class="onBreak ? 'bg-amber-400' : 'bg-green-500'"></span>
+        </span>
+      </div>
+
+      <!-- Counters -->
+      <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+        <div class="rounded-xl bg-red-500/20 py-2">
+          <span class="block text-xl font-bold text-red-300" x-text="waitingCalls.length"></span>
+          <span class="text-[11px] text-white/70">Çağrı</span>
+        </div>
+        <div class="rounded-xl bg-green-500/20 py-2">
+          <span class="block text-xl font-bold text-green-300" x-text="newOrders.length"></span>
+          <span class="text-[11px] text-white/70">Yeni sipariş</span>
+        </div>
+        <div class="rounded-xl bg-brand-500/25 py-2">
+          <span class="block text-xl font-bold text-brand-200" x-text="preparing.length"></span>
+          <span class="text-[11px] text-white/70">Hazırlanıyor</span>
+        </div>
+      </div>
+
+      <label class="mt-3 flex cursor-pointer items-center justify-end gap-2 text-xs text-white/70">
+        <input type="checkbox" x-model="allTables" class="h-3.5 w-3.5 accent-brand-500" />
+        Tüm masaları göster
+      </label>
+    </header>
+
+    <div class="space-y-5 p-4">
+      <!-- On break: calls go to the other waiters -->
+      <div x-show="onBreak" class="flex items-center gap-3 rounded-2xl bg-amber-50 p-3.5 ring-1 ring-amber-200 ring-inset dark:bg-amber-500/10 dark:ring-amber-500/30">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-400 text-gray-900">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v2M10 2v2M14 2v2" /></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-sm font-semibold text-gray-800 dark:text-white/90">Moladasın</span>
+          <span class="block text-xs text-gray-600 dark:text-gray-400">Masalarının çağrıları vardiyadaki diğer garsonlara gidiyor.</span>
+        </div>
+        <button type="button" @click="toggleBreak()" class="shrink-0 rounded-xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white active:scale-[0.98] dark:bg-white dark:text-gray-900">Molayı bitir</button>
+      </div>
+
+      <!-- Take an order at the table without a call -->
+      <button
+        type="button"
+        @click="openOrder()"
+        class="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-gray-900 text-base font-semibold text-white shadow-theme-md active:scale-[0.98] dark:bg-white dark:text-gray-900"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        Sipariş Al
+      </button>
+
+      <!-- Waiter calls -->
+      <section class="space-y-2.5">
+        <h3 class="flex items-center justify-between px-1 text-xs font-semibold tracking-wide text-red-600 uppercase dark:text-red-400">
+          Garson çağrıları
+          <span x-show="waitingCalls.length" class="rounded-full bg-red-500 px-2 py-0.5 text-[11px] text-white" x-text="waitingCalls.length"></span>
+        </h3>
+        <template x-for="c in waitingCalls" :key="c.id">
+          <article class="rounded-2xl border-2 bg-white p-3.5 dark:bg-gray-900" :class="live.isEscalated(c) ? 'border-red-500 bg-red-50 ring-4 ring-red-500/20 dark:bg-red-500/10' : 'border-red-200 dark:border-red-500/30'">
+            <div class="flex items-center gap-3">
+              <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-red-500 text-2xl font-bold text-white" x-text="c.table"></span>
+              <div class="min-w-0 flex-1">
+                <span class="block text-lg font-semibold text-gray-800 dark:text-white/90" x-text="'Masa ' + c.table"></span>
+                <span class="text-sm" :class="live.isEscalated(c) ? 'font-medium text-red-600' : 'text-gray-500 dark:text-gray-400'" x-text="(live.isEscalated(c) ? 'Gecikti · ' : 'Garson çağırıyor · ') + live.ago(c.createdAt)"></span>
+              </div>
+            </div>
+            <button type="button" @click="answer(c)" class="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-500 text-base font-semibold text-white active:scale-[0.98]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7" /></svg>
+              Geliyorum
+            </button>
+          </article>
+        </template>
+        <p x-show="!waitingCalls.length" class="rounded-2xl border border-dashed border-gray-300 py-5 text-center text-sm text-gray-400 dark:border-gray-700">Bekleyen çağrı yok</p>
+      </section>
+
+      <!-- New orders -->
+      <section class="space-y-2.5">
+        <h3 class="flex items-center justify-between px-1 text-xs font-semibold tracking-wide text-green-600 uppercase dark:text-green-400">
+          Onay bekleyen siparişler
+          <span x-show="newOrders.length" class="rounded-full bg-green-500 px-2 py-0.5 text-[11px] text-white" x-text="newOrders.length"></span>
+        </h3>
+        <template x-for="o in newOrders" :key="o.id">
+          <article class="rounded-2xl border-2 border-green-200 bg-white p-3.5 dark:border-green-500/30 dark:bg-gray-900">
+            <div class="flex items-center gap-3">
+              <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-500 text-xl font-bold text-white" x-text="o.table"></span>
+              <div class="min-w-0 flex-1">
+                <span class="block font-semibold text-gray-800 dark:text-white/90" x-text="'Masa ' + o.table"></span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="'#' + o.no + ' · ' + live.ago(o.createdAt)"></span>
+              </div>
+              <span class="text-base font-bold text-gray-800 dark:text-white/90" x-text="formatPrice(o.total)"></span>
+            </div>
+            <ul class="mt-3 space-y-1.5 rounded-xl bg-gray-50 p-3 dark:bg-white/5">
+              <template x-for="l in o.lines" :key="l.id">
+                <li class="flex items-baseline gap-2 text-sm text-gray-800 dark:text-gray-200">
+                  <span class="w-7 shrink-0 font-bold" x-text="l.qty + '×'"></span>
+                  <span x-text="l.name"></span>
+                </li>
+              </template>
+            </ul>
+            <p x-show="o.note" class="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" x-text="'Not: ' + o.note"></p>
+            <div class="mt-3 grid grid-cols-[auto_1fr] gap-2">
+              <button type="button" @click="reject(o)" class="h-12 rounded-xl bg-red-50 px-4 text-sm font-semibold text-red-600 ring-1 ring-red-200 ring-inset active:scale-95 dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30">Reddet</button>
+              <button type="button" @click="confirmOrder(o)" class="flex h-12 items-center justify-center gap-2 rounded-xl bg-green-500 text-base font-semibold text-white active:scale-[0.98]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7" /></svg>
+                Siparişi Onayla
+              </button>
+            </div>
+          </article>
+        </template>
+        <p x-show="!newOrders.length" class="rounded-2xl border border-dashed border-gray-300 py-5 text-center text-sm text-gray-400 dark:border-gray-700">Onay bekleyen sipariş yok</p>
+      </section>
+
+      <!-- Preparing -->
+      <section class="space-y-2.5">
+        <h3 class="px-1 text-xs font-semibold tracking-wide text-brand-600 uppercase dark:text-brand-400">Hazırlanıyor · servis edilecek</h3>
+        <template x-for="o in preparing" :key="o.id">
+          <article class="flex items-center gap-3 rounded-2xl border border-brand-200 bg-white p-3 dark:border-brand-500/30 dark:bg-gray-900">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-lg font-bold text-white" x-text="o.table"></span>
+            <div class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-semibold text-gray-800 dark:text-white/90" x-text="o.lines.map((l) => l.qty + '× ' + l.name).join(', ')"></span>
+              <span class="text-xs text-gray-500 dark:text-gray-400" x-text="'Masa ' + o.table + ' · ' + live.ago(o.createdAt) + (o.byWaiter ? ' · Çağrı dışı' : '')"></span>
+            </div>
+            <button type="button" @click="deliver(o)" class="h-10 shrink-0 rounded-xl bg-brand-50 px-3 text-sm font-semibold text-brand-600 ring-1 ring-brand-200 ring-inset active:scale-95 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30">Teslim Et</button>
+          </article>
+        </template>
+        <p x-show="!preparing.length" class="rounded-2xl border border-dashed border-gray-300 py-5 text-center text-sm text-gray-400 dark:border-gray-700">Hazırlanan sipariş yok</p>
+      </section>
+    </div>
+  </div>
+
+  <p class="mt-4 text-center text-xs text-gray-400">
+    Bu ekran garsonların telefonu için tasarlandı; şimdilik panelin içinden açılıyor.
+  </p>
+
+  <!-- ===== Sipariş Al sheet ===== -->
+  <div x-show="sheetOpen" x-cloak class="fixed inset-0 z-[99999] flex items-end justify-center sm:items-center" style="display: none" @keydown.escape.window="sheetOpen = false">
+    <div class="fixed inset-0 bg-gray-900/50" @click="sheetOpen = false"></div>
+    <div role="dialog" aria-modal="true" aria-labelledby="order-sheet-title" class="relative flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl bg-white sm:rounded-3xl dark:bg-gray-900">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+        <div>
+          <h3 id="order-sheet-title" class="text-lg font-semibold text-gray-800 dark:text-white/90">Sipariş Al</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Çağrı dışı sipariş · doğrudan mutfağa gider</p>
+        </div>
+        <button type="button" @click="sheetOpen = false" aria-label="Kapat" class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-white/10">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div class="flex-1 space-y-4 overflow-y-auto px-5 py-4">
+        <!-- Table -->
+        <div>
+          <span class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Masa</span>
+          <div class="grid grid-cols-6 gap-2">
+            <template x-for="n in orderTables" :key="n">
+              <button
+                type="button"
+                @click="orderTable = n"
+                :aria-pressed="(orderTable === n).toString()"
+                class="h-11 rounded-xl border-2 text-base font-bold transition"
+                :class="orderTable === n ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900' : (me?.tables.includes(n) ? 'border-gray-300 text-gray-800 dark:border-gray-600 dark:text-white' : 'border-gray-200 text-gray-400 dark:border-gray-800')"
+                x-text="n"
+              ></button>
+            </template>
+          </div>
+          <p class="mt-1.5 text-[11px] text-gray-400">Koyu numaralar senin masaların.</p>
+        </div>
+
+        <!-- Categories -->
+        <div class="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5">
+          <template x-for="c in categories" :key="c.id">
+            <button
+              type="button"
+              @click="orderCategory = c.id"
+              class="shrink-0 rounded-full px-4 py-2 text-sm font-medium transition"
+              :class="orderCategory === c.id ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900' : 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-300'"
+              x-text="c.name"
+            ></button>
+          </template>
+        </div>
+
+        <!-- Products -->
+        <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+          <template x-for="p in categoryProducts" :key="p.id">
+            <li class="flex items-center gap-3 py-2.5">
+              <img :src="p.image" :alt="p.name" class="h-12 w-12 shrink-0 rounded-xl object-cover" />
+              <div class="min-w-0 flex-1">
+                <span class="block truncate text-sm font-medium text-gray-800 dark:text-white/90" x-text="p.name"></span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="formatPrice(p.price)"></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button x-show="qty(p.id)" type="button" @click="dec(p.id)" :aria-label="p.name + ' azalt'" class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-lg text-gray-700 dark:border-gray-600 dark:text-gray-200">−</button>
+                <span x-show="qty(p.id)" class="w-5 text-center text-sm font-bold text-gray-900 dark:text-white" x-text="qty(p.id)"></span>
+                <button type="button" @click="inc(p.id)" :aria-label="p.name + ' ekle'" class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-lg text-white dark:bg-white dark:text-gray-900">+</button>
+              </div>
+            </li>
+          </template>
+        </ul>
+
+        <!-- Note -->
+        <div>
+          <label for="order-note" class="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">Not</label>
+          <input id="order-note" type="text" x-model="orderNote" placeholder="Örn. Az şekerli, soğansız" class="h-11 w-full rounded-xl border border-gray-300 bg-transparent px-4 text-sm text-gray-800 dark:border-gray-700 dark:text-white/90" />
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-gray-100 px-5 py-4 dark:border-gray-800">
+        <p x-show="cartCount" class="mb-2 truncate text-xs text-gray-500 dark:text-gray-400" x-text="cartLines.map((l) => l.qty + '× ' + l.name).join(', ')"></p>
+        <button
+          type="button"
+          @click="sendOrder()"
+          :disabled="!cartCount || !orderTable"
+          class="flex h-14 w-full items-center justify-between rounded-2xl bg-green-500 px-5 text-base font-semibold text-white transition active:scale-[0.98] disabled:bg-gray-300 dark:disabled:bg-gray-700"
+        >
+          <span x-text="orderTable ? 'Masa ' + orderTable + ' · Siparişi Gönder' : 'Masa seçin'"></span>
+          <span x-text="cartCount ? cartCount + ' ürün · ' + formatPrice(cartTotal) : ''"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Break confirmation sheet ===== -->
+  <div x-show="breakAsk" x-cloak class="fixed inset-0 z-[99999] flex items-end justify-center sm:items-center" style="display: none" @keydown.escape.window="breakAsk = null">
+    <div class="fixed inset-0 bg-gray-900/50" @click="breakAsk = null"></div>
+    <div
+      x-show="breakAsk"
+      x-transition:enter="transition duration-200 ease-out"
+      x-transition:enter-start="translate-y-full sm:translate-y-4 sm:opacity-0"
+      x-transition:enter-end="translate-y-0 sm:opacity-100"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="break-sheet-title"
+      class="relative w-full max-w-md rounded-t-3xl bg-white px-6 pt-3 pb-6 text-center sm:rounded-3xl dark:bg-gray-900"
+    >
+      <span class="mx-auto mb-5 block h-1.5 w-10 rounded-full bg-gray-200 sm:hidden dark:bg-gray-700"></span>
+      <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-theme-md">
+        <svg x-show="breakAsk === 'start'" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v2M10 2v2M14 2v2" /></svg>
+        <svg x-show="breakAsk === 'end'" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+      </span>
+      <h3 id="break-sheet-title" class="mt-4 text-xl font-bold text-gray-900 dark:text-white" x-text="breakAsk === 'start' ? 'Molaya çıkıyor musun?' : 'Moladan dönüyor musun?'"></h3>
+      <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-gray-500 dark:text-gray-400">
+        <template x-if="breakAsk === 'start'">
+          <span>
+            <template x-if="me?.tables.length"><b class="text-gray-800 dark:text-white/90" x-text="'Masa ' + me.tables.join(', ')"></b></template>
+            <span x-text="me?.tables.length ? 'çağrıları sen dönene kadar diğer garsonlara gidecek.' : 'Çağrılar sen dönene kadar diğer garsonlara gidecek.'"></span>
+          </span>
+        </template>
+        <template x-if="breakAsk === 'end'">
+          <span x-text="'Molada ' + live.ago(me?.breakSince).replace(' önce', '') + ' kaldın. Çağrılar yeniden sana gelecek.'"></span>
+        </template>
+      </p>
+      <button
+        type="button"
+        @click="confirmBreak()"
+        class="mt-6 flex h-14 w-full items-center justify-center rounded-2xl bg-brand-500 text-base font-semibold text-white active:scale-[0.98]"
+        x-text="breakAsk === 'start' ? 'Molaya çık' : 'İşe dön'"
+      ></button>
+      <button type="button" @click="breakAsk = null" class="mt-2 h-12 w-full rounded-2xl text-sm font-semibold text-gray-500 active:bg-gray-100 dark:text-gray-400 dark:active:bg-white/5">Vazgeç</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,719 @@
+<!-- Menu Group -->
+<div>
+  <ul class="mb-6 flex flex-col gap-1">
+    <!-- Menu Item Ana Sayfa -->
+    <li>
+      <a
+        href="index.html"
+        class="group menu-item"
+        :class=" page === 'ecommerce' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'ecommerce' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M3.75 10.5L12 3.75l8.25 6.75" />
+          <path d="M5.75 9v9.5a1.75 1.75 0 0 0 1.75 1.75h9a1.75 1.75 0 0 0 1.75-1.75V9" />
+          <path d="M10 20.25v-5.5h4v5.5" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Ana Sayfa
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Ana Sayfa -->
+
+    <!-- Menu Item Canlı Servis -->
+    <li>
+      <a
+        href="canli-servis.html"
+        class="group menu-item"
+        :class="page === 'live' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'live' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M3 18h18" />
+          <path d="M5 18a7 7 0 0 1 14 0" />
+          <path d="M12 11V8" />
+          <path d="M10 8h4" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Canlı Servis
+        </span>
+        <span class="ms-auto flex gap-1" :class="sidebarToggle ? 'xl:hidden' : ''">
+          <span
+            x-show="$store.live.waitingCalls.length > 0"
+            title="Bekleyen garson çağrısı"
+            class="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white"
+            x-text="$store.live.waitingCalls.length"
+          ></span>
+          <span
+            x-show="$store.live.newOrderCount > 0"
+            title="Yeni sipariş"
+            class="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500 px-1.5 text-[11px] font-semibold text-white"
+            x-text="$store.live.newOrderCount"
+          ></span>
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Canlı Servis -->
+
+    <!-- Menu Item Garson Ekranı (will move to its own app later) -->
+    <li>
+      <a
+        href="garson.html"
+        class="group menu-item"
+        :class="page === 'waiter' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'waiter' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="6.25" y="2.75" width="11.5" height="18.5" rx="2.25" />
+          <path d="M10.5 18h3" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Garson Ekranı
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Garson Ekranı -->
+
+    <!-- Menu Item Menü -->
+    <li>
+      <a
+        href="menu.html"
+        class="group menu-item"
+        :class="page === 'menu' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'menu' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M5 3.75h11.5a2.25 2.25 0 0 1 2.25 2.25v12a2.25 2.25 0 0 1-2.25 2.25H5z" />
+          <path d="M8.75 8.25h6.5M8.75 12h6.5M8.75 15.75h4" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Menü
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Menü -->
+
+    <!-- Menu Item Story -->
+    <li>
+      <a
+        href="story.html"
+        class="group menu-item"
+        :class="page === 'story' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'story' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="12" cy="12" r="8.25" stroke-dasharray="3.5 2" />
+          <circle cx="12" cy="12" r="4.75" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Story
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Story -->
+
+    <!-- Menu Item Menü Ayarları -->
+    <li>
+      <a
+        href="menu-ayarlari.html"
+        class="group menu-item"
+        :class="page === 'menuSettings' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'menuSettings' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+          <circle cx="16" cy="7" r="2" />
+          <circle cx="10" cy="17" r="2" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Menü Ayarları
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Menü Ayarları -->
+
+    <!-- Menu Item Yapay Zekâ Ayarları -->
+    <li>
+      <a
+        href="yapay-zeka.html"
+        class="group menu-item"
+        :class="page === 'aiSettings' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'aiSettings' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M10 3.75l1.6 4.65 4.65 1.6-4.65 1.6L10 16.25l-1.6-4.65L3.75 10l4.65-1.6z" />
+          <path d="M17.5 14.25l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Yapay Zekâ Ayarları
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Yapay Zekâ Ayarları -->
+
+    <!-- Menu Item QR İşlemleri -->
+    <li>
+      <a
+        href="qr-islemleri.html"
+        class="group menu-item"
+        :class="page === 'qr' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'qr' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="3.75" y="3.75" width="6.5" height="6.5" rx="1" />
+          <rect x="13.75" y="3.75" width="6.5" height="6.5" rx="1" />
+          <rect x="3.75" y="13.75" width="6.5" height="6.5" rx="1" />
+          <path d="M13.75 13.75h2.5v2.5h-2.5zM17.75 17.75h2.5v2.5h-2.5zM17.75 13.75h2.5M13.75 20.25h2.5" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          QR İşlemleri
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item QR İşlemleri -->
+
+    <!-- Menu Item Satışlar -->
+    <li>
+      <a
+        href="satislar.html"
+        class="group menu-item"
+        :class="page === 'sales' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'sales' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M6 3.75h12v16.5l-2-1.25-2 1.25-2-1.25-2 1.25-2-1.25-2 1.25z" />
+          <path d="M9 8.25h6M9 11.75h6M9 15.25h3.5" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Satışlar
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Satışlar -->
+
+    <!-- Menu Item Personeller -->
+    <li>
+      <a
+        href="personeller.html"
+        class="group menu-item"
+        :class="page === 'staff' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'staff' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="9" cy="8" r="3.25" />
+          <path d="M3.5 19.25c.6-3 2.8-4.75 5.5-4.75s4.9 1.75 5.5 4.75" />
+          <path d="M15.5 5.1a3.25 3.25 0 0 1 0 5.8M17.5 14.9c1.6.6 2.7 2.1 3 4.35" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Personeller
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Personeller -->
+
+    <!-- Menu Item Yetkilendirme (owner only) -->
+    <li x-show="$store.session.isOwner">
+      <a
+        href="yetkiler.html"
+        class="group menu-item"
+        :class="page === 'permissions' ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="page === 'permissions' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Yetkilendirme
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Yetkilendirme -->
+
+    <!-- Demo shortcut to the platform owner's super panel (not shown to real businesses) -->
+    <li>
+      <a href="super-isletmeler.html" class="group menu-item menu-item-inactive">
+        <svg class="menu-item-icon-inactive" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
+          <path d="M12 8v4l2.5 1.5" />
+        </svg>
+        <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">Süper Panel (demo)</span>
+      </a>
+    </li>
+
+    <!-- Menu Item Calendar -->
+    <li>
+      <a
+        href="calendar.html"
+        @click="selected = (selected === 'Calendar' ? '':'Calendar')"
+        class="group menu-item"
+        :class=" (selected === 'Calendar') && (page === 'calendar') ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="(selected === 'Calendar') && (page === 'calendar') ? 'menu-item-icon-active'  :'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8 2C8.41421 2 8.75 2.33579 8.75 2.75V3.75H15.25V2.75C15.25 2.33579 15.5858 2 16 2C16.4142 2 16.75 2.33579 16.75 2.75V3.75H18.5C19.7426 3.75 20.75 4.75736 20.75 6V9V19C20.75 20.2426 19.7426 21.25 18.5 21.25H5.5C4.25736 21.25 3.25 20.2426 3.25 19V9V6C3.25 4.75736 4.25736 3.75 5.5 3.75H7.25V2.75C7.25 2.33579 7.58579 2 8 2ZM8 5.25H5.5C5.08579 5.25 4.75 5.58579 4.75 6V8.25H19.25V6C19.25 5.58579 18.9142 5.25 18.5 5.25H16H8ZM19.25 9.75H4.75V19C4.75 19.4142 5.08579 19.75 5.5 19.75H18.5C18.9142 19.75 19.25 19.4142 19.25 19V9.75Z"
+            fill="currentColor"
+          />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Takvim
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Calendar -->
+
+    <!-- Menu Item Profile -->
+    <li>
+      <a
+        href="profile.html"
+        @click="selected = (selected === 'Profile' ? '':'Profile')"
+        class="group menu-item"
+        :class=" (selected === 'Profile') && (page === 'profile') ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="(selected === 'Profile') && (page === 'profile') ?  'menu-item-icon-active'  :'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z"
+            fill="currentColor"
+          />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+        >
+          Profil
+        </span>
+      </a>
+    </li>
+    <!-- Menu Item Profile -->
+
+    <!-- Menu Item Forms -->
+    <li>
+      <a
+        href="#"
+        @click.prevent="selected = (selected === 'Forms' ? '':'Forms')"
+        id="menu-forms-btn"
+        aria-controls="menu-forms"
+        :aria-expanded="selected === 'Forms' ? 'true' : 'false'"
+        class="group menu-item"
+        :class=" (selected === 'Forms') || (page === 'formElements') ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="(selected === 'Forms') || (page === 'formElements') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H18.5001C19.7427 20.75 20.7501 19.7426 20.7501 18.5V5.5C20.7501 4.25736 19.7427 3.25 18.5001 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H18.5001C18.9143 4.75 19.2501 5.08579 19.2501 5.5V18.5C19.2501 18.9142 18.9143 19.25 18.5001 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V5.5ZM6.25005 9.7143C6.25005 9.30008 6.58583 8.9643 7.00005 8.9643L17 8.96429C17.4143 8.96429 17.75 9.30008 17.75 9.71429C17.75 10.1285 17.4143 10.4643 17 10.4643L7.00005 10.4643C6.58583 10.4643 6.25005 10.1285 6.25005 9.7143ZM6.25005 14.2857C6.25005 13.8715 6.58583 13.5357 7.00005 13.5357H17C17.4143 13.5357 17.75 13.8715 17.75 14.2857C17.75 14.6999 17.4143 15.0357 17 15.0357H7.00005C6.58583 15.0357 6.25005 14.6999 6.25005 14.2857Z"
+            fill="currentColor"
+          />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+          x-text="$t('sidebar.items.forms')"
+        >
+          Forms
+        </span>
+
+        <svg
+          class="menu-item-arrow"
+          :class="[(selected === 'Forms') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'xl:hidden' : '' ]"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+
+      <!-- Dropdown Menu Start -->
+      <div
+        id="menu-forms"
+        aria-labelledby="menu-forms-btn"
+        x-cloak
+        x-show="selected === 'Forms'"
+        x-collapse
+      >
+        <ul
+          :class="sidebarToggle ? 'xl:hidden' : 'flex'"
+          class="menu-dropdown mt-2 flex animate-in flex-col gap-1 pl-9 duration-200 fade-in-0 slide-in-from-top-1 rtl:pr-9 rtl:pl-0"
+        >
+          <li>
+            <a
+              href="form-elements.html"
+              class="group menu-dropdown-item"
+              :class="page === 'formElements' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
+              x-text="$t('sidebar.items.formElements')"
+            >
+              Form Elements
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- Dropdown Menu End -->
+    </li>
+    <!-- Menu Item Forms -->
+
+    <!-- Menu Item Tables -->
+    <li>
+      <a
+        href="#"
+        @click.prevent="selected = (selected === 'Tables' ? '':'Tables')"
+        id="menu-tables-btn"
+        aria-controls="menu-tables"
+        :aria-expanded="selected === 'Tables' ? 'true' : 'false'"
+        class="group menu-item"
+        :class="(selected === 'Tables') || (page === 'basicTables') ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="(selected === 'Tables') || (page === 'basicTables') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M3.25 5.5C3.25 4.25736 4.25736 3.25 5.5 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V18.5C20.75 19.7426 19.7426 20.75 18.5 20.75H5.5C4.25736 20.75 3.25 19.7426 3.25 18.5V5.5ZM5.5 4.75C5.08579 4.75 4.75 5.08579 4.75 5.5V8.58325L19.25 8.58325V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H5.5ZM19.25 10.0833H15.416V13.9165H19.25V10.0833ZM13.916 10.0833L10.083 10.0833V13.9165L13.916 13.9165V10.0833ZM8.58301 10.0833H4.75V13.9165H8.58301V10.0833ZM4.75 18.5V15.4165H8.58301V19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5ZM10.083 19.25V15.4165L13.916 15.4165V19.25H10.083ZM15.416 19.25V15.4165H19.25V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15.416Z"
+            fill="currentColor"
+          />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+          x-text="$t('sidebar.items.tables')"
+        >
+          Tables
+        </span>
+
+        <svg
+          class="menu-item-arrow"
+          :class="[(selected === 'Tables') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'xl:hidden' : '' ]"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+
+      <!-- Dropdown Menu Start -->
+      <div
+        id="menu-tables"
+        aria-labelledby="menu-tables-btn"
+        x-cloak
+        x-show="selected === 'Tables'"
+        x-collapse
+      >
+        <ul
+          :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+          class="menu-dropdown mt-2 flex animate-in flex-col gap-1 pl-9 duration-200 fade-in-0 slide-in-from-top-1 rtl:pr-9 rtl:pl-0"
+        >
+          <li>
+            <a
+              href="basic-tables.html"
+              class="group menu-dropdown-item"
+              :class="page === 'basicTables' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
+              x-text="$t('sidebar.items.basicTables')"
+            >
+              Basic Tables
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- Dropdown Menu End -->
+    </li>
+    <!-- Menu Item Tables -->
+
+    <!-- Menu Item Pages -->
+    <li>
+      <a
+        href="#"
+        @click.prevent="selected = (selected === 'Pages' ? '':'Pages')"
+        id="menu-pages-btn"
+        aria-controls="menu-pages"
+        :aria-expanded="selected === 'Pages' ? 'true' : 'false'"
+        class="group menu-item"
+        :class="(selected === 'Pages') || (page === 'blank' || page === 'error404') ? 'menu-item-active' : 'menu-item-inactive'"
+      >
+        <svg
+          :class="(selected === 'Pages') || (page === 'blank' || page === 'error404') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8.50391 4.25C8.50391 3.83579 8.83969 3.5 9.25391 3.5H15.2777C15.4766 3.5 15.6674 3.57902 15.8081 3.71967L18.2807 6.19234C18.4214 6.333 18.5004 6.52376 18.5004 6.72268V16.75C18.5004 17.1642 18.1646 17.5 17.7504 17.5H16.248V17.4993H14.748V17.5H9.25391C8.83969 17.5 8.50391 17.1642 8.50391 16.75V4.25ZM14.748 19H9.25391C8.01126 19 7.00391 17.9926 7.00391 16.75V6.49854H6.24805C5.83383 6.49854 5.49805 6.83432 5.49805 7.24854V19.75C5.49805 20.1642 5.83383 20.5 6.24805 20.5H13.998C14.4123 20.5 14.748 20.1642 14.748 19.75L14.748 19ZM7.00391 4.99854V4.25C7.00391 3.00736 8.01127 2 9.25391 2H15.2777C15.8745 2 16.4468 2.23705 16.8687 2.659L19.3414 5.13168C19.7634 5.55364 20.0004 6.12594 20.0004 6.72268V16.75C20.0004 17.9926 18.9931 19 17.7504 19H16.248L16.248 19.75C16.248 20.9926 15.2407 22 13.998 22H6.24805C5.00541 22 3.99805 20.9926 3.99805 19.75V7.24854C3.99805 6.00589 5.00541 4.99854 6.24805 4.99854H7.00391Z"
+            fill="currentColor"
+          />
+        </svg>
+
+        <span
+          class="menu-item-text"
+          :class="sidebarToggle ? 'xl:hidden' : ''"
+          x-text="$t('sidebar.items.pages')"
+        >
+          Pages
+        </span>
+
+        <svg
+          class="menu-item-arrow"
+          :class="[(selected === 'Pages') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'xl:hidden' : '' ]"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+
+      <!-- Dropdown Menu Start -->
+      <div
+        id="menu-pages"
+        aria-labelledby="menu-pages-btn"
+        x-cloak
+        x-show="selected === 'Pages'"
+        x-collapse
+      >
+        <ul
+          :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+          class="menu-dropdown mt-2 flex animate-in flex-col gap-1 pl-9 duration-200 fade-in-0 slide-in-from-top-1 rtl:pr-9 rtl:pl-0"
+        >
+          <li>
+            <a
+              href="blank.html"
+              class="group menu-dropdown-item"
+              :class="page === 'blank' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
+              x-text="$t('sidebar.items.blankPage')"
+            >
+              Blank Page
+            </a>
+          </li>
+          <li>
+            <a
+              href="error-404.html"
+              target="_blank"
+              class="group menu-dropdown-item"
+              :class="page === 'error404' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
+              x-text="$t('sidebar.items.error404')"
+            >
+              404 Error
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- Dropdown Menu End -->
+    </li>
+    <!-- Menu Item Pages -->
+  </ul>
+</div>

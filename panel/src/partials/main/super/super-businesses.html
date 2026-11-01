@@ -1,0 +1,122 @@
+<div x-data="superBusinesses()" class="space-y-5">
+  <!-- Stats -->
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3">
+      <span class="text-sm text-gray-500 dark:text-gray-400">Toplam işletme</span>
+      <b class="mt-1 block text-2xl font-bold text-gray-800 dark:text-white/90" x-text="businesses.length"></b>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3">
+      <span class="text-sm text-gray-500 dark:text-gray-400">Aktif</span>
+      <b class="mt-1 block text-2xl font-bold text-green-600 dark:text-green-500" x-text="count('active')"></b>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3">
+      <span class="text-sm text-gray-500 dark:text-gray-400">Deneme sürümünde</span>
+      <b class="mt-1 block text-2xl font-bold text-brand-500" x-text="count('trial')"></b>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3">
+      <span class="text-sm text-gray-500 dark:text-gray-400">Yenilemesi yaklaşan</span>
+      <b class="mt-1 block text-2xl font-bold text-amber-600 dark:text-amber-400" x-text="renewingSoon"></b>
+    </div>
+  </div>
+
+  <!-- List -->
+  <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+    <div class="flex flex-col gap-3 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-800">
+      <div class="flex flex-1 flex-col gap-3 sm:flex-row">
+        <input
+          type="search"
+          x-model="query"
+          placeholder="İşletme, yetkili veya şehir ara"
+          aria-label="İşletme ara"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden sm:max-w-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        />
+        <select
+          x-model="statusFilter"
+          aria-label="Duruma göre filtrele"
+          class="h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        >
+          <option value="">Tüm durumlar</option>
+          <template x-for="s in statuses" :key="s.id">
+            <option :value="s.id" x-text="s.name"></option>
+          </template>
+        </select>
+      </div>
+      <a
+        href="super-isletme.html?id=new"
+        class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-green-50 px-4 text-sm font-medium text-green-600 ring-1 ring-green-200 ring-inset hover:bg-green-100 dark:bg-green-500/15 dark:text-green-400 dark:ring-green-500/30 dark:hover:bg-green-500/25"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        Yeni İşletme
+      </a>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[900px] text-left text-sm">
+        <thead>
+          <tr class="border-b border-gray-100 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400">
+            <th class="px-6 py-3 font-medium">İşletme</th>
+            <th class="px-4 py-3 font-medium">Yetkili</th>
+            <th class="px-4 py-3 font-medium">Telefon</th>
+            <th class="px-4 py-3 font-medium">Paket</th>
+            <th class="px-4 py-3 font-medium">Durum</th>
+            <th class="px-4 py-3 font-medium">Yenileme</th>
+            <th class="px-6 py-3"><span class="sr-only">İşlemler</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <template x-for="b in filtered" :key="b.id">
+            <tr class="hover:bg-gray-50 dark:hover:bg-white/3">
+              <td class="px-6 py-3.5">
+                <div class="flex items-center gap-3">
+                  <template x-if="b.logo">
+                    <img :src="b.logo" :alt="b.name" class="size-10 shrink-0 rounded-xl border border-gray-200 object-contain p-1 dark:border-gray-700 dark:bg-white" />
+                  </template>
+                  <template x-if="!b.logo">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white" :class="tintFor(b.id)" x-text="initials(b.name)"></span>
+                  </template>
+                  <div class="min-w-0">
+                    <span class="flex items-center gap-1.5">
+                      <a :href="'super-isletme.html?id=' + b.id" class="truncate font-semibold text-gray-800 hover:text-brand-500 dark:text-white/90" x-text="b.name"></a>
+                      <span x-show="b.note" :title="b.note" class="shrink-0 cursor-help text-amber-500" aria-label="Not var">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6M8 13h8M8 17h5" /></svg>
+                      </span>
+                    </span>
+                    <span class="block truncate text-xs text-gray-500 dark:text-gray-400" x-text="b.category + ' · ' + b.city"></span>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3.5">
+                <span class="block text-gray-800 dark:text-white/90" x-text="b.owner.name"></span>
+                <span class="block text-xs text-gray-500 dark:text-gray-400" x-text="b.owner.email"></span>
+              </td>
+              <td class="px-4 py-3.5 whitespace-nowrap">
+                <a :href="'tel:' + b.owner.phone.replace(/\s/g, '')" class="block text-gray-800 hover:text-brand-500 dark:text-white/90" x-text="b.owner.phone || '—'"></a>
+                <span x-show="b.phone" class="block text-xs text-gray-500 dark:text-gray-400" x-text="'İşletme: ' + b.phone"></span>
+              </td>
+              <td class="px-4 py-3.5 text-gray-700 dark:text-gray-300" x-text="packageName(b)"></td>
+              <td class="px-4 py-3.5">
+                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset" :class="status(b).badge" x-text="status(b).name"></span>
+              </td>
+              <td class="px-4 py-3.5">
+                <span class="block text-gray-700 dark:text-gray-300" x-text="formatDate(b.renewsAt)"></span>
+                <span class="block text-xs" :class="renewalTone(b)" x-text="renewalText(b)"></span>
+              </td>
+              <td class="px-6 py-3.5 text-right">
+                <a
+                  :href="'super-isletme.html?id=' + b.id"
+                  class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-50 px-3 text-sm font-medium text-brand-600 ring-1 ring-brand-200 ring-inset hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30"
+                >
+                  Aç
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
+                </a>
+              </td>
+            </tr>
+          </template>
+          <tr x-show="!filtered.length">
+            <td colspan="7" class="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Aramaya uyan işletme yok.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

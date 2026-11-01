@@ -1,0 +1,286 @@
+<div x-data="staff()" class="space-y-5">
+  <!-- Summary + actions -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-wrap gap-3">
+      <span class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/3 dark:text-gray-300">
+        Toplam <b class="text-gray-800 dark:text-white/90" x-text="staff.length"></b>
+      </span>
+      <span class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/3 dark:text-gray-300">
+        Vardiyada <b class="text-green-600 dark:text-green-500" x-text="onShiftCount"></b>
+      </span>
+      <span class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/3 dark:text-gray-300">
+        Çağrı alan <b class="text-brand-500" x-text="receivers.length"></b>
+      </span>
+    </div>
+    <div class="flex gap-3">
+      <select
+        x-model="roleFilter"
+        aria-label="Göreve göre filtrele"
+        class="h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+      >
+        <option value="">Tüm görevler</option>
+        <template x-for="r in roles" :key="r">
+          <option :value="r" x-text="r"></option>
+        </template>
+      </select>
+      <button
+        type="button"
+        @click="openNew()"
+        class="inline-flex h-11 shrink-0 items-center gap-2 rounded-lg bg-green-50 px-4 text-sm font-medium text-green-600 hover:bg-green-100 ring-1 ring-green-200 ring-inset dark:bg-green-500/15 dark:text-green-400 dark:ring-green-500/30 dark:hover:bg-green-500/25"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        Yeni Personel
+      </button>
+    </div>
+  </div>
+
+  <!-- Waiter call routing -->
+  <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+    <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+      <h3 class="flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-white/90">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500" aria-hidden="true"><path d="M3 18h18" /><path d="M5 18a7 7 0 0 1 14 0" /><path d="M12 11V8" /><path d="M10 8h4" /></svg>
+        Garson çağrısı bildirimleri
+      </h3>
+      <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Müşteri QR menüden "Garson çağır"a bastığında bildirim kime gitsin?</p>
+    </div>
+    <div class="grid grid-cols-1 gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_340px]">
+      <div class="space-y-4">
+        <template x-for="m in [
+          { id: 'owner', name: 'Masanın sorumlu garsonuna', hint: 'Her garsona atanan masalardan gelen çağrılar yalnızca ona gider.' },
+          { id: 'all', name: 'Vardiyadaki tüm garsonlara', hint: 'Çağrı, bildirim alan ve vardiyada olan herkese aynı anda gider.' },
+          { id: 'round', name: 'Tek bir garsona (sırayla)', hint: 'Çağrı tek kişiye gider; sorumlu garson yoksa sıradaki garsona.' }
+        ]" :key="m.id">
+          <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition" :class="routing.mode === m.id ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-500/10' : 'border-gray-200 dark:border-gray-800'">
+            <input type="radio" name="routing-mode" :value="m.id" x-model="routing.mode" class="mt-1 h-4 w-4 accent-brand-500" />
+            <span>
+              <span class="block text-sm font-medium text-gray-800 dark:text-white/90" x-text="m.name"></span>
+              <span class="block text-sm text-gray-500 dark:text-gray-400" x-text="m.hint"></span>
+            </span>
+          </label>
+        </template>
+
+        <label x-show="routing.mode === 'owner'" class="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+          <input type="checkbox" x-model="routing.fallback" class="mt-0.5 h-4 w-4 accent-brand-500" />
+          Sorumlu garson vardiyada değilse vardiyadaki tüm garsonlara gönder
+        </label>
+        <div class="flex flex-wrap items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+          <label class="flex cursor-pointer items-center gap-3">
+            <input type="checkbox" x-model="routing.escalate" class="h-4 w-4 accent-brand-500" />
+            Yanıt gelmezse uyarı ver:
+          </label>
+          <select
+            x-model.number="routing.escalateAfter"
+            :disabled="!routing.escalate"
+            aria-label="Uyarı süresi"
+            class="h-9 rounded-lg border border-gray-300 bg-white px-3 pr-8 text-sm disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900"
+          >
+            <template x-for="n in 10" :key="n">
+              <option :value="n" x-text="n + ' dk'" :selected="n === routing.escalateAfter"></option>
+            </template>
+          </select>
+          <span>sonra</span>
+        </div>
+
+        <p x-show="unassignedTables.length" class="rounded-lg bg-amber-50 px-3.5 py-2.5 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+          Sorumlu garsonu olmayan masalar: <b x-text="unassignedTables.join(', ')"></b>
+        </p>
+      </div>
+
+      <!-- Test -->
+      <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/3">
+        <span class="block text-sm font-semibold text-gray-800 dark:text-white/90">Çağrıyı dene</span>
+        <label class="mt-3 block text-xs font-medium text-gray-600 dark:text-gray-400">
+          Çağıran masa
+          <select x-model.number="testTable" class="mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+            <template x-for="n in tableCount" :key="n">
+              <option :value="n" x-text="'Masa ' + n" :selected="n === testTable"></option>
+            </template>
+          </select>
+        </label>
+        <span class="mt-4 block text-xs font-medium text-gray-600 dark:text-gray-400">Bildirim gidecek kişiler</span>
+        <ul class="mt-2 space-y-2">
+          <template x-for="s in testRecipients" :key="s.id">
+            <li class="flex items-center gap-2.5 rounded-lg bg-white p-2 dark:bg-gray-900">
+              <img x-show="s.photo" :src="s.photo" :alt="s.name" class="h-8 w-8 rounded-full object-cover" />
+              <span x-show="!s.photo" class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-600" x-text="initials(s.name)"></span>
+              <span class="flex-1 text-sm text-gray-800 dark:text-white/90" x-text="s.name"></span>
+              <span class="text-xs text-gray-500 dark:text-gray-400" x-text="channelName(s.channel)"></span>
+            </li>
+          </template>
+        </ul>
+        <p x-show="testNote" x-text="testNote" class="mt-2 text-xs" :class="testRecipients.length ? 'text-amber-600 dark:text-amber-400' : 'text-red-500'"></p>
+        <p x-show="routing.escalate" class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+          <span x-text="routing.escalateAfter"></span> dk içinde yanıt gelmezse çağrı
+          <b class="text-red-500">Gecikti</b> olarak işaretlenir.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Staff cards -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <template x-for="s in visible" :key="s.id">
+      <div class="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3">
+        <div class="flex items-start gap-4">
+          <img x-show="s.photo" :src="s.photo" :alt="s.name" data-zoom title="Büyütmek için tıklayın" class="h-16 w-16 shrink-0 cursor-zoom-in rounded-full object-cover transition hover:ring-4 hover:ring-brand-500/20" />
+          <span x-show="!s.photo" class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-50 text-lg font-semibold text-brand-600 dark:bg-brand-500/15" x-text="initials(s.name)"></span>
+          <div class="min-w-0 flex-1">
+            <h4 class="truncate text-base font-semibold text-gray-800 dark:text-white/90" x-text="s.name"></h4>
+            <span class="mt-1 inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/5 dark:text-gray-300" x-text="s.role"></span>
+            <span class="mt-1.5 block text-xs text-gray-500 dark:text-gray-400" x-text="s.phone"></span>
+          </div>
+          <button
+            type="button"
+            @click="s.onShift = !s.onShift"
+            :title="s.onShift ? 'Vardiyadan çıkar' : 'Vardiyaya al'"
+            class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium"
+            :class="s.onShift ? 'bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-500' : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'"
+            x-text="s.onShift ? 'Vardiyada' : 'İzinli'"
+          ></button>
+        </div>
+
+        <dl class="mt-4 space-y-2 border-t border-gray-100 pt-4 text-sm dark:border-gray-800">
+          <div class="flex justify-between gap-3">
+            <dt class="text-gray-500 dark:text-gray-400">Vardiya</dt>
+            <dd class="text-end text-gray-800 dark:text-white/90" x-text="shiftName(s.shift)"></dd>
+          </div>
+          <div x-show="s.role === 'Garson'" class="flex justify-between gap-3">
+            <dt class="text-gray-500 dark:text-gray-400">Masalar</dt>
+            <dd class="text-end text-gray-800 dark:text-white/90" x-text="s.tables.length ? s.tables.join(', ') : 'Atanmadı'"></dd>
+          </div>
+          <div class="flex justify-between gap-3">
+            <dt class="text-gray-500 dark:text-gray-400">Garson çağrısı</dt>
+            <dd class="flex items-center gap-1.5 text-end" :class="s.notify ? 'text-brand-500' : 'text-gray-400'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+              <span x-text="s.notify ? channelName(s.channel) : 'Kapalı'"></span>
+            </dd>
+          </div>
+        </dl>
+
+        <div class="mt-4 flex gap-2">
+          <button
+            type="button"
+            @click="openEdit(s)"
+            class="flex-1 rounded-lg bg-orange-50 px-3 py-2 text-sm font-medium text-orange-600 hover:bg-orange-100 ring-1 ring-orange-200 ring-inset dark:bg-orange-500/15 dark:text-orange-400 dark:ring-orange-500/30 dark:hover:bg-orange-500/25"
+          >
+            Düzenle
+          </button>
+          <button
+            type="button"
+            @click="remove(s)"
+            class="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100 ring-1 ring-red-200 ring-inset dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30 dark:hover:bg-red-500/25"
+          >
+            Sil
+          </button>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Staff modal -->
+  <div
+    x-show="isModalOpen"
+    x-cloak
+    @keydown.escape.window="isModalOpen = false"
+    class="fixed inset-0 z-99999 flex items-center justify-center overflow-y-auto p-4 sm:p-5"
+    style="display: none"
+  >
+    <div @click="isModalOpen = false" x-show="isModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-400/50 backdrop-blur-[32px] dark:bg-black/80"></div>
+    <div
+      x-show="isModalOpen"
+      x-transition
+      class="relative no-scrollbar flex max-h-[90vh] w-full max-w-[calc(100%-2rem)] flex-col overflow-y-auto rounded-3xl bg-white p-6 sm:max-w-146 sm:p-8 dark:bg-gray-900"
+    >
+      <h3 class="text-xl font-semibold text-gray-800 dark:text-white/90" x-text="form.id ? 'Personeli Düzenle' : 'Yeni Personel'"></h3>
+
+      <form @submit.prevent="save()" class="mt-6 space-y-5" novalidate>
+        <div class="flex items-center gap-4">
+          <img x-show="form.photo" :src="form.photo" alt="" class="h-20 w-20 rounded-full object-cover" />
+          <span x-show="!form.photo" class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-white/5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+          </span>
+          <label class="cursor-pointer rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">
+            Fotoğraf seç
+            <input type="file" accept="image/*" class="hidden" @change="pickPhoto($event)" />
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Ad Soyad</label>
+            <input type="text" x-model="form.name" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Görev</label>
+            <select x-model="form.role" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+              <template x-for="r in roles" :key="r">
+                <option :value="r" x-text="r" :selected="r === form.role"></option>
+              </template>
+            </select>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Telefon</label>
+            <input type="tel" x-model="form.phone" placeholder="+90 5xx xxx xx xx" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Vardiya</label>
+            <select x-model="form.shift" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+              <template x-for="sh in shifts" :key="sh.id">
+                <option :value="sh.id" x-text="sh.name" :selected="sh.id === form.shift"></option>
+              </template>
+            </select>
+          </div>
+          <label class="flex cursor-pointer items-center gap-3 pt-7 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" x-model="form.onShift" class="h-4 w-4 accent-brand-500" />
+            Şu an vardiyada
+          </label>
+        </div>
+
+        <div x-show="form.role === 'Garson'">
+          <span class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Sorumlu olduğu masalar</span>
+          <div class="grid grid-cols-6 gap-2">
+            <template x-for="n in tableCount" :key="n">
+              <button
+                type="button"
+                @click="toggleTable(form.tables, n)"
+                :aria-pressed="form.tables.includes(n).toString()"
+                class="h-10 rounded-lg border text-sm font-medium transition"
+                :class="form.tables.includes(n) ? 'border-brand-500 bg-brand-500 text-white' : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400'"
+                x-text="n"
+              ></button>
+            </template>
+          </div>
+        </div>
+
+        <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/3">
+          <label class="flex cursor-pointer items-center justify-between gap-3">
+            <span>
+              <span class="block text-sm font-medium text-gray-800 dark:text-white/90">Garson çağrısı bildirimleri</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400">Müşteri garson çağırınca bu kişiye bildirim gider.</span>
+            </span>
+            <input type="checkbox" x-model="form.notify" class="h-5 w-5 accent-brand-500" />
+          </label>
+          <label x-show="form.notify" class="mt-3 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            Bildirim kanalı
+            <select x-model="form.channel" class="mt-1.5 h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+              <template x-for="c in channels" :key="c.id">
+                <option :value="c.id" x-text="c.name" :selected="c.id === form.channel"></option>
+              </template>
+            </select>
+          </label>
+        </div>
+
+        <p x-show="error" x-text="error" class="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-600 empty:hidden dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"></p>
+
+        <div class="flex flex-col-reverse justify-end gap-3 pt-1 sm:flex-row">
+          <button type="button" @click="isModalOpen = false" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+            Vazgeç
+          </button>
+          <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600">
+            Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

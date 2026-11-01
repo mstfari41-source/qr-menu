@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 132" fill="none">
+  <defs>
+    <linearGradient id="beecafe-gold" x1="15" y1="10" x2="90" y2="125" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E6C477" />
+      <stop offset="1" stop-color="#B5832E" />
+    </linearGradient>
+    <path id="beecafe-hex" d="M0 -11L9.5 -5.5V5.5L0 11L-9.5 5.5V-5.5Z" />
+  </defs>
+  <g stroke="url(#beecafe-gold)" stroke-linejoin="round">
+    <path d="M50 5C38 22 9 53 9 86a41 41 0 0 0 82 0C91 53 62 22 50 5Z" stroke-width="5" />
+    <g stroke-width="4">
+      <use href="#beecafe-hex" x="50" y="50" />
+      <use href="#beecafe-hex" x="27" y="72" />
+      <use href="#beecafe-hex" x="73" y="72" />
+      <use href="#beecafe-hex" x="50" y="94" />
+    </g>
+  </g>
+</svg>

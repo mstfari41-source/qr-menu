@@ -1,0 +1,19 @@
+<!-- SIDEBAR HEADER -->
+<div
+  :class="sidebarToggle ? 'xl:justify-center' : 'justify-start'"
+  class="sidebar-header flex items-center gap-2 py-7"
+>
+  <a href="index.html" class="flex items-center gap-3">
+    <span class="sr-only">Ana Sayfa</span>
+    <img class="h-11 w-auto shrink-0" src="./images/logo/beecafe-mark.svg" alt="" />
+    <!-- Wordmark: dark brown on light, white on dark -->
+    <span
+      style="font-family: Georgia, 'Times New Roman', serif"
+      class="logo text-[28px] leading-none tracking-tight text-[#2E1B17] dark:text-white"
+      :class="sidebarToggle ? 'xl:hidden' : ''"
+      aria-hidden="true"
+      ><b class="font-bold">Bee</b>Cafe</span
+    >
+  </a>
+</div>
+<!-- SIDEBAR HEADER -->

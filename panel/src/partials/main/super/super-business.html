@@ -1,0 +1,320 @@
+<form x-data="superBusiness()" @submit.prevent="save()" class="space-y-5 pb-24" novalidate>
+  <!-- Back -->
+  <a href="super-isletmeler.html" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+    İşletmeler
+  </a>
+
+  <!-- Identity -->
+  <section class="flex flex-col gap-5 rounded-2xl border border-gray-200 bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 dark:border-gray-800 dark:bg-white/3">
+    <div class="flex items-center gap-4">
+      <template x-if="form.logo">
+        <img :src="form.logo" alt="Logo" class="size-16 shrink-0 rounded-2xl border border-gray-200 object-contain p-1.5 dark:border-gray-700 dark:bg-white" />
+      </template>
+      <template x-if="!form.logo">
+        <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white" :class="tint" x-text="initials(form.name || '?')"></span>
+      </template>
+      <div class="min-w-0">
+        <h2 class="truncate text-xl font-semibold text-gray-800 dark:text-white/90" x-text="form.name || 'Yeni işletme'"></h2>
+        <p class="truncate text-sm text-gray-500 dark:text-gray-400" x-text="MENU_HOST + (form.slug || '…')"></p>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset" :class="status.badge" x-text="status.name"></span>
+      <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-white/5 dark:text-gray-300" x-text="pkg.name + ' paket'"></span>
+      <button
+        x-show="!editing"
+        type="button"
+        @click="startEdit()"
+        class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-orange-50 px-3 text-sm font-medium text-orange-600 ring-1 ring-orange-200 ring-inset hover:bg-orange-100 dark:bg-orange-500/15 dark:text-orange-400 dark:ring-orange-500/30"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+        Düzenle
+      </button>
+      <span x-show="editing" class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-orange-500 px-3 text-sm font-medium text-white">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+        Düzenleniyor
+      </span>
+      <a
+        x-show="!isNew && !editing"
+        href="index.html"
+        class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-50 px-3 text-sm font-medium text-brand-600 ring-1 ring-brand-200 ring-inset hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5M10 16l4-4-4-4M14 12H4" /></svg>
+        İşletme paneline gir
+      </a>
+    </div>
+  </section>
+
+  <!-- Read-only until "Düzenle"; disabled fields look like plain text -->
+  <fieldset
+    :disabled="!editing"
+    class="grid min-w-0 grid-cols-12 gap-5 [&_:is(input,select,textarea):disabled]:cursor-default [&_:is(input,select,textarea):disabled]:border-transparent [&_:is(input,select,textarea):disabled]:bg-gray-50 [&_:is(input,select,textarea):disabled]:shadow-none dark:[&_:is(input,select,textarea):disabled]:bg-white/3 [&_button:disabled]:cursor-default"
+  >
+    <div class="col-span-12 space-y-5 xl:col-span-8">
+      <!-- Business -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">İşletme Bilgileri</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">QR menüde ve işletme panelinde görünen ad ve logo.</p>
+        </div>
+        <div class="space-y-5 p-5 sm:p-6">
+          <!-- Logo -->
+          <div class="flex flex-wrap items-center gap-4">
+            <template x-if="form.logo">
+              <img :src="form.logo" alt="" class="size-20 rounded-2xl border border-gray-200 object-contain p-2 dark:border-gray-700 dark:bg-white" />
+            </template>
+            <template x-if="!form.logo">
+              <span class="flex size-20 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 text-gray-400 dark:border-gray-700">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="9" cy="9" r="2" /><path d="M21 15l-5-5L5 21" /></svg>
+              </span>
+            </template>
+            <div>
+              <span class="block text-sm font-medium text-gray-700 dark:text-gray-300">Logo</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400" x-text="editing ? 'PNG, JPG veya SVG · en fazla 2 MB · kare önerilir' : (form.logo ? 'Yüklü' : 'Logo yüklenmemiş')"></span>
+              <div x-show="editing" class="mt-2 flex gap-2">
+                <label class="inline-flex h-9 cursor-pointer items-center rounded-lg bg-brand-50 px-3 text-sm font-medium text-brand-600 ring-1 ring-brand-200 ring-inset hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30">
+                  <span x-text="form.logo ? 'Değiştir' : 'Logo yükle'"></span>
+                  <input type="file" accept="image/*" class="sr-only" @change="pickLogo($event)" />
+                </label>
+                <button
+                  x-show="form.logo"
+                  type="button"
+                  @click="removeLogo()"
+                  class="inline-flex h-9 items-center rounded-lg bg-red-50 px-3 text-sm font-medium text-red-600 ring-1 ring-red-200 ring-inset hover:bg-red-100 dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30"
+                >
+                  Kaldır
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label for="b-name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">İşletme adı <span class="text-red-500">*</span></label>
+              <input id="b-name" type="text" x-model="form.name" @input="nameChanged()" :aria-invalid="!!errors.name" class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:bg-gray-900 dark:text-white/90" :class="errors.name ? 'border-red-400' : 'border-gray-300 focus:border-brand-300 dark:border-gray-700'" />
+              <p x-show="errors.name" x-text="errors.name" class="mt-1.5 text-xs text-red-500"></p>
+            </div>
+            <div>
+              <label for="b-category" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
+              <select id="b-category" x-model="form.category" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                <template x-for="c in categories" :key="c">
+                  <option :value="c" x-text="c" :selected="c === form.category"></option>
+                </template>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label for="b-slug" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Menü adresi <span class="text-red-500">*</span></label>
+              <div class="flex h-11 overflow-hidden rounded-lg border shadow-theme-xs focus-within:ring-3 focus-within:ring-brand-500/10" :class="errors.slug ? 'border-red-400' : 'border-gray-300 focus-within:border-brand-300 dark:border-gray-700'">
+                <span class="flex items-center bg-gray-50 px-3 text-sm text-gray-500 dark:bg-white/5 dark:text-gray-400" x-text="MENU_HOST"></span>
+                <input id="b-slug" type="text" x-model="form.slug" @change="slugChanged()" :aria-invalid="!!errors.slug" class="min-w-0 flex-1 border-0 bg-transparent px-3 text-sm text-gray-800 focus:ring-0 focus:outline-hidden dark:bg-gray-900 dark:text-white/90" />
+              </div>
+              <p x-show="errors.slug" x-text="errors.slug" class="mt-1.5 text-xs text-red-500"></p>
+              <p x-show="editing && !errors.slug && !isNew" class="mt-1.5 text-xs text-amber-600 dark:text-amber-400">Adres değişirse basılı QR kodlar eski adrese gider; yeniden basılması gerekir.</p>
+            </div>
+            <div>
+              <label for="b-phone" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">İşletme telefonu</label>
+              <input id="b-phone" type="tel" x-model="form.phone" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </div>
+            <div>
+              <label for="b-email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">İşletme e-postası</label>
+              <input id="b-email" type="email" x-model="form.email" :aria-invalid="!!errors.email" class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:bg-gray-900 dark:text-white/90" :class="errors.email ? 'border-red-400' : 'border-gray-300 focus:border-brand-300 dark:border-gray-700'" />
+              <p x-show="errors.email" x-text="errors.email" class="mt-1.5 text-xs text-red-500"></p>
+            </div>
+            <div>
+              <label for="b-address" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Adres</label>
+              <input id="b-address" type="text" x-model="form.address" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </div>
+            <div>
+              <label for="b-city" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">İlçe / İl</label>
+              <input id="b-city" type="text" x-model="form.city" placeholder="Kadıköy / İstanbul" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Owner -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Müşteri (Yetkili) Bilgileri</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">İşletme sahibi. Panele bu e-posta ile giriş yapar.</p>
+        </div>
+        <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
+          <div>
+            <label for="o-name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Ad soyad <span class="text-red-500">*</span></label>
+            <input id="o-name" type="text" x-model="form.owner.name" :aria-invalid="!!errors.ownerName" class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:bg-gray-900 dark:text-white/90" :class="errors.ownerName ? 'border-red-400' : 'border-gray-300 focus:border-brand-300 dark:border-gray-700'" />
+            <p x-show="errors.ownerName" x-text="errors.ownerName" class="mt-1.5 text-xs text-red-500"></p>
+          </div>
+          <div>
+            <label for="o-phone" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Cep telefonu</label>
+            <input id="o-phone" type="tel" x-model="form.owner.phone" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="o-email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Giriş e-postası <span class="text-red-500">*</span></label>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <input id="o-email" type="email" x-model="form.owner.email" :aria-invalid="!!errors.ownerEmail" class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:bg-gray-900 dark:text-white/90" :class="errors.ownerEmail ? 'border-red-400' : 'border-gray-300 focus:border-brand-300 dark:border-gray-700'" />
+              <button
+                x-show="editing"
+                type="button"
+                @click="sendReset()"
+                class="inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-brand-50 px-4 text-sm font-medium text-brand-600 ring-1 ring-brand-200 ring-inset hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30"
+              >
+                Parola sıfırlama gönder
+              </button>
+            </div>
+            <p x-show="errors.ownerEmail" x-text="errors.ownerEmail" class="mt-1.5 text-xs text-red-500"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Billing -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Fatura Bilgileri</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Abonelik faturaları bu bilgilerle kesilir.</p>
+        </div>
+        <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
+          <div class="sm:col-span-2">
+            <label for="f-title" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Ünvan / Ad soyad</label>
+            <input id="f-title" type="text" x-model="form.billing.title" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+          <div>
+            <label for="f-office" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Vergi dairesi</label>
+            <input id="f-office" type="text" x-model="form.billing.taxOffice" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+          <div>
+            <label for="f-taxno" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Vergi / T.C. kimlik no</label>
+            <input id="f-taxno" type="text" inputmode="numeric" maxlength="11" x-model="form.billing.taxNo" :aria-invalid="!!errors.taxNo" class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:bg-gray-900 dark:text-white/90" :class="errors.taxNo ? 'border-red-400' : 'border-gray-300 focus:border-brand-300 dark:border-gray-700'" />
+            <p x-show="errors.taxNo" x-text="errors.taxNo" class="mt-1.5 text-xs text-red-500"></p>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300">
+              <input type="checkbox" x-model="form.billing.sameAddress" class="h-4 w-4 accent-brand-500" />
+              Fatura adresi işletme adresiyle aynı
+            </label>
+            <div x-show="!form.billing.sameAddress" class="mt-3">
+              <label for="f-address" class="sr-only">Fatura adresi</label>
+              <input id="f-address" type="text" x-model="form.billing.address" placeholder="Fatura adresi" :aria-invalid="!!errors.billingAddress" class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:bg-gray-900 dark:text-white/90" :class="errors.billingAddress ? 'border-red-400' : 'border-gray-300 focus:border-brand-300 dark:border-gray-700'" />
+              <p x-show="errors.billingAddress" x-text="errors.billingAddress" class="mt-1.5 text-xs text-red-500"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-span-12 space-y-5 xl:col-span-4">
+      <!-- Subscription -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+        <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Abonelik</h3>
+        </div>
+        <div class="space-y-5 p-5">
+          <div>
+            <span class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Durum</span>
+            <div class="grid grid-cols-3 gap-1 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-900" role="radiogroup" aria-label="Durum">
+              <template x-for="s in statuses" :key="s.id">
+                <button
+                  type="button"
+                  role="radio"
+                  :aria-checked="(form.status === s.id).toString()"
+                  @click="form.status = s.id"
+                  class="rounded-md py-1.5 text-xs font-medium transition"
+                  :class="form.status === s.id ? 'bg-white shadow-theme-xs dark:bg-gray-800 ' + (s.id === 'suspended' ? 'text-red-600 dark:text-red-400' : s.id === 'active' ? 'text-green-600 dark:text-green-400' : 'text-brand-600 dark:text-brand-400') : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                  x-text="s.name"
+                ></button>
+              </template>
+            </div>
+            <p x-show="form.status === 'suspended'" class="mt-2 text-xs text-red-600 dark:text-red-400">Askıdaki işletmenin QR menüsü ve paneli kapanır.</p>
+          </div>
+          <div>
+            <label for="s-package" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Paket</label>
+            <select id="s-package" x-model="form.package" @change="packageChanged()" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+              <template x-for="p in packages" :key="p.id">
+                <option :value="p.id" x-text="p.name + ' · ' + p.price.toLocaleString('tr-TR') + ' ₺/ay'" :selected="p.id === form.package"></option>
+              </template>
+            </select>
+          </div>
+          <div>
+            <label for="s-tables" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Masa sayısı</label>
+            <input id="s-tables" type="number" min="1" :max="pkg.tables ?? ''" x-model.number="form.tables" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400" x-text="pkg.tables ? 'Bu pakette en fazla ' + pkg.tables + ' masa' : 'Bu pakette masa sınırı yok'"></p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="s-start" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Başlangıç</label>
+              <input id="s-start" type="date" x-model="form.startedAt" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </div>
+            <div>
+              <label for="s-renew" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Yenileme</label>
+              <input id="s-renew" type="date" x-model="form.renewsAt" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </div>
+          </div>
+          <p
+            class="rounded-lg px-3.5 py-2.5 text-sm"
+            :class="daysLeft < 0 ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : daysLeft <= 14 ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' : 'bg-gray-50 text-gray-600 dark:bg-white/3 dark:text-gray-400'"
+            x-text="daysLeft < 0 ? 'Yenileme ' + (-daysLeft) + ' gün gecikti.' : 'Yenilemeye ' + daysLeft + ' gün var (' + formatDate(form.renewsAt) + ').'"
+          ></p>
+        </div>
+      </section>
+
+      <!-- Internal note: only the super panel sees it -->
+      <section class="rounded-2xl border border-amber-200 bg-amber-50/60 dark:border-amber-500/30 dark:bg-amber-500/5">
+        <div class="flex items-center justify-between gap-2 border-b border-amber-200/70 px-5 py-4 dark:border-amber-500/20">
+          <h3 class="flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-white/90">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6M8 13h8M8 17h5" /></svg>
+            İşletme Notu
+          </h3>
+          <span class="text-xs text-gray-500 dark:text-gray-400">İşletme görmez</span>
+        </div>
+        <div class="p-5">
+          <label for="b-note" class="sr-only">İşletme notu</label>
+          <textarea
+            id="b-note"
+            x-model="form.note"
+            rows="5"
+            maxlength="1000"
+            placeholder="Görüşme notları, özel anlaşmalar, hatırlatmalar…"
+            class="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm leading-6 text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+          ></textarea>
+          <p x-show="!editing && !form.note" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Not eklemek için Düzenle'ye basın.</p>
+          <p x-show="editing" class="mt-1 text-right text-xs text-gray-400" x-text="form.note.length + ' / 1000'"></p>
+        </div>
+      </section>
+
+      <!-- What the business sees -->
+      <section class="rounded-2xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-white/3">
+        <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white/90">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+          Yalnızca süper panelden değişir
+        </h3>
+        <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">İşletme bu sayfadaki bilgileri kendi panelinde görür ama değiştiremez.</p>
+        <ul class="mt-3 space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
+          <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-gray-400"></span>İşletme adı, logo ve menü adresi</li>
+          <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-gray-400"></span>Yetkili ve giriş e-postası</li>
+          <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-gray-400"></span>Fatura bilgileri</li>
+          <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-gray-400"></span>Paket, masa sayısı ve durum</li>
+        </ul>
+      </section>
+    </div>
+  </fieldset>
+
+  <!-- Save bar -->
+  <div x-show="editing" class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur xl:left-72.5 dark:border-gray-800 dark:bg-gray-900/95" :class="sidebarToggle ? 'xl:left-22.5' : ''">
+    <div class="mx-auto flex max-w-(--breakpoint-2xl) items-center justify-end gap-3 px-4 py-3 md:px-6">
+      <span class="mr-auto text-sm" :class="dirty ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'" x-text="dirty ? 'Kaydedilmemiş değişiklikler var' : 'Düzenleme modundasınız'"></span>
+      <button
+        type="button"
+        @click="cancelEdit()"
+        class="inline-flex h-11 items-center justify-center rounded-lg border border-gray-300 bg-white px-5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+      >
+        Vazgeç
+      </button>
+      <button
+        type="submit"
+        :disabled="!dirty"
+        class="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50"
+        x-text="isNew ? 'İşletmeyi Oluştur' : 'Kaydet'"
+      ></button>
+    </div>
+  </div>
+</form>

@@ -1,0 +1,211 @@
+<div x-data="liveService()" class="space-y-5">
+  <!-- Status bar -->
+  <div class="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800 dark:bg-white/3">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="me-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+        </span>
+        Canlı
+      </span>
+      <span class="rounded-lg bg-red-50 px-3 py-1.5 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">Bekleyen çağrı <b x-text="live.waitingCalls.length"></b></span>
+      <span class="rounded-lg bg-green-50 px-3 py-1.5 text-sm text-green-700 dark:bg-green-500/10 dark:text-green-400">Yeni sipariş <b x-text="live.newOrderCount"></b></span>
+      <span class="rounded-lg bg-brand-50 px-3 py-1.5 text-sm text-brand-700 dark:bg-brand-500/10 dark:text-brand-400">Hazırlanıyor <b x-text="live.ordersBy('preparing').length"></b></span>    </div>
+    <div class="inline-flex w-fit rounded-lg bg-gray-100 p-1 dark:bg-gray-900">
+      <button type="button" @click="tab = 'active'" class="rounded-md px-3.5 py-1.5 text-sm font-medium transition" :class="tab === 'active' ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400'">Aktif</button>
+      <button type="button" @click="tab = 'history'" class="rounded-md px-3.5 py-1.5 text-sm font-medium transition" :class="tab === 'history' ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400'">Bugünkü geçmiş</button>
+    </div>
+  </div>
+
+  <!-- Tables overview -->
+  <section class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Masalar</h3>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <template x-for="(s, key) in tableStates" :key="key">
+          <span class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400"><span class="h-2 w-2 rounded-full" :class="s.dot"></span><span x-text="s.label"></span></span>
+        </template>
+      </div>
+    </div>
+    <div class="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
+      <template x-for="n in live.tableCount" :key="n">
+        <button
+          type="button"
+          @click="toggleTable(n)"
+          :aria-pressed="(table === n).toString()"
+          :title="'Masa ' + n + ': ' + tableStates[live.tableState(n)].label"
+          class="relative flex flex-col items-center justify-center rounded-xl border-2 py-2.5 transition"
+          :class="[tableStates[live.tableState(n)].tile, table === n ? 'ring-2 ring-gray-800 ring-offset-2 dark:ring-white dark:ring-offset-gray-900' : '']"
+        >
+          <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full" :class="tableStates[live.tableState(n)].dot"></span>
+          <span class="text-[11px] font-medium opacity-70">Masa</span>
+          <span class="text-lg leading-tight font-bold" x-text="n"></span>
+        </button>
+      </template>
+    </div>
+    <p x-show="table !== null" class="mt-3 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+      Sadece <b class="text-gray-800 dark:text-white/90" x-text="'Masa ' + table"></b> gösteriliyor.
+      <button type="button" @click="table = null" class="font-medium text-brand-500 hover:underline">Tüm masalar</button>
+    </p>
+  </section>
+
+  <!-- ===== ACTIVE ===== -->
+  <div x-show="tab === 'active'" class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    <!-- Waiter calls -->
+    <section class="flex flex-col self-start rounded-2xl border border-red-200 bg-red-50/40 dark:border-red-500/20 dark:bg-red-500/5">
+      <header class="flex items-center justify-between px-4 py-3">
+        <h3 class="flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18" /><path d="M5 18a7 7 0 0 1 14 0" /><path d="M12 11V8" /><path d="M10 8h4" /></svg>
+          Garson Çağrıları
+        </h3>
+        <a href="personeller.html" class="text-xs font-medium text-brand-500 hover:underline">Bildirim ayarları</a>
+      </header>
+      <div class="grid grid-cols-1 gap-2.5 px-3 pb-3 sm:grid-cols-2">
+        <template x-for="c in calls" :key="c.id">
+          <article class="rounded-xl border bg-white p-3 dark:bg-gray-900" :class="c.status === 'handling' ? 'border-yellow-300 bg-yellow-50/50 dark:border-yellow-500/40 dark:bg-yellow-500/5' : (live.isEscalated(c) ? 'border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-500/10' : 'border-red-200 dark:border-red-500/30')">
+            <div class="flex items-center gap-2.5">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white" :class="c.status === 'handling' ? 'bg-yellow-400 text-yellow-950!' : 'bg-red-500'" x-text="c.table"></span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-baseline justify-between gap-2">
+                  <span class="text-sm font-semibold text-gray-800 dark:text-white/90" x-text="'Masa ' + c.table"></span>
+                  <span class="shrink-0 text-[11px] font-medium" :class="live.isEscalated(c) ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'" x-text="live.ago(c.createdAt)"></span>
+                </div>
+                <span
+                  class="block truncate text-xs"
+                  :class="live.isEscalated(c) ? 'font-medium text-red-500' : 'text-gray-500 dark:text-gray-400'"
+                  :title="c.status === 'handling' ? c.handledBy + ' ilgileniyor' : live.owners(c).map((s) => s.name).join(', ')"
+                  x-text="live.isEscalated(c) ? '⚠ Gecikti' : (c.status === 'handling' ? c.handledBy + ' ilgileniyor' : live.owners(c).map((s) => s.name.split(' ')[0]).join(', ') + ' çağrıldı')"
+                ></span>
+              </div>
+            </div>
+            <div class="mt-2.5 flex gap-1.5">
+              <button x-show="c.status === 'waiting'" type="button" @click="live.takeCall(c)" class="flex-1 rounded-lg bg-brand-50 px-2 py-1.5 text-xs font-medium text-brand-600 ring-1 ring-brand-200 ring-inset hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30">İlgileniyorum</button>
+              <button type="button" @click="live.finishCall(c)" class="flex-1 rounded-lg bg-green-50 px-2 py-1.5 text-xs font-medium text-green-600 ring-1 ring-green-200 ring-inset hover:bg-green-100 dark:bg-green-500/15 dark:text-green-400 dark:ring-green-500/30">Tamamlandı</button>
+            </div>
+          </article>
+        </template>
+        <p x-show="calls.length === 0" class="py-8 text-center text-sm text-gray-400 sm:col-span-2">Bekleyen çağrı yok</p>
+      </div>
+    </section>
+
+    <!-- Orders -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <template x-for="step in activeSteps" :key="step.id">
+        <section class="flex flex-col rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/[0.02]">
+          <header class="flex items-center justify-between px-4 py-3">
+            <h3 class="flex items-center gap-2 text-sm font-semibold" :class="columnThemes[step.id].head">
+              <span class="h-2.5 w-2.5 rounded-full" :class="columnThemes[step.id].dot"></span>
+              <span x-text="step.name"></span>
+            </h3>
+            <span class="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-gray-600 shadow-theme-xs dark:bg-gray-900 dark:text-gray-300" x-text="orders(step.id).length"></span>
+          </header>
+          <div class="flex flex-col gap-3 px-3 pb-3">
+            <template x-for="o in orders(step.id)" :key="o.id">
+              <article class="rounded-xl border bg-white p-3.5 shadow-theme-xs dark:bg-gray-900" :class="late(o) ? 'border-red-300 dark:border-red-500/40' : 'border-gray-200 dark:border-gray-800'">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <span class="block text-base font-semibold text-gray-800 dark:text-white/90" x-text="'Masa ' + o.table"></span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400" x-text="'#' + o.no + ' · ' + live.clock(o.createdAt)"></span>
+                    <span
+                      x-show="o.byWaiter"
+                      class="mt-1 flex w-fit items-center gap-1 rounded-md border border-gray-300 px-1.5 py-0.5 text-[11px] font-medium text-gray-600 dark:border-gray-600 dark:text-gray-300"
+                      :title="'Garson masada aldı: ' + o.byWaiter"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5" /><path d="M5 20.25a7 7 0 0 1 14 0" /></svg>
+                      <span x-text="'Çağrı dışı · ' + o.byWaiter"></span>
+                    </span>
+                  </div>
+                  <span class="shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium" :class="late(o) ? 'bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400' : 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400'" x-text="live.ago(o.createdAt)"></span>
+                </div>
+                <ul class="mt-3 space-y-1">
+                  <template x-for="l in o.lines" :key="l.id">
+                    <li class="flex items-baseline gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <span class="w-6 shrink-0 font-semibold text-gray-900 dark:text-white" x-text="l.qty + '×'"></span>
+                      <span x-text="l.name"></span>
+                    </li>
+                  </template>
+                </ul>
+                <p x-show="o.note" class="mt-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" x-text="'Not: ' + o.note"></p>
+                <div class="mt-3 border-t border-gray-100 pt-3 dark:border-gray-800">
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">Toplam</span>
+                    <span class="font-semibold text-gray-800 dark:text-white/90" x-text="formatPrice(o.total)"></span>
+                  </div>
+                  <div class="mt-2.5 flex gap-1.5">
+                    <button x-show="step.id === 'new'" type="button" @click="live.cancelOrder(o)" class="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600 ring-1 ring-red-200 ring-inset hover:bg-red-100 dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30">İptal</button>
+                    <button type="button" @click="live.advanceOrder(o)" class="flex-1 rounded-lg px-3 py-2 text-xs font-medium ring-1 ring-inset" :class="columnThemes[step.id].button" x-text="step.action"></button>
+                  </div>
+                </div>
+              </article>
+            </template>
+            <p x-show="orders(step.id).length === 0" class="py-8 text-center text-sm text-gray-400">Sipariş yok</p>
+          </div>
+        </section>
+      </template>
+    </div>
+  </div>
+
+  <!-- ===== HISTORY ===== -->
+  <div x-show="tab === 'history'" x-cloak class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+      <h3 class="border-b border-gray-100 px-5 py-4 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white/90">Teslim edilen siparişler</h3>
+      <div class="max-w-full overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="border-b border-gray-100 dark:border-white/5">
+            <tr>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Sipariş</th>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Masa</th>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Ürünler</th>
+              <th class="px-5 py-3 text-end text-xs font-medium text-gray-500 dark:text-gray-400">Tutar</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+            <template x-for="o in deliveredOrders" :key="o.id">
+              <tr>
+                <td class="px-5 py-3 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                  <span x-text="'#' + o.no + ' · ' + live.clock(o.createdAt)"></span>
+                  <span x-show="o.byWaiter" class="ms-1 rounded border border-gray-300 px-1 text-[11px] text-gray-600 dark:border-gray-600 dark:text-gray-300" :title="o.byWaiter">Çağrı dışı</span>
+                </td>
+                <td class="px-5 py-3 text-sm font-medium whitespace-nowrap text-gray-800 dark:text-white/90" x-text="'Masa ' + o.table"></td>
+                <td class="max-w-56 px-5 py-3 text-sm text-gray-500 dark:text-gray-400"><span class="block truncate" x-text="o.lines.map((l) => l.qty + '× ' + l.name).join(', ')"></span></td>
+                <td class="px-5 py-3 text-end text-sm font-medium whitespace-nowrap text-gray-800 dark:text-white/90" x-text="formatPrice(o.total)"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+      <h3 class="border-b border-gray-100 px-5 py-4 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white/90">Tamamlanan garson çağrıları</h3>
+      <div class="max-w-full overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="border-b border-gray-100 dark:border-white/5">
+            <tr>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Masa</th>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Saat</th>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Yanıt</th>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">İlgilenen</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+            <template x-for="c in doneCalls" :key="c.id">
+              <tr>
+                <td class="px-5 py-3 text-sm font-medium text-gray-800 dark:text-white/90" x-text="'Masa ' + c.table"></td>
+                <td class="px-5 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="live.clock(c.createdAt)"></td>
+                <td class="px-5 py-3 text-sm" :class="c.answeredAt - c.createdAt > 60000 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'" x-text="live.duration(c.answeredAt - c.createdAt)"></td>
+                <td class="px-5 py-3">
+                  <span class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <img :src="live.staffPhoto(c.handledBy)" :alt="c.handledBy" class="h-6 w-6 rounded-full object-cover" />
+                    <span x-text="c.handledBy"></span>
+                  </span>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

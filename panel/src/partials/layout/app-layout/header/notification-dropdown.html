@@ -1,0 +1,75 @@
+<!-- Notification Dropdown: general notices (reminders, stock, reports, system).
+     Orders and waiter calls are handled on the Canlı Servis screen. -->
+<div
+  class="relative"
+  x-data="dropdown({ placement: 'bottom-end', offset: 8 })"
+  @click.outside="open = false"
+  @keydown.escape.window="open = false"
+>
+  <button
+    x-ref="trigger"
+    type="button"
+    @click="toggle()"
+    class="relative inline-flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-gray-300 bg-transparent text-gray-700 shadow-theme-xs transition-all select-none hover:bg-gray-50 hover:text-gray-800 focus-visible:ring-3 focus-visible:ring-gray-300/50 focus-visible:outline-hidden active:translate-y-px dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white"
+    :aria-label="'Bildirimler: ' + $store.notices.unread + ' okunmamış'"
+  >
+    <span
+      x-show="$store.notices.unread > 0"
+      class="absolute -top-1.5 -right-1.5 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-semibold text-white ring-2 ring-white dark:ring-gray-900"
+      x-text="$store.notices.unread"
+    ></span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="size-auto!" aria-hidden="true">
+      <path d="M9.861 1.876v1.25m0 0a5.625 5.625 0 015.625 5.625v6.041H4.236V8.751a5.625 5.625 0 015.625-5.625zm-1.25 14.166h2.5m-7.917-2.5h13.334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <div
+    x-ref="dropdown"
+    x-cloak
+    x-show="open"
+    x-transition:enter="animate-in fade-in-0 zoom-in-95 duration-100"
+    x-transition:leave="animate-out fade-out-0 zoom-out-95 fill-mode-forwards duration-75"
+    class="fixed z-50 flex w-96 max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-lg outline-none dark:border-gray-800 dark:bg-[#1E2635]"
+  >
+    <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+      <h5 class="text-base font-semibold text-gray-800 dark:text-gray-200">
+        Bildirimler
+        <span x-show="$store.notices.unread" class="ms-1 text-sm font-normal text-gray-500" x-text="'(' + $store.notices.unread + ' yeni)'"></span>
+      </h5>
+      <button
+        x-show="$store.notices.unread"
+        type="button"
+        @click="$store.notices.markAllRead()"
+        class="text-xs font-medium text-brand-500 hover:underline"
+      >
+        Tümünü okundu yap
+      </button>
+    </div>
+
+    <ul class="custom-scrollbar max-h-[420px] divide-y divide-gray-100 overflow-y-auto dark:divide-gray-800">
+      <template x-for="n in $store.notices.sorted" :key="n.id">
+        <li>
+          <a
+            :href="n.link || '#'"
+            @click="$store.notices.markRead(n); if (!n.link) $event.preventDefault()"
+            class="flex gap-3 px-4 py-3 transition hover:bg-gray-50 dark:hover:bg-white/5"
+            :class="n.read ? '' : 'bg-brand-50/40 dark:bg-brand-500/5'"
+          >
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" :class="$store.notices.types[n.type].badge">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" x-html="$store.notices.types[n.type].icon"></svg>
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="flex items-start justify-between gap-2">
+                <span class="text-sm text-gray-800 dark:text-white/90" :class="n.read ? 'font-normal' : 'font-semibold'" x-text="n.title"></span>
+                <span x-show="!n.read" class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-500" aria-label="Okunmadı"></span>
+              </span>
+              <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400" x-text="n.text"></span>
+              <span class="mt-1 block text-[11px] text-gray-400" x-text="$store.notices.types[n.type].label + ' · ' + $store.notices.ago(n.time)"></span>
+            </span>
+          </a>
+        </li>
+      </template>
+      <li x-show="$store.notices.items.length === 0" class="px-4 py-10 text-center text-sm text-gray-500">Bildirim yok.</li>
+    </ul>
+  </div>
+</div>

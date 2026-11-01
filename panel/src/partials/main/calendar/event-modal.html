@@ -1,0 +1,145 @@
+<div
+  id="eventModal"
+  class="fixed inset-0 z-99999 hidden items-center justify-center overflow-y-auto bg-gray-900/50 p-4 backdrop-blur-xs"
+>
+  <div
+    class="modal-dialog relative max-h-[92vh] w-full max-w-160 overflow-y-auto rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-lg sm:p-8 dark:border-gray-800 dark:bg-[#1E2635]"
+  >
+    <button
+      type="button"
+      class="modal-close-btn absolute inset-e-6 top-6 hidden size-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-all outline-none select-none hover:bg-gray-200 hover:text-gray-800 sm:flex dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+      aria-label="Kapat"
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+    </button>
+
+    <div class="flex flex-col gap-1 pe-12">
+      <h3 class="text-xl font-semibold text-gray-800 sm:text-2xl dark:text-white/90">Not / Hatırlatıcı</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Saati gelince panelin hangi sayfasındaysanız ekrana bildirim düşer.
+      </p>
+    </div>
+
+    <form id="eventForm" class="mt-6 space-y-5" novalidate>
+      <div>
+        <label for="event-title" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Başlık</label>
+        <input
+          type="text"
+          id="event-title"
+          placeholder="Örn. Süt siparişi ver"
+          class="h-11 w-full rounded-[10px] border border-gray-300 bg-white px-4 text-sm text-gray-800 shadow-theme-xs outline-hidden placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        />
+      </div>
+
+      <div>
+        <label for="event-note" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Not</label>
+        <textarea
+          id="event-note"
+          rows="3"
+          placeholder="Ayrıntılar (isteğe bağlı)"
+          class="w-full rounded-[10px] border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs outline-hidden placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="event-start-date" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tarih</label>
+          <input
+            type="text"
+            id="event-start-date"
+            placeholder="yyyy-aa-gg"
+            class="h-11 w-full rounded-[10px] border border-gray-300 bg-white px-4 text-sm text-gray-800 shadow-theme-xs outline-hidden focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+          />
+        </div>
+        <div>
+          <label for="event-time" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Saat</label>
+          <input
+            type="time"
+            id="event-time"
+            class="h-11 w-full rounded-[10px] border border-gray-300 bg-white px-4 text-sm text-gray-800 shadow-theme-xs outline-hidden focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3 rounded-xl bg-gray-50 p-4 sm:flex-row sm:items-center sm:justify-between dark:bg-white/3">
+        <label class="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-gray-800 dark:text-white/90">
+          <input type="checkbox" id="event-remind" checked class="h-4 w-4 accent-brand-500" />
+          Hatırlatıcı kur
+        </label>
+        <select
+          id="event-remind-before"
+          aria-label="Ne zaman hatırlatılsın"
+          class="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        >
+          <option value="0">Tam zamanında</option>
+          <option value="5">5 dakika önce</option>
+          <option value="15">15 dakika önce</option>
+          <option value="30">30 dakika önce</option>
+          <option value="60">1 saat önce</option>
+          <option value="1440">1 gün önce</option>
+        </select>
+      </div>
+
+      <div x-data="{ eventLevel: 'Primary' }">
+        <span class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300">Renk</span>
+        <div class="flex flex-wrap items-center gap-4">
+          <template
+            x-for="c in [
+              { id: 'Primary', name: 'Mavi', dot: 'bg-brand-500' },
+              { id: 'Danger', name: 'Kırmızı', dot: 'bg-red-500' },
+              { id: 'Success', name: 'Yeşil', dot: 'bg-green-500' },
+              { id: 'Warning', name: 'Turuncu', dot: 'bg-orange-500' },
+              { id: 'Info', name: 'Açık mavi', dot: 'bg-blue-500' }
+            ]"
+            :key="c.id"
+          >
+            <label class="flex cursor-pointer items-center gap-2 text-sm text-gray-700 select-none dark:text-gray-400">
+              <input type="radio" name="event-level" :value="c.id" x-model="eventLevel" class="peer sr-only" />
+              <span
+                class="flex size-5 items-center justify-center rounded-full ring-offset-2 transition peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500/40 dark:ring-offset-gray-900"
+                :class="[c.dot, eventLevel === c.id ? 'ring-2 ring-gray-400' : '']"
+              >
+                <span x-show="eventLevel === c.id" class="size-2 rounded-full bg-white"></span>
+              </span>
+              <span x-text="c.name"></span>
+            </label>
+          </template>
+        </div>
+      </div>
+
+      <label class="flex cursor-pointer items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300">
+        <input type="checkbox" id="event-done" class="h-4 w-4 accent-brand-500" />
+        Tamamlandı olarak işaretle
+      </label>
+
+      <p id="event-error" class="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-600 empty:hidden dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400" role="alert"></p>
+
+      <div class="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          class="btn-delete-event hidden h-11 items-center justify-center rounded-[10px] bg-red-50 px-5 text-sm font-medium text-red-600 hover:bg-red-100 sm:me-auto ring-1 ring-red-200 ring-inset dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30 dark:hover:bg-red-500/25"
+        >
+          Sil
+        </button>
+        <button
+          type="button"
+          class="modal-close-btn flex h-11 items-center justify-center rounded-[10px] border border-gray-300 px-5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 sm:ms-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+        >
+          Vazgeç
+        </button>
+        <button
+          type="button"
+          class="btn-add-event flex h-11 items-center justify-center rounded-[10px] bg-green-50 px-5 text-sm font-medium text-green-600 hover:bg-green-100 ring-1 ring-green-200 ring-inset dark:bg-green-500/15 dark:text-green-400 dark:ring-green-500/30 dark:hover:bg-green-500/25"
+        >
+          Notu Ekle
+        </button>
+        <button
+          type="button"
+          class="btn-update-event hidden h-11 items-center justify-center rounded-[10px] bg-brand-500 px-5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
+        >
+          Değişiklikleri Kaydet
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

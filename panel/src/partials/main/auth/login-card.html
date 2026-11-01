@@ -1,0 +1,118 @@
+<!-- Sign-in card shared by the business and the super panel; x-data="login('business' | 'super')" sits on the page -->
+<div class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10" :class="kind === 'super' ? 'bg-gray-950' : 'bg-gray-50 dark:bg-gray-900'">
+  <include src="../../common/grid-shape.html" />
+
+  <div class="relative w-full max-w-[440px]">
+    <!-- Logos -->
+    <div class="mb-8 flex items-center justify-center gap-5">
+      <!-- Business (business sign-in only) -->
+      <template x-if="kind === 'business'">
+        <div class="flex items-center gap-5">
+          <div class="flex items-center gap-3">
+            <template x-if="business.logo">
+              <img :src="business.logo" :alt="business.name" class="h-14 w-auto max-w-16 object-contain" />
+            </template>
+            <template x-if="!business.logo">
+              <span class="flex size-14 items-center justify-center rounded-2xl text-lg font-bold text-white" :class="tint" x-text="initials(business.name)"></span>
+            </template>
+            <!-- BeeCafe's wordmark; other businesses show their name as text -->
+            <span
+              x-show="business.slug === 'beecafe'"
+              class="text-[26px] leading-none text-[#2E1B17] dark:text-white"
+              style="font-family: Georgia, 'Times New Roman', serif"
+              aria-hidden="true"
+              ><b class="font-bold">Bee</b>Cafe</span
+            >
+            <span x-show="business.slug !== 'beecafe'" class="max-w-40 text-lg leading-tight font-semibold text-gray-800 dark:text-white/90" x-text="business.name"></span>
+          </div>
+          <span class="h-12 w-px bg-gray-300 dark:bg-gray-700" aria-hidden="true"></span>
+        </div>
+      </template>
+
+      <!-- ARI Medya -->
+      <div class="flex items-center gap-3">
+        <img src="./images/logo/ari-medya.png" alt="ARI Medya" class="rounded-xl bg-white object-contain" :class="kind === 'super' ? 'size-20 p-1' : 'size-14'" />
+        <span x-show="kind === 'super'" class="text-left">
+          <span class="block text-xl font-semibold text-white">ARI Medya</span>
+          <span class="mt-1 inline-flex rounded-md bg-white px-2 py-0.5 text-[11px] font-semibold tracking-wide text-gray-900 uppercase">Süper Panel</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="rounded-2xl border p-6 shadow-theme-lg sm:p-8" :class="kind === 'super' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'">
+      <h1 class="text-xl font-semibold" :class="kind === 'super' ? 'text-white' : 'text-gray-800 dark:text-white/90'" x-text="title"></h1>
+      <p x-show="subtitle" class="mt-1.5 text-sm text-gray-500 dark:text-gray-400" :class="kind === 'super' && 'text-gray-400'" x-text="subtitle"></p>
+
+      <!-- Reset link sent -->
+      <div x-show="mode === 'sent'" class="mt-5 rounded-xl bg-green-50 p-4 text-sm text-green-700 dark:bg-green-500/10 dark:text-green-400">
+        <b class="font-semibold" x-text="email"></b> adresine parola sıfırlama bağlantısı gönderildi. Gelen kutunuzu kontrol edin.
+      </div>
+
+      <form x-show="mode !== 'sent'" @submit.prevent="submit()" class="mt-6 space-y-5" novalidate>
+        <div>
+          <label for="login-email" class="mb-1.5 block text-sm font-medium" :class="kind === 'super' ? 'text-gray-300' : 'text-gray-700 dark:text-gray-300'">E-posta</label>
+          <input
+            id="login-email"
+            x-ref="email"
+            type="email"
+            autocomplete="username"
+            x-model.trim="email"
+            placeholder="ornek@isletme.com"
+            class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden"
+            :class="kind === 'super' ? 'border-gray-700 text-white placeholder:text-gray-500' : 'border-gray-300 text-gray-800 dark:border-gray-700 dark:text-white/90'"
+          />
+        </div>
+
+        <div x-show="mode === 'login'">
+          <div class="mb-1.5 flex items-center justify-between">
+            <label for="login-password" class="block text-sm font-medium" :class="kind === 'super' ? 'text-gray-300' : 'text-gray-700 dark:text-gray-300'">Parola</label>
+            <button type="button" @click="forgot()" class="text-sm font-medium text-brand-500 hover:text-brand-600">Parolamı unuttum</button>
+          </div>
+          <div class="relative">
+            <input
+              id="login-password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              x-model="password"
+              class="h-11 w-full rounded-lg border bg-transparent py-2.5 ps-4 pe-12 text-sm shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden"
+              :class="kind === 'super' ? 'border-gray-700 text-white' : 'border-gray-300 text-gray-800 dark:border-gray-700 dark:text-white/90'"
+            />
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              :aria-label="showPassword ? 'Parolayı gizle' : 'Parolayı göster'"
+              class="absolute inset-y-0 end-0 flex w-11 items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <svg x-show="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+              <svg x-show="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.9 8.3 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <label x-show="mode === 'login'" class="flex cursor-pointer items-center gap-2.5 text-sm" :class="kind === 'super' ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'">
+          <input type="checkbox" x-model="remember" class="h-4 w-4 accent-brand-500" />
+          Beni hatırla
+        </label>
+
+        <p x-show="error" x-text="error" class="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"></p>
+
+        <button
+          type="submit"
+          :disabled="loading"
+          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-500 text-sm font-semibold text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-70"
+        >
+          <svg x-show="loading" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+          <span x-text="mode === 'forgot' ? 'Bağlantı Gönder' : loading ? 'Giriş yapılıyor…' : 'Giriş Yap'"></span>
+        </button>
+      </form>
+
+      <button x-show="mode !== 'login'" type="button" @click="back()" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        Girişe dön
+      </button>
+    </div>
+
+    <p class="mt-6 text-center text-xs text-gray-500" x-text="kind === 'super' ? '© 2026 ARI Medya' : 'ARI Medya altyapısıyla çalışır · © 2026'"></p>
+  </div>
+</div>

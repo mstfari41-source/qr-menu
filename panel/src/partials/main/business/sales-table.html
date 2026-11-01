@@ -1,0 +1,122 @@
+<div x-data="salesTable()" class="space-y-5">
+  <!-- Summary -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <template x-for="s in stats" :key="s.label">
+      <div class="flex items-center gap-4 rounded-2xl border p-5" :class="statKinds[s.kind].theme.card">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" :class="statKinds[s.kind].theme.badge" x-html="statIcon(s.kind)"></span>
+        <div class="min-w-0">
+          <span class="text-sm text-gray-600 dark:text-gray-400" x-text="s.label"></span>
+          <h4 class="mt-0.5 text-title-sm font-bold text-gray-800 dark:text-white/90" x-text="s.value"></h4>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+    <!-- Filters -->
+    <div class="grid grid-cols-1 gap-3 border-b border-gray-100 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-4 dark:border-gray-800">
+      <input
+        type="search"
+        x-model="search"
+        placeholder="Sipariş no veya ürün ara..."
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+      />
+      <select
+        x-model="range"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+      >
+        <option value="1">Son 1 saat</option>
+        <option value="24">Son 24 saat</option>
+        <option value="168">Son 7 gün</option>
+        <option value="720" selected>Son 30 gün</option>
+        <option value="all">Tümü</option>
+      </select>
+      <select
+        x-model="table"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+      >
+        <option value="">Tüm masalar</option>
+        <template x-for="n in 12" :key="n">
+          <option :value="n" x-text="'Masa ' + n"></option>
+        </template>
+      </select>
+      <select
+        x-model="payment"
+        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+      >
+        <option value="">Tüm ödemeler</option>
+        <option value="Kart">Kart</option>
+        <option value="Nakit">Nakit</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="max-w-full overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="border-b border-gray-100 dark:border-white/5">
+          <tr>
+            <th class="px-5 py-3 text-start text-xs font-medium whitespace-nowrap text-gray-500 sm:px-6 dark:text-gray-400">Sipariş No</th>
+            <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Tarih</th>
+            <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Masa</th>
+            <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Ürünler</th>
+            <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Adet</th>
+            <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Tutar</th>
+            <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Ödeme</th>
+            <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Durum</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+          <template x-for="s in rows" :key="s.no">
+            <tr class="transition hover:bg-gray-50/50 dark:hover:bg-white/2">
+              <td class="px-5 py-3.5 text-sm font-medium text-gray-800 sm:px-6 dark:text-white/90" x-text="'#' + s.no"></td>
+              <td class="px-5 py-3.5 text-sm whitespace-nowrap text-gray-500 sm:px-6 dark:text-gray-400" x-text="formatDate(s.date)"></td>
+              <td class="px-5 py-3.5 text-sm whitespace-nowrap text-gray-500 sm:px-6 dark:text-gray-400" x-text="'Masa ' + s.table"></td>
+              <td class="max-w-xs px-5 py-3.5 text-sm text-gray-500 sm:px-6 dark:text-gray-400">
+                <span class="block truncate" :title="summary(s.lines)" x-text="summary(s.lines)"></span>
+              </td>
+              <td class="px-5 py-3.5 text-sm text-gray-500 sm:px-6 dark:text-gray-400" x-text="itemCount(s.lines)"></td>
+              <td class="px-5 py-3.5 text-sm font-medium whitespace-nowrap text-gray-800 sm:px-6 dark:text-white/90" x-text="formatPrice(s.total)"></td>
+              <td class="px-5 py-3.5 text-sm text-gray-500 sm:px-6 dark:text-gray-400" x-text="s.payment"></td>
+              <td class="px-5 py-3.5 sm:px-6">
+                <span
+                  class="inline-flex rounded-lg px-2 py-0.5 text-xs font-medium"
+                  :class="s.status === 'Tamamlandı' ? 'bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-500' : 'bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-500'"
+                  x-text="s.status"
+                ></span>
+              </td>
+            </tr>
+          </template>
+          <tr x-show="rows.length === 0">
+            <td colspan="8" class="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Bu filtreye uyan satış yok.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between border-t border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+      <span class="text-sm text-gray-500 dark:text-gray-400">
+        <span x-text="filtered.length"></span> satış ·
+        Sayfa <span x-text="page"></span> / <span x-text="pageCount"></span>
+      </span>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          @click="page--"
+          :disabled="page === 1"
+          class="rounded-lg border border-gray-300 px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
+        >
+          Önceki
+        </button>
+        <button
+          type="button"
+          @click="page++"
+          :disabled="page === pageCount"
+          class="rounded-lg border border-gray-300 px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
+        >
+          Sonraki
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

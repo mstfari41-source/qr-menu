@@ -1,0 +1,63 @@
+<!-- Super panel sidebar: the platform owner's own navigation -->
+<a class="sr-only" href="#main-content">skip to the main content</a>
+<div
+  x-cloak
+  x-show="sidebarToggle"
+  class="fixed inset-0 z-99 bg-gray-900/50 backdrop-blur-xs xl:hidden"
+  aria-hidden="true"
+  @click="sidebarToggle = false"
+  x-transition.opacity
+></div>
+
+<aside
+  x-cloak
+  :class="sidebarToggle ? 'translate-x-0 xl:w-22.5' : '-translate-x-full rtl:translate-x-full'"
+  class="sidebar fixed top-0 left-0 z-9999 flex h-screen w-72.5 flex-col border-r border-gray-200 bg-white px-5 transition-all duration-300 xl:static xl:translate-x-0 dark:border-gray-800 dark:bg-black"
+  @click.outside="if (window.innerWidth < 1280) sidebarToggle = false"
+  aria-label="Süper panel menüsü"
+>
+  <!-- Platform logo -->
+  <div class="flex items-center gap-3 py-6" :class="sidebarToggle ? 'xl:justify-center' : ''">
+    <a href="super-isletmeler.html" class="flex items-center gap-3">
+      <img class="size-12 shrink-0 rounded-xl object-contain dark:bg-white dark:p-0.5" src="./images/logo/ari-medya.png" alt="ARI Medya" />
+      <span :class="sidebarToggle ? 'xl:hidden' : ''">
+        <span class="block text-base font-semibold text-gray-800 dark:text-white/90">ARI Medya</span>
+        <span class="mt-0.5 inline-flex items-center gap-1 rounded-md bg-gray-900 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase dark:bg-white dark:text-gray-900">Süper Panel</span>
+      </span>
+    </a>
+  </div>
+
+  <nav class="no-scrollbar flex flex-1 flex-col overflow-y-auto" aria-label="Süper panel menüsü">
+    <h3 class="mb-3 text-xs leading-5 text-gray-400 uppercase" :class="sidebarToggle ? 'xl:hidden' : ''">Platform</h3>
+    <ul class="mb-6 flex flex-col gap-1">
+      <li>
+        <a
+          href="super-isletmeler.html"
+          class="group menu-item"
+          :class="['superBusinesses', 'superBusiness'].includes(page) ? 'menu-item-active' : 'menu-item-inactive'"
+        >
+          <svg
+            :class="['superBusinesses', 'superBusiness'].includes(page) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+            width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+          >
+            <path d="M3.75 20.25h16.5M5.25 20.25V8.25L12 3.75l6.75 4.5v12" />
+            <path d="M9.75 20.25v-4.5h4.5v4.5M9 11.25h.01M15 11.25h.01" />
+          </svg>
+          <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">İşletmeler</span>
+        </a>
+      </li>
+    </ul>
+
+    <h3 class="mb-3 text-xs leading-5 text-gray-400 uppercase" :class="sidebarToggle ? 'xl:hidden' : ''">Geçiş</h3>
+    <ul class="flex flex-col gap-1">
+      <li>
+        <a href="index.html" class="group menu-item menu-item-inactive">
+          <svg class="menu-item-icon-inactive" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5M10 16l4-4-4-4M14 12H4" />
+          </svg>
+          <span class="menu-item-text" :class="sidebarToggle ? 'xl:hidden' : ''">İşletme Paneli (demo)</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>

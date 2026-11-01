@@ -1,0 +1,401 @@
+<form x-data="aiSettings()" @submit.prevent="save()" class="space-y-5" novalidate>
+  <!-- Genel -->
+  <section class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/3">
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-start gap-4">
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="enabled.toString()"
+          @click="enabled = !enabled"
+          aria-label="Yapay zekâ önerileri"
+          class="relative mt-0.5 inline-flex h-6 w-12 shrink-0 items-center rounded-full p-[2px] transition-colors"
+          :class="enabled ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'"
+        >
+          <span class="pointer-events-none block h-5 w-7 rounded-full bg-white shadow-theme-sm transition-transform duration-150" :class="enabled ? 'translate-x-4' : 'translate-x-0'"></span>
+        </button>
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Yapay zekâ önerileri</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            Açıkken QR menüdeki öneriler; saat, hava, yoğunluk, müşteri tercihleri ve yaş kitlesine göre anlık seçilir.
+          </p>
+        </div>
+      </div>
+      <div class="lg:shrink-0">
+        <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Öneri stratejisi</span>
+        <div class="inline-flex flex-wrap rounded-lg bg-gray-100 p-1 dark:bg-gray-900">
+          <template x-for="(s, key) in strategies" :key="key">
+            <button
+              type="button"
+              @click="applyStrategy(key)"
+              class="rounded-md px-3.5 py-2 text-sm font-medium transition"
+              :class="strategy === key ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400'"
+              x-text="s.name"
+            ></button>
+          </template>
+          <span
+            x-show="strategy === 'custom'"
+            class="rounded-md bg-white px-3.5 py-2 text-sm font-medium text-gray-900 shadow-theme-xs dark:bg-gray-800 dark:text-white"
+            >Özel</span
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="space-y-5 transition" :class="enabled ? '' : 'pointer-events-none opacity-50'" :inert="!enabled">
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_380px]">
+      <!-- Karar faktörleri -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Karar faktörleri</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Yapay zekânın hangi bilgilere ne kadar önem vereceğini seçin.</p>
+        </div>
+        <ul class="divide-y divide-gray-100 dark:divide-white/5">
+          <template x-for="f in factorList" :key="f.id">
+            <li class="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 px-5 py-4 sm:grid-cols-[auto_1fr_220px] sm:px-6">
+              <button
+                type="button"
+                role="switch"
+                :aria-checked="factors[f.id].on.toString()"
+                @click="factors[f.id].on = !factors[f.id].on"
+                :aria-label="f.name"
+                class="relative inline-flex h-5 w-11 shrink-0 items-center rounded-full p-[1.5px] transition-colors"
+                :class="factors[f.id].on ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'"
+              >
+                <span class="pointer-events-none block h-[17px] w-[26px] rounded-full bg-white shadow-theme-sm transition-transform duration-150" :class="factors[f.id].on ? 'translate-x-[15px]' : 'translate-x-0'"></span>
+              </button>
+              <div>
+                <span class="block text-sm font-medium text-gray-800 dark:text-white/90" x-text="f.name"></span>
+                <span class="block text-sm text-gray-500 dark:text-gray-400" x-text="f.hint"></span>
+              </div>
+              <div class="col-span-2 flex items-center gap-3 sm:col-span-1" :class="factors[f.id].on ? '' : 'opacity-40'">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="10"
+                  x-model.number="factors[f.id].weight"
+                  @input="changeWeight()"
+                  :disabled="!factors[f.id].on"
+                  :aria-label="f.name + ' önemi'"
+                  class="w-full accent-brand-500"
+                />
+                <span class="w-10 text-end text-sm font-medium text-gray-700 dark:text-gray-300" x-text="factors[f.id].weight + '%'"></span>
+              </div>
+            </li>
+          </template>
+        </ul>
+      </section>
+
+      <!-- Simülasyon -->
+      <section class="rounded-2xl border border-brand-200 bg-brand-50/50 dark:border-brand-500/30 dark:bg-brand-500/5">
+        <div class="border-b border-brand-100 px-5 py-4 dark:border-brand-500/20">
+          <h3 class="flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-white/90">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-brand-500" aria-hidden="true"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z" /></svg>
+            Öneri önizlemesi
+          </h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Koşulları değiştirin, yapay zekânın ne önereceğini görün.</p>
+        </div>
+        <div class="space-y-4 p-5">
+          <div class="grid grid-cols-2 gap-3">
+            <label class="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Saat
+              <select x-model.number="sim.hour" class="mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                <template x-for="h in 24" :key="h">
+                  <option :value="h - 1" x-text="String(h - 1).padStart(2, '0') + ':00'" :selected="h - 1 === sim.hour"></option>
+                </template>
+              </select>
+            </label>
+            <label class="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Sıcaklık (°C)
+              <input type="number" x-model.number="sim.temp" class="mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </label>
+            <label class="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Yaş aralığı
+              <select x-model="sim.age" class="mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                <template x-for="s in age.segments" :key="s.id">
+                  <option :value="s.id" x-text="s.name" :selected="s.id === sim.age"></option>
+                </template>
+              </select>
+            </label>
+            <label class="flex items-end gap-2 pb-2.5 text-sm text-gray-700 dark:text-gray-300">
+              <input type="checkbox" x-model="sim.rain" class="h-4 w-4 accent-brand-500" />
+              Yağmurlu
+            </label>
+          </div>
+          <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
+            Kafe yoğunluğu: <span class="text-gray-800 dark:text-white/90" x-text="'%' + sim.crowd"></span>
+            <input type="range" min="0" max="100" step="5" x-model.number="sim.crowd" class="mt-1 w-full accent-brand-500" />
+          </label>
+
+          <div class="flex flex-wrap gap-1.5 text-xs">
+            <span class="rounded-md bg-white px-2 py-1 text-gray-600 dark:bg-white/5 dark:text-gray-300" x-text="simPartName"></span>
+            <span class="rounded-md bg-white px-2 py-1 text-gray-600 dark:bg-white/5 dark:text-gray-300" x-text="simWeather.name + ' hava'"></span>
+            <span class="rounded-md bg-white px-2 py-1 text-gray-600 dark:bg-white/5 dark:text-gray-300" x-text="simBusy ? 'Yoğun' : 'Sakin'"></span>
+          </div>
+
+          <ol class="space-y-2">
+            <template x-for="(p, i) in picks" :key="p.id">
+              <li class="flex items-center gap-3 rounded-xl bg-white p-2.5 dark:bg-gray-900">
+                <span class="w-4 text-center text-sm font-semibold text-brand-500" x-text="i + 1"></span>
+                <img :src="p.image" :alt="p.name" class="h-11 w-11 rounded-lg object-cover" />
+                <div class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-medium text-gray-800 dark:text-white/90" x-text="p.name"></span>
+                  <span class="block truncate text-xs text-gray-500 dark:text-gray-400" x-text="p.reasons.length ? p.reasons.join(' · ') : 'Genel uygunluk'"></span>
+                </div>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="formatPrice(p.price)"></span>
+              </li>
+            </template>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+      <!-- Hava durumu -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3" :class="factors.weather.on ? '' : 'opacity-50'">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Hava durumu</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Hava koşuluna göre hangi kategoriler öne çıksın?</p>
+        </div>
+        <div class="space-y-5 p-5 sm:p-6">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-400">
+              Konum
+              <input type="text" x-model="weather.city" class="mt-1.5 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-400">
+              Sıcak sayılır (°C ve üstü)
+              <input type="number" x-model.number="weather.hotAbove" class="mt-1.5 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-400">
+              Soğuk sayılır (°C ve altı)
+              <input type="number" x-model.number="weather.coldBelow" class="mt-1.5 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            </label>
+          </div>
+          <template x-for="rule in [{ id: 'hot', name: 'Sıcak havada' }, { id: 'cold', name: 'Soğuk havada' }, { id: 'rainy', name: 'Yağmurlu havada' }]" :key="rule.id">
+            <div>
+              <span class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400" x-text="rule.name"></span>
+              <div class="flex flex-wrap gap-2">
+                <template x-for="c in categories" :key="c.id">
+                  <button
+                    type="button"
+                    @click="toggleIn(weather.rules[rule.id], c.id)"
+                    :aria-pressed="weather.rules[rule.id].includes(c.id).toString()"
+                    class="rounded-lg border px-3 py-1.5 text-sm transition"
+                    :class="weather.rules[rule.id].includes(c.id) ? 'border-brand-500 bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400' : 'border-gray-300 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5'"
+                    x-text="c.name"
+                  ></button>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- Kafe yoğunluğu -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3" :class="factors.crowd.on ? '' : 'opacity-50'">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Kafe yoğunluğu</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Yoğun ve sakin saatlerde öneriler nasıl değişsin?</p>
+        </div>
+        <div class="space-y-5 p-5 sm:p-6">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-400">
+              Yoğunluk ölçümü
+              <select x-model="crowd.source" class="mt-1.5 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                <option value="tables">Aktif masa oranı (QR okutmaları)</option>
+                <option value="orders">Açık sipariş sayısı</option>
+              </select>
+            </label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-400">
+              Yoğun sayılır: <span class="text-gray-800 dark:text-white/90" x-text="'%' + crowd.busyAbove + ' ve üstü'"></span>
+              <input type="range" min="30" max="100" step="5" x-model.number="crowd.busyAbove" class="mt-4 w-full accent-brand-500" />
+            </label>
+          </div>
+          <label class="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" x-model="crowd.fastWhenBusy" class="mt-0.5 h-4 w-4 accent-brand-500" />
+            Yoğunken hızlı hazırlanan ürünleri öne çıkar
+          </label>
+          <label class="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" x-model="crowd.marginWhenQuiet" class="mt-0.5 h-4 w-4 accent-brand-500" />
+            Sakinken kârı yüksek ürünleri öne çıkar
+          </label>
+          <div>
+            <span class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Kategori hazırlama hızı</span>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+              <template x-for="c in categories" :key="c.id">
+                <label class="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span x-text="c.name"></span>
+                  <select x-model="crowd.prep[c.id]" class="h-9 rounded-lg border border-gray-300 bg-transparent px-2 text-sm dark:border-gray-700 dark:bg-gray-900">
+                    <template x-for="l in prepLevels" :key="l.id">
+                      <option :value="l.id" x-text="l.name" :selected="l.id === crowd.prep[c.id]"></option>
+                    </template>
+                  </select>
+                </label>
+              </template>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Müşteri tercihleri -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3" :class="factors.preference.on ? '' : 'opacity-50'">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Müşteri tercihleri</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Yapay zekâ sipariş geçmişinden ne öğrensin?</p>
+        </div>
+        <div class="space-y-4 p-5 sm:p-6">
+          <label class="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" x-model="preference.personalize" class="mt-0.5 h-4 w-4 accent-brand-500" />
+            <span>Tekrar gelen müşteriye geçmiş siparişlerine göre öner <span class="block text-xs text-gray-500 dark:text-gray-400">Anonimdir; kişisel bilgi tutulmaz, yalnızca cihaz hatırlanır.</span></span>
+          </label>
+          <label class="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" x-model="preference.popular" class="mt-0.5 h-4 w-4 accent-brand-500" />
+            En çok tercih edilen ürünleri öne çıkar
+          </label>
+          <label class="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" x-model="preference.diet" class="mt-0.5 h-4 w-4 accent-brand-500" />
+            Diyet ve alerjen tercihlerine uy (vegan, glutensiz vb.)
+          </label>
+          <label class="block text-sm font-medium text-gray-700 sm:w-64 dark:text-gray-400">
+            Dikkate alınacak dönem
+            <select x-model="preference.window" class="mt-1.5 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+              <option value="7">Son 7 gün</option>
+              <option value="30">Son 30 gün</option>
+              <option value="90">Son 90 gün</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- Yaş kitlesi -->
+      <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3" :class="factors.age.on ? '' : 'opacity-50'">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Yaş kitlesi</h3>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Her yaş aralığına hangi kategoriler önerilsin?</p>
+        </div>
+        <div class="space-y-4 p-5 sm:p-6">
+          <label class="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" x-model="age.askCustomer" class="mt-0.5 h-4 w-4 accent-brand-500" />
+            <span>Müşteriye isteğe bağlı yaş aralığı sor <span class="block text-xs text-gray-500 dark:text-gray-400">Yaş yalnızca müşteri kendisi seçerse kullanılır; tahmin yapılmaz.</span></span>
+          </label>
+          <template x-for="s in age.segments" :key="s.id">
+            <div class="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center dark:border-gray-800">
+              <label class="flex w-36 shrink-0 cursor-pointer items-center gap-2 text-sm font-medium text-gray-800 dark:text-white/90">
+                <input type="checkbox" x-model="s.on" class="h-4 w-4 accent-brand-500" />
+                <span x-text="s.name"></span>
+              </label>
+              <div class="flex flex-wrap gap-1.5" :class="s.on ? '' : 'opacity-40'">
+                <template x-for="c in categories" :key="c.id">
+                  <button
+                    type="button"
+                    @click="toggleIn(s.cats, c.id)"
+                    :disabled="!s.on"
+                    :aria-pressed="s.cats.includes(c.id).toString()"
+                    class="rounded-lg border px-2.5 py-1 text-xs transition"
+                    :class="s.cats.includes(c.id) ? 'border-brand-500 bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400' : 'border-gray-300 text-gray-500 dark:border-gray-700 dark:text-gray-400'"
+                    x-text="c.name"
+                  ></button>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+
+    <!-- Öneri saatleri -->
+    <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3" :class="factors.time.on ? '' : 'opacity-50'">
+      <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Öneri saatleri</h3>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+          Gün dilimlerinin başlangıç saatini ve her dilimde hangi kategorilerin önerileceğini seçin.
+        </p>
+      </div>
+      <div class="max-w-full overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="border-b border-gray-100 dark:border-white/5">
+            <tr>
+              <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 sm:px-6 dark:text-gray-400">Kategori</th>
+              <template x-for="d in parts" :key="d.id">
+                <th class="px-5 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <span class="block" x-text="d.name"></span>
+                  <label class="mt-1 inline-flex items-center gap-1 font-normal">
+                    <select x-model.number="d.from" :aria-label="d.name + ' başlangıç saati'" class="h-8 rounded-md border border-gray-300 bg-transparent px-1.5 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                      <template x-for="h in 24" :key="h">
+                        <option :value="h - 1" x-text="String(h - 1).padStart(2, '0') + ':00'" :selected="h - 1 === d.from"></option>
+                      </template>
+                    </select>
+                  </label>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+            <template x-for="c in categories" :key="c.id">
+              <tr>
+                <td class="px-5 py-3 text-sm font-medium text-gray-800 sm:px-6 dark:text-white/90" x-text="c.name"></td>
+                <template x-for="d in parts" :key="d.id">
+                  <td class="px-5 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      :checked="slots[c.id].includes(d.id)"
+                      @change="toggleSlot(c.id, d.id)"
+                      :aria-label="c.name + ' - ' + d.name"
+                      class="h-4 w-4 cursor-pointer rounded border-gray-300 accent-brand-500"
+                    />
+                  </td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Sınırlar -->
+    <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+      <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Sınırlar</h3>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Tükenen ürünler hiçbir zaman önerilmez.</p>
+      </div>
+      <div class="space-y-5 p-5 sm:p-6">
+        <label class="block text-sm font-medium text-gray-700 sm:w-64 dark:text-gray-400">
+          Aynı anda gösterilecek öneri sayısı
+          <select x-model.number="limits.maxPicks" class="mt-1.5 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+            <template x-for="n in 5" :key="n">
+              <option :value="n" x-text="n" :selected="n === limits.maxPicks"></option>
+            </template>
+          </select>
+        </label>
+        <div>
+          <span class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Hiç önerilmeyecek ürünler</span>
+          <div class="flex flex-wrap gap-2">
+            <template x-for="p in products" :key="p.id">
+              <button
+                type="button"
+                @click="toggleIn(limits.excluded, p.id)"
+                :aria-pressed="limits.excluded.includes(p.id).toString()"
+                class="rounded-lg border px-3 py-1.5 text-sm transition"
+                :class="limits.excluded.includes(p.id) ? 'border-red-400 bg-red-50 text-red-600 line-through dark:bg-red-500/10 dark:text-red-400' : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5'"
+                x-text="p.name"
+              ></button>
+            </template>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Save -->
+  <div class="flex items-center justify-end gap-4">
+    <button
+      type="submit"
+      class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
+    >
+      Kaydet
+    </button>
+  </div>
+</form>

@@ -1,0 +1,34 @@
+<div x-data="todayNotes()" class="flex h-full flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5">
+      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-800 text-white dark:bg-white/10">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M8 2.5v4M16 2.5v4M3 10h18" /></svg>
+      </span>
+      <div>
+        <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Bugünkü Notlar</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          <span x-text="notes.length"></span> not · yarın <span x-text="tomorrowCount"></span>
+        </p>
+      </div>
+    </div>
+    <a href="calendar.html" class="text-xs font-medium text-brand-500 hover:underline">Takvime git</a>
+  </div>
+
+  <ul class="no-scrollbar -mx-1 max-h-36 flex-1 space-y-1 overflow-y-auto px-1">
+    <template x-for="n in notes" :key="n.id">
+      <li class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-white/5">
+        <input
+          type="checkbox"
+          :checked="n.done"
+          @change="toggleDone(n)"
+          :aria-label="n.title + ' tamamlandı'"
+          class="h-4 w-4 shrink-0 accent-brand-500"
+        />
+        <span class="w-11 shrink-0 text-xs font-medium" :class="isPast(n) && !n.done ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'" x-text="n.time || 'Gün içi'"></span>
+        <span class="min-w-0 flex-1 truncate text-sm text-gray-800 dark:text-white/90" :class="n.done ? 'line-through opacity-50' : ''" x-text="n.title"></span>
+        <svg x-show="n.remind && !n.done && !n.notified" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-orange-500" aria-label="Hatırlatıcı kurulu"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+      </li>
+    </template>
+    <li x-show="notes.length === 0" class="py-4 text-center text-sm text-gray-400">Bugün için not yok.</li>
+  </ul>
+</div>

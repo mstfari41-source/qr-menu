@@ -1,0 +1,221 @@
+<form x-data="menuSettings()" @submit.prevent="save()" class="space-y-5" novalidate>
+  <!-- Özellikler -->
+  <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+    <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Özellikler</h3>
+      <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Müşterinin menüde göreceği renk, butonlar ve bölümler.</p>
+    </div>
+    <ul class="divide-y divide-gray-100 dark:divide-white/5">
+      <!-- Ana renk -->
+      <li class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <div>
+          <span class="block text-sm font-medium text-gray-800 dark:text-white/90">Ana renk</span>
+          <span class="block text-sm text-gray-500 dark:text-gray-400">Menüdeki butonların ve vurguların rengi.</span>
+        </div>
+        <label class="flex h-10 shrink-0 cursor-pointer items-center gap-2.5 rounded-lg border border-gray-300 px-2 dark:border-gray-700">
+          <input type="color" x-model="accent" aria-label="Ana renk" class="h-7 w-9 cursor-pointer rounded border-0 bg-transparent p-0" />
+          <span class="w-16 text-sm text-gray-700 uppercase dark:text-gray-300" x-text="accent"></span>
+        </label>
+      </li>
+
+      <!-- Garson çağır -->
+      <li class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div>
+          <span class="block text-sm font-medium text-gray-800 dark:text-white/90">Garson çağır butonu</span>
+          <span class="block text-sm text-gray-500 dark:text-gray-400">Müşteri masadan garson çağırabilir.</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <label x-show="waiter" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            Tekrar çağırma süresi
+            <input
+              type="number"
+              min="10"
+              step="10"
+              x-model.number="waiterCooldown"
+              class="h-9 w-20 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+            />
+            sn
+          </label>
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="waiter.toString()"
+            @click="waiter = !waiter"
+            aria-label="Garson çağır butonu"
+            class="relative inline-flex h-5 w-11 shrink-0 items-center rounded-full p-[1.5px] transition-colors"
+            :class="waiter ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'"
+          >
+            <span class="pointer-events-none block h-[17px] w-[26px] rounded-full bg-white shadow-theme-sm transition-transform duration-150" :class="waiter ? 'translate-x-[15px]' : 'translate-x-0'"></span>
+          </button>
+        </div>
+      </li>
+
+      <!-- Sepet -->
+      <li class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <div>
+          <span class="block text-sm font-medium text-gray-800 dark:text-white/90">Sepet</span>
+          <span class="block text-sm text-gray-500 dark:text-gray-400">Müşteri ürünleri sepete ekleyip toplam tutarı görebilir.</span>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="cart.toString()"
+          @click="cart = !cart"
+          aria-label="Sepet"
+          class="relative inline-flex h-5 w-11 shrink-0 items-center rounded-full p-[1.5px] transition-colors"
+          :class="cart ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'"
+        >
+          <span class="pointer-events-none block h-[17px] w-[26px] rounded-full bg-white shadow-theme-sm transition-transform duration-150" :class="cart ? 'translate-x-[15px]' : 'translate-x-0'"></span>
+        </button>
+      </li>
+
+      <!-- Story şeridi -->
+      <li class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <div>
+          <span class="block text-sm font-medium text-gray-800 dark:text-white/90">Story şeridi</span>
+          <span class="block text-sm text-gray-500 dark:text-gray-400">Ana sayfanın üstündeki yuvarlak ürün şeridi.</span>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="stories.toString()"
+          @click="stories = !stories"
+          aria-label="Story şeridi"
+          class="relative inline-flex h-5 w-11 shrink-0 items-center rounded-full p-[1.5px] transition-colors"
+          :class="stories ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'"
+        >
+          <span class="pointer-events-none block h-[17px] w-[26px] rounded-full bg-white shadow-theme-sm transition-transform duration-150" :class="stories ? 'translate-x-[15px]' : 'translate-x-0'"></span>
+        </button>
+      </li>
+
+      <!-- Puanlar -->
+      <li class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <div>
+          <span class="block text-sm font-medium text-gray-800 dark:text-white/90">Ürün puanları</span>
+          <span class="block text-sm text-gray-500 dark:text-gray-400">Ürünlerin yanında yıldız puanı gösterilir.</span>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="ratings.toString()"
+          @click="ratings = !ratings"
+          aria-label="Ürün puanları"
+          class="relative inline-flex h-5 w-11 shrink-0 items-center rounded-full p-[1.5px] transition-colors"
+          :class="ratings ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'"
+        >
+          <span class="pointer-events-none block h-[17px] w-[26px] rounded-full bg-white shadow-theme-sm transition-transform duration-150" :class="ratings ? 'translate-x-[15px]' : 'translate-x-0'"></span>
+        </button>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Diller -->
+  <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+    <div class="border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Diller</h3>
+      <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Müşterinin seçebileceği diller. Türkçe her zaman açıktır.</p>
+    </div>
+    <div class="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
+      <div class="flex flex-wrap gap-3">
+        <template x-for="lang in languages" :key="lang.id">
+          <button
+            type="button"
+            @click="toggleLanguage(lang)"
+            :aria-pressed="lang.on.toString()"
+            class="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition"
+            :class="lang.on ? 'border-brand-500 bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400' : 'border-gray-300 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5'"
+          >
+            <span class="flex h-4 w-4 items-center justify-center rounded border" :class="lang.on ? 'border-brand-500 bg-brand-500 text-white' : 'border-gray-300 dark:border-gray-600'">
+              <svg x-show="lang.on" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+            </span>
+            <span x-text="lang.name"></span>
+          </button>
+        </template>
+      </div>
+      <div class="lg:w-56">
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Varsayılan dil</label>
+        <select
+          x-model="defaultLang"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+        >
+          <template x-for="lang in activeLanguages" :key="lang.id">
+            <option :value="lang.id" x-text="lang.name" :selected="lang.id === defaultLang"></option>
+          </template>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Panel dark mode schedule (applies at once, to this panel only) -->
+  <section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+    <div class="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 sm:px-6 dark:border-gray-800">
+      <div>
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Otomatik karanlık mod</h3>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Yönetim paneli seçilen saatlerde kendiliğinden karanlık temaya geçer.</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        :aria-checked="$store.theme.auto.toString()"
+        @click="$store.theme.auto = !$store.theme.auto; $store.theme.save()"
+        aria-label="Otomatik karanlık mod"
+        class="relative mt-0.5 inline-flex h-5 w-11 shrink-0 items-center rounded-full p-[1.5px] transition-colors"
+        :class="$store.theme.auto ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'"
+      >
+        <span class="pointer-events-none block h-[17px] w-[26px] rounded-full bg-white shadow-theme-sm transition-transform duration-150" :class="$store.theme.auto ? 'translate-x-[15px]' : 'translate-x-0'"></span>
+      </button>
+    </div>
+    <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6" :class="$store.theme.auto ? '' : 'opacity-50'">
+      <div class="flex items-end gap-3">
+        <label class="block">
+          <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Başlangıç</span>
+          <select
+            x-model="$store.theme.start"
+            @change="$store.theme.save()"
+            :disabled="!$store.theme.auto"
+            class="h-11 w-28 rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+          >
+            <template x-for="h in hours" :key="h">
+              <option :value="h" x-text="h" :selected="h === $store.theme.start"></option>
+            </template>
+          </select>
+        </label>
+        <span class="pb-3 text-gray-400">→</span>
+        <label class="block">
+          <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Bitiş</span>
+          <select
+            x-model="$store.theme.end"
+            @change="$store.theme.save()"
+            :disabled="!$store.theme.auto"
+            class="h-11 w-28 rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+          >
+            <template x-for="h in hours" :key="h">
+              <option :value="h" x-text="h" :selected="h === $store.theme.end"></option>
+            </template>
+          </select>
+        </label>
+      </div>
+      <p class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <template x-if="$store.theme.auto">
+          <span>
+            Şu an <b class="text-gray-800 dark:text-white/90" x-text="$store.theme.darkNow ? 'karanlık' : 'aydınlık'"></b> tema ·
+            <span x-text="$store.theme.start + ' – ' + $store.theme.end + ' arası karanlık'"></span>
+          </span>
+        </template>
+        <template x-if="!$store.theme.auto">
+          <span>Kapalı · tema üst menüdeki düğmeyle elle değişir</span>
+        </template>
+      </p>
+    </div>
+  </section>
+
+  <!-- Save -->
+  <div class="flex items-center justify-end gap-4">
+    <button
+      type="submit"
+      class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
+    >
+      Kaydet
+    </button>
+  </div>
+</form>
