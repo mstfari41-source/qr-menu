@@ -56,8 +56,9 @@ function sendFile(req, res, dir, rel, status = 200) {
   const file = resolve(dir, rel);
   if (!file.startsWith(dir + sep) || !existsSync(file) || !statSync(file).isFile()) return false;
   const type = TYPES[extname(file).toLowerCase()] ?? "application/octet-stream";
-  // Pages are never cached, so phones always get the current version.
-  res.writeHead(status, { "Content-Type": type, "Cache-Control": type.startsWith("text/html") ? "no-cache" : "public, max-age=3600" });
+  // Pages, scripts and styles (bundle.js, style.css keep their names between builds) are
+  // checked every time, so phones always get the current version; pictures are cached.
+  res.writeHead(status, { "Content-Type": type, "Cache-Control": type.startsWith("image/") ? "public, max-age=3600" : "no-cache" });
   res.end(req.method === "HEAD" ? undefined : readFileSync(file));
   return true;
 }

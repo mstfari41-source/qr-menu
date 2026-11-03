@@ -77,8 +77,18 @@ export function publicUser(user) {
   return out;
 }
 
+// Test sign-in: 12345 / 12345 opens the super panel, or the owner's panel of any business.
+// For the test phase only; TEST_LOGIN=0 switches it off (do that before real use).
+export const TEST_LOGIN = process.env.TEST_LOGIN !== "0";
+const TEST_CODE = "12345";
+
 export function login({ email, password, scope, business }, ip) {
   email = text(email, 120).toLowerCase();
+  if (TEST_LOGIN && email === TEST_CODE && String(password ?? "") === TEST_CODE) {
+    const user = scope === "super" ? db.prepare("SELECT * FROM users WHERE role = 'super' ORDER BY id LIMIT 1").get() : q.ownerOf.get(business);
+    if (!user) throw new HttpError(404, "Bu işletmenin sahibi için hesap yok.");
+    return startSession(user);
+  }
   const key = `${ip}|${email}`;
   throttle(key);
   const user = EMAIL.test(email) ? q.byEmail.get(email) : null;
@@ -96,6 +106,10 @@ export function login({ email, password, scope, business }, ip) {
     if (user.role === "staff" && !staffAccess(user)?.access) throw new HttpError(403, "Panel erişiminiz kapalı. İşletme sahibine başvurun.");
   }
   attempts.delete(key);
+  return startSession(user);
+}
+
+function startSession(user) {
   const token = randomBytes(32).toString("base64url");
   q.addSession.run(token, user.id, Date.now() + SESSION_DAYS * 86400000);
   q.purge.run(Date.now());

@@ -49,7 +49,8 @@ export default function login(kind = "business") {
     },
     async submit() {
       this.error = "";
-      if (!EMAIL.test(this.email)) return (this.error = "Geçerli bir e-posta adresi girin.");
+      // "12345" is the test sign-in (server/auth.mjs), not an e-mail address.
+      if (this.email !== "12345" && !EMAIL.test(this.email)) return (this.error = "Geçerli bir e-posta adresi girin.");
       if (!this.password) return (this.error = "Parolanızı girin.");
       this.loading = true;
       try {
