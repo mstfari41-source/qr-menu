@@ -65,13 +65,14 @@ import dropdown from "./components/ui/dropdown";
 import popover from "./components/ui/popover";
 import tooltip from "./components/ui/tooltip";
 
-// Automatic dark mode decides the theme first, by the clock.
-applyThemeScheduleEarly();
+// Sign-in screens always keep the light look; elsewhere automatic dark mode decides the theme first, by the clock.
+const signIn = document.body?.dataset.area === "auth";
+if (!signIn) applyThemeScheduleEarly();
 
 // TailAdmin Theme Manager: reads from localStorage, falls back to dark
 (function () {
   var stored = localStorage.getItem("darkMode");
-  var isDark = stored !== null ? JSON.parse(stored) : false;
+  var isDark = !signIn && stored !== null ? JSON.parse(stored) : false;
 
   if (isDark) {
     document.documentElement.classList.add("dark");
@@ -152,7 +153,7 @@ Alpine.data("login", login);
 Alpine.start();
 
 // Panel switches to dark mode by itself in the chosen hours.
-startThemeSchedule(Alpine);
+if (!signIn) startThemeSchedule(Alpine);
 
 // Calendar notes come from the server; their reminders pop up on every business panel page.
 if (inBusinessPanel) initNotes().finally(startReminders);

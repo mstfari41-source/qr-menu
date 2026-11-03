@@ -1,5 +1,6 @@
-<!-- Sign-in card shared by the business and the super panel; x-data="login('business' | 'super')" sits on the page -->
-<div class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10" :class="kind === 'super' ? 'bg-gray-950' : 'bg-gray-50 dark:bg-gray-900'">
+<!-- Sign-in card shared by the business and the super panel; x-data="login('business' | 'super')" sits on the page.
+     Always the light look, whatever the panel's dark mode. -->
+<div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 py-10">
   <include src="../../common/grid-shape.html" />
 
   <div class="relative w-full max-w-[440px]">
@@ -18,37 +19,37 @@
             <!-- BeeCafe's wordmark; other businesses show their name as text -->
             <span
               x-show="business.slug === 'beecafe'"
-              class="text-[26px] leading-none text-[#2E1B17] dark:text-white"
+              class="text-[26px] leading-none text-[#2E1B17]"
               style="font-family: Georgia, 'Times New Roman', serif"
               aria-hidden="true"
               ><b class="font-bold">Bee</b>Cafe</span
             >
-            <span x-show="business.slug !== 'beecafe'" class="max-w-40 text-lg leading-tight font-semibold text-gray-800 dark:text-white/90" x-text="business.name"></span>
+            <span x-show="business.slug !== 'beecafe'" class="max-w-40 text-lg leading-tight font-semibold text-gray-800" x-text="business.name"></span>
           </div>
-          <span class="h-12 w-px bg-gray-300 dark:bg-gray-700" aria-hidden="true"></span>
+          <span class="h-12 w-px bg-gray-300" aria-hidden="true"></span>
         </div>
       </template>
 
       <!-- ARI Medya -->
       <div class="flex items-center gap-3">
-        <img src="./images/logo/ari-medya.png" alt="ARI Medya" class="rounded-xl bg-white object-contain" :class="kind === 'super' ? 'size-20 p-1' : 'size-14'" />
+        <img src="./images/logo/ari-medya.png" alt="ARI Medya" class="rounded-xl bg-white object-contain" :class="kind === 'super' ? 'size-20 p-1 ring-1 ring-gray-200' : 'size-14'" />
         <span x-show="kind === 'super'" class="text-left">
-          <span class="block text-xl font-semibold text-white">ARI Medya</span>
-          <span class="mt-1 inline-flex rounded-md bg-white px-2 py-0.5 text-[11px] font-semibold tracking-wide text-gray-900 uppercase">Süper Panel</span>
+          <span class="block text-xl font-semibold text-gray-800">ARI Medya</span>
+          <span class="mt-1 inline-flex rounded-md bg-gray-900 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-white uppercase">Süper Panel</span>
         </span>
       </div>
     </div>
 
     <!-- Card -->
-    <div class="rounded-2xl border p-6 shadow-theme-lg sm:p-8" :class="kind === 'super' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'">
-      <h1 class="text-xl font-semibold" :class="kind === 'super' ? 'text-white' : 'text-gray-800 dark:text-white/90'" x-text="title"></h1>
-      <p x-show="subtitle" class="mt-1.5 text-sm text-gray-500 dark:text-gray-400" :class="kind === 'super' && 'text-gray-400'" x-text="subtitle"></p>
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-lg sm:p-8">
+      <h1 class="text-xl font-semibold text-gray-800" x-text="title"></h1>
+      <p x-show="subtitle" class="mt-1.5 text-sm text-gray-500" x-text="subtitle"></p>
 
-      <p x-show="mode === 'login'" class="mt-4 rounded-lg bg-amber-50 px-3.5 py-2.5 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Test girişi: kullanıcı adı <b>12345</b>, parola <b>12345</b></p>
+      <p x-show="mode === 'login'" class="mt-4 rounded-lg bg-amber-50 px-3.5 py-2.5 text-sm text-amber-700">Test girişi: kullanıcı adı <b>12345</b>, parola <b>12345</b></p>
 
       <form x-show="mode === 'login'" @submit.prevent="submit()" class="mt-6 space-y-5" novalidate>
         <div>
-          <label for="login-email" class="mb-1.5 block text-sm font-medium" :class="kind === 'super' ? 'text-gray-300' : 'text-gray-700 dark:text-gray-300'">E-posta veya kullanıcı adı</label>
+          <label for="login-email" class="mb-1.5 block text-sm font-medium text-gray-700">E-posta veya kullanıcı adı</label>
           <input
             id="login-email"
             x-ref="email"
@@ -56,14 +57,14 @@
             autocomplete="username"
             x-model.trim="email"
             placeholder="ornek@isletme.com"
-            class="h-11 w-full rounded-lg border bg-transparent px-4 text-sm shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden"
-            :class="kind === 'super' ? 'border-gray-700 text-white placeholder:text-gray-500' : 'border-gray-300 text-gray-800 dark:border-gray-700 dark:text-white/90'"
+            class="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden"
+            
           />
         </div>
 
         <div x-show="mode === 'login'">
           <div class="mb-1.5 flex items-center justify-between">
-            <label for="login-password" class="block text-sm font-medium" :class="kind === 'super' ? 'text-gray-300' : 'text-gray-700 dark:text-gray-300'">Parola</label>
+            <label for="login-password" class="block text-sm font-medium text-gray-700">Parola</label>
             <button type="button" @click="forgot()" class="text-sm font-medium text-brand-500 hover:text-brand-600">Parolamı unuttum</button>
           </div>
           <div class="relative">
@@ -72,14 +73,14 @@
               :type="showPassword ? 'text' : 'password'"
               autocomplete="current-password"
               x-model="password"
-              class="h-11 w-full rounded-lg border bg-transparent py-2.5 ps-4 pe-12 text-sm shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden"
-              :class="kind === 'super' ? 'border-gray-700 text-white' : 'border-gray-300 text-gray-800 dark:border-gray-700 dark:text-white/90'"
+              class="h-11 w-full rounded-lg border border-gray-300 bg-white py-2.5 ps-4 pe-12 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden"
+              
             />
             <button
               type="button"
               @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Parolayı gizle' : 'Parolayı göster'"
-              class="absolute inset-y-0 end-0 flex w-11 items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              class="absolute inset-y-0 end-0 flex w-11 items-center justify-center text-gray-400 hover:text-gray-600"
             >
               <svg x-show="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
               <svg x-show="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.9 8.3 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6" /></svg>
@@ -87,7 +88,7 @@
           </div>
         </div>
 
-        <p x-show="error" x-text="error" class="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"></p>
+        <p x-show="error" x-text="error" class="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-600"></p>
 
         <button
           type="submit"
@@ -99,7 +100,7 @@
         </button>
       </form>
 
-      <button x-show="mode !== 'login'" type="button" @click="back()" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+      <button x-show="mode !== 'login'" type="button" @click="back()" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
         Girişe dön
       </button>
