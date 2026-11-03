@@ -2,12 +2,16 @@
   <!-- Status bar -->
   <div class="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800 dark:bg-white/3">
     <div class="flex flex-wrap items-center gap-2">
-      <span class="me-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+      <!-- Live (server) or demo data -->
+      <span
+        class="me-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+        :title="live.online ? 'Siparişler QR menüden ve garsonlardan anlık geliyor' : 'Sunucu kapalı; örnek verilerle çalışıyor'"
+      >
         <span class="relative flex h-2.5 w-2.5">
-          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-          <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+          <span x-show="live.online" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex h-2.5 w-2.5 rounded-full" :class="live.online ? 'bg-green-500' : 'bg-gray-400'"></span>
         </span>
-        Canlı
+        <span x-text="live.online ? 'Canlı' : 'Demo verisi'"></span>
       </span>
       <span class="rounded-lg bg-red-50 px-3 py-1.5 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">Bekleyen çağrı <b x-text="live.waitingCalls.length"></b></span>
       <span class="rounded-lg bg-green-50 px-3 py-1.5 text-sm text-green-700 dark:bg-green-500/10 dark:text-green-400">Yeni sipariş <b x-text="live.newOrderCount"></b></span>
@@ -59,7 +63,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18" /><path d="M5 18a7 7 0 0 1 14 0" /><path d="M12 11V8" /><path d="M10 8h4" /></svg>
           Garson Çağrıları
         </h3>
-        <a href="personeller.html" class="text-xs font-medium text-brand-500 hover:underline">Bildirim ayarları</a>
+        <a :href="$store.nav.to('personeller')" class="text-xs font-medium text-brand-500 hover:underline">Bildirim ayarları</a>
       </header>
       <div class="grid grid-cols-1 gap-2.5 px-3 pb-3 sm:grid-cols-2">
         <template x-for="c in calls" :key="c.id">

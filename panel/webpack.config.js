@@ -11,6 +11,14 @@ const { globSync } = require("glob");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const routes = require("./src/js/routes");
+
+// Page files by name ("menu", "super-isletme" …), for readable-address rewrites.
+const pageNames = new Set(
+  globSync("./src/pages/**/*.html", { posix: true }).map((f) =>
+    path.basename(f, ".html"),
+  ),
+);
 
 const INCLUDE_PATTERN =
   /<include\s+src=["'](.+?)["']\s*\/?>\s*(?:<\/include>)?/gis;
@@ -62,6 +70,9 @@ const generateHTMLPlugins = () => {
         template: filePath,
         favicon: "./src/images/logo/beecafe-mark.svg",
         inject: "body",
+        // Readable addresses are nested (/beecafe/menu); <base href="/"> keeps
+        // the pages' relative image, script and link paths pointing at the root.
+        base: "/",
       }),
     );
   });
@@ -82,9 +93,21 @@ module.exports = {
     ],
     hot: true,
     compress: true,
+    // Live service API (server/index.mjs); same origin for the panel and waiters' phones.
+    proxy: [{ context: ["/api"], target: "http://localhost:3000" }],
     historyApiFallback: {
       rewrites: [
         { from: /^\/$/, to: "/index.html" },
+        {
+          // Readable addresses: /beecafe/menu, /super/isletmeler/beecafe … (src/js/routes.js)
+          from: /^\/[^.]+$/,
+          to: (context) => {
+            const page = routes.resolve(context.parsedUrl.pathname, (name) =>
+              pageNames.has(name),
+            );
+            return page ? `/${page}.html` : context.parsedUrl.pathname + ".html";
+          },
+        },
         {
           from: /^\/[^.]+$/,
           to: (context) => context.parsedUrl.pathname + ".html",

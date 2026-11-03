@@ -1,5 +1,5 @@
 <!-- This allows screen readers to skip the sidebar and go directly to the main content. -->
-<a class="sr-only" href="#main-content">skip to the main content</a>
+<a class="sr-only" href="#main-content" @click.prevent="document.getElementById('main-content')?.scrollIntoView()">skip to the main content</a>
 <!-- Sidebar Backdrop (Mobile) -->
 <div
   x-cloak

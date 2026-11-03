@@ -1,9 +1,20 @@
+import { superBusinessUrl } from "../../routes";
+import { api } from "../../server";
+import { toast } from "../business/toast";
 import { daysLeft, demoBusinesses, formatDate, initials, MENU_HOST, packages, statuses, tintFor } from "./businesses";
 
 // Super panel: every business on the platform at a glance.
 export default function superBusinesses() {
   return {
     businesses: demoBusinesses,
+    async init() {
+      try {
+        this.businesses = await api("/api/super/businesses");
+      } catch (err) {
+        // no server: the demo list
+        if (err.status !== 0) toast(err.message, "error", "Yüklenemedi");
+      }
+    },
     statuses,
     packages,
     query: "",
@@ -13,13 +24,20 @@ export default function superBusinesses() {
     tintFor,
     daysLeft,
     formatDate,
+    url: (b) => superBusinessUrl(b ? b.slug : "yeni"),
 
     get filtered() {
       const q = this.query.trim().toLocaleLowerCase("tr-TR");
+      // Phone numbers match by digits, so "0535 444" finds "+90 535 444 55 66".
+      const digits = q.replace(/\D/g, "").replace(/^0/, "");
+      const phoneMatch = (b) =>
+        digits.length >= 3 && [b.owner.phone, b.phone].some((p) => p.replace(/\D/g, "").includes(digits));
       return this.businesses.filter(
         (b) =>
           (!this.statusFilter || b.status === this.statusFilter) &&
-          (!q || [b.name, b.owner.name, b.owner.email, b.owner.phone, b.phone, b.city].some((v) => v.toLocaleLowerCase("tr-TR").includes(q))),
+          (!q ||
+            phoneMatch(b) ||
+            [b.name, b.owner.name, b.owner.email, b.city].some((v) => v.toLocaleLowerCase("tr-TR").includes(q))),
       );
     },
     count(status) {

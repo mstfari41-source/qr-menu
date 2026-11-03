@@ -1,19 +1,27 @@
-<!-- SIDEBAR HEADER -->
+<!-- SIDEBAR HEADER: the business's own logo and name (set in the super panel) -->
 <div
   :class="sidebarToggle ? 'xl:justify-center' : 'justify-start'"
   class="sidebar-header flex items-center gap-2 py-7"
+  x-data="{ get biz() { return $store.session.business ?? { name: 'BeeCafe', logo: 'images/logo/beecafe-mark.svg' } } }"
 >
-  <a href="index.html" class="flex items-center gap-3">
+  <a :href="$store.nav.to('')" class="flex min-w-0 items-center gap-3">
     <span class="sr-only">Ana Sayfa</span>
-    <img class="h-11 w-auto shrink-0" src="./images/logo/beecafe-mark.svg" alt="" />
+    <template x-if="biz.logo">
+      <img class="h-11 w-auto max-w-12 shrink-0 object-contain" :src="biz.logo" alt="" />
+    </template>
+    <template x-if="!biz.logo">
+      <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-base font-bold text-white" x-text="biz.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toLocaleUpperCase('tr-TR')"></span>
+    </template>
     <!-- Wordmark: dark brown on light, white on dark -->
     <span
       style="font-family: Georgia, 'Times New Roman', serif"
-      class="logo text-[28px] leading-none tracking-tight text-[#2E1B17] dark:text-white"
-      :class="sidebarToggle ? 'xl:hidden' : ''"
+      class="logo truncate text-[28px] leading-none tracking-tight text-[#2E1B17] dark:text-white"
+      :class="[sidebarToggle ? 'xl:hidden' : '', biz.name.length > 12 ? 'text-xl' : '']"
       aria-hidden="true"
-      ><b class="font-bold">Bee</b>Cafe</span
     >
+      <template x-if="biz.name === 'BeeCafe'"><span><b class="font-bold">Bee</b>Cafe</span></template>
+      <template x-if="biz.name !== 'BeeCafe'"><span x-text="biz.name"></span></template>
+    </span>
   </a>
 </div>
 <!-- SIDEBAR HEADER -->

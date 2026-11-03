@@ -2,9 +2,9 @@
 <div>
   <ul class="mb-6 flex flex-col gap-1">
     <!-- Menu Item Ana Sayfa -->
-    <li>
+    <li x-show="$store.session.can('dashboard')">
       <a
-        href="index.html"
+        :href="$store.nav.to('')"
         class="group menu-item"
         :class=" page === 'ecommerce' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -36,9 +36,9 @@
     <!-- Menu Item Ana Sayfa -->
 
     <!-- Menu Item Canlı Servis -->
-    <li>
+    <li x-show="$store.session.can('live')">
       <a
-        href="canli-servis.html"
+        :href="$store.nav.to('canli-servis')"
         class="group menu-item"
         :class="page === 'live' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -85,9 +85,9 @@
     <!-- Menu Item Canlı Servis -->
 
     <!-- Menu Item Garson Ekranı (will move to its own app later) -->
-    <li>
+    <li x-show="$store.session.can('waiter')">
       <a
-        href="garson.html"
+        :href="$store.nav.to('garson-ekrani')"
         class="group menu-item"
         :class="page === 'waiter' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -118,9 +118,9 @@
     <!-- Menu Item Garson Ekranı -->
 
     <!-- Menu Item Menü -->
-    <li>
+    <li x-show="$store.session.can('menu')">
       <a
-        href="menu.html"
+        :href="$store.nav.to('menu')"
         class="group menu-item"
         :class="page === 'menu' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -151,9 +151,9 @@
     <!-- Menu Item Menü -->
 
     <!-- Menu Item Story -->
-    <li>
+    <li x-show="$store.session.can('story')">
       <a
-        href="story.html"
+        :href="$store.nav.to('story')"
         class="group menu-item"
         :class="page === 'story' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -182,9 +182,9 @@
     <!-- Menu Item Story -->
 
     <!-- Menu Item Menü Ayarları -->
-    <li>
+    <li x-show="$store.session.can('menuSettings')">
       <a
-        href="menu-ayarlari.html"
+        :href="$store.nav.to('menu-ayarlari')"
         class="group menu-item"
         :class="page === 'menuSettings' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -215,9 +215,9 @@
     <!-- Menu Item Menü Ayarları -->
 
     <!-- Menu Item Yapay Zekâ Ayarları -->
-    <li>
+    <li x-show="$store.session.can('ai')">
       <a
-        href="yapay-zeka.html"
+        :href="$store.nav.to('yapay-zeka')"
         class="group menu-item"
         :class="page === 'aiSettings' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -247,9 +247,9 @@
     <!-- Menu Item Yapay Zekâ Ayarları -->
 
     <!-- Menu Item QR İşlemleri -->
-    <li>
+    <li x-show="$store.session.can('qr')">
       <a
-        href="qr-islemleri.html"
+        :href="$store.nav.to('qr-islemleri')"
         class="group menu-item"
         :class="page === 'qr' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -281,9 +281,9 @@
     <!-- Menu Item QR İşlemleri -->
 
     <!-- Menu Item Satışlar -->
-    <li>
+    <li x-show="$store.session.can('sales')">
       <a
-        href="satislar.html"
+        :href="$store.nav.to('satislar')"
         class="group menu-item"
         :class="page === 'sales' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -314,9 +314,9 @@
     <!-- Menu Item Satışlar -->
 
     <!-- Menu Item Personeller -->
-    <li>
+    <li x-show="$store.session.can('staff')">
       <a
-        href="personeller.html"
+        :href="$store.nav.to('personeller')"
         class="group menu-item"
         :class="page === 'staff' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -350,7 +350,7 @@
     <!-- Menu Item Yetkilendirme (owner only) -->
     <li x-show="$store.session.isOwner">
       <a
-        href="yetkiler.html"
+        :href="$store.nav.to('yetkilendirme')"
         class="group menu-item"
         :class="page === 'permissions' ? 'menu-item-active' : 'menu-item-inactive'"
       >
@@ -382,7 +382,7 @@
 
     <!-- Demo shortcut to the platform owner's super panel (not shown to real businesses) -->
     <li>
-      <a href="super-isletmeler.html" class="group menu-item menu-item-inactive">
+      <a href="/super/isletmeler" class="group menu-item menu-item-inactive">
         <svg class="menu-item-icon-inactive" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
           <path d="M12 8v4l2.5 1.5" />
@@ -392,9 +392,9 @@
     </li>
 
     <!-- Menu Item Calendar -->
-    <li>
+    <li x-show="$store.session.can('calendar')">
       <a
-        href="calendar.html"
+        :href="$store.nav.to('takvim')"
         @click="selected = (selected === 'Calendar' ? '':'Calendar')"
         class="group menu-item"
         :class=" (selected === 'Calendar') && (page === 'calendar') ? 'menu-item-active' : 'menu-item-inactive'"
@@ -428,7 +428,7 @@
     <!-- Menu Item Profile -->
     <li>
       <a
-        href="profile.html"
+        :href="$store.nav.to('profil')"
         @click="selected = (selected === 'Profile' ? '':'Profile')"
         class="group menu-item"
         :class=" (selected === 'Profile') && (page === 'profile') ? 'menu-item-active' : 'menu-item-inactive'"

@@ -52,6 +52,12 @@ import staff from "./components/business/staff";
 import todayNotes from "./components/business/today-notes";
 import storyEditor from "./components/business/story-editor";
 import login from "./components/super/login";
+import { businessUrl, currentBusiness } from "./routes";
+import { registerSession } from "./session";
+import { qrMenuUrl } from "./server";
+import { initNotes } from "./components/business/notes-store";
+import { registerPanelStores } from "./stores";
+import { toast } from "./components/business/toast";
 import superBusiness from "./components/super/super-business";
 import superBusinesses from "./components/super/super-businesses";
 import { applyThemeScheduleEarly, registerThemeStore, startThemeSchedule } from "./components/business/theme-schedule";
@@ -100,13 +106,29 @@ Alpine.data("aiSettings", aiSettings);
 Alpine.data("businessProfile", businessProfile);
 Alpine.data("dailyPick", dailyPick);
 Alpine.store("menu", { url: MENU_URL });
-registerLiveStore(Alpine);
+// The customer menu for this business ("Menüyü görüntüle"), reachable from phones too.
+qrMenuUrl().then((url) => (Alpine.store("menu").url = url));
+// Sign-in screens (data-area="auth") and the super panel (data-area="super") get no
+// live orders or calls; the waiter's own screen (data-area="waiter") does.
+// Calendar reminders are for the business panel only.
+const area = document.body.dataset.area;
+const inBusinessPanel = !area;
+registerLiveStore(Alpine, { simulate: !area || area === "waiter" });
 registerNoticesStore(Alpine);
-// QR menu features that can be switched off from the panel (demo: per page load).
-Alpine.store("features", { waiter: true, cart: true });
+// Settings, home page picks and staff shared by several screens (saved on the server).
+registerPanelStores(Alpine, { save: inBusinessPanel });
 registerThemeStore(Alpine);
-// Signed-in user. Demo: always the business owner, who alone sees the permissions screen.
-Alpine.store("session", { name: "Ahmet Yılmaz", role: "owner", get isOwner() { return this.role === "owner"; } });
+// Readable addresses for links: :href="$store.nav.to('menu')" -> /beecafe/menu
+Alpine.store("nav", {
+  business: currentBusiness(),
+  to(page = "") {
+    return businessUrl(page, this.business);
+  },
+});
+// Signed-in user; panel pages without a sign-in go to their sign-in screen.
+registerSession(Alpine, area);
+// A save that did not reach the server is always shown.
+window.addEventListener("save-failed", (e) => toast(e.detail, "error", "Kaydedilemedi"));
 Alpine.data("dashboard", dashboard);
 Alpine.data("languageSwitcher", languageSwitcher);
 Alpine.data("liveService", liveService);
@@ -132,8 +154,8 @@ Alpine.start();
 // Panel switches to dark mode by itself in the chosen hours.
 startThemeSchedule(Alpine);
 
-// Calendar reminders pop up on every panel page.
-startReminders();
+// Calendar notes come from the server; their reminders pop up on every business panel page.
+if (inBusinessPanel) initNotes().finally(startReminders);
 
 // Click a product, category or staff photo to see it large.
 startImageZoom();

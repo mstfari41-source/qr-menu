@@ -1,4 +1,5 @@
 import { products, slots, currentDayPart } from "./menu-data";
+import { bizApi } from "../../server";
 
 // Demo sales for the last year, seeded so every page load shows the same numbers.
 export const TABLE_COUNT = 12;
@@ -69,6 +70,30 @@ function buildSales() {
 
 export const sales = buildSales();
 export const completedSales = sales.filter((s) => s.status === "Tamamlandı");
+
+// Real sales: delivered (Tamamlandı) and cancelled (İptal) orders from the server.
+// They replace the demo sales in place, so every screen using these lists sees them.
+// Resolves to false when the server is not running (the demo sales stay).
+export async function loadSales(days = 400) {
+  try {
+    const { orders } = await bizApi(`/sales?days=${days}`);
+    const real = orders.map((o) => ({
+      no: o.no,
+      date: new Date(o.createdAt),
+      table: o.table,
+      lines: o.lines,
+      total: o.total,
+      payment: "",
+      status: o.status === "delivered" ? "Tamamlandı" : "İptal",
+      byWaiter: o.byWaiter,
+    }));
+    sales.splice(0, sales.length, ...real);
+    completedSales.splice(0, completedSales.length, ...real.filter((s) => s.status === "Tamamlandı"));
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 export const daysAgo = (n) => new Date(startOfDay(new Date()).getTime() - n * DAY);

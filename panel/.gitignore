@@ -10,3 +10,6 @@ build
 .env*
 !.env.example
 .DS_Store
+
+# live service database (server/index.mjs)
+server/data

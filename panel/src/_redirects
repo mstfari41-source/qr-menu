@@ -26,3 +26,25 @@
 /500.html               /error-500           301
 /503                    /error-503           301
 /503.html               /error-503           301
+
+# Readable addresses (keep in sync with src/js/routes.js). 200 = serve the page, keep the address.
+/super                          /super-isletmeler   200
+/super/giris                    /super-giris        200
+/super/isletmeler               /super-isletmeler   200
+/super/isletmeler/:isletme      /super-isletme      200
+/:isletme/garson/:garson        /garson-ekrani      200
+/:isletme/giris                 /signin             200
+/:isletme/canli-servis          /canli-servis       200
+/:isletme/garson-ekrani         /garson             200
+/:isletme/menu                  /menu               200
+/:isletme/story                 /story              200
+/:isletme/menu-ayarlari         /menu-ayarlari      200
+/:isletme/yapay-zeka            /yapay-zeka         200
+/:isletme/qr-islemleri          /qr-islemleri       200
+/:isletme/satislar              /satislar           200
+/:isletme/personeller           /personeller        200
+/:isletme/yetkilendirme         /yetkiler           200
+/:isletme/takvim                /calendar           200
+/:isletme/profil                /profile            200
+# Business home last, so it does not swallow the rules above.
+/:isletme                       /index              200

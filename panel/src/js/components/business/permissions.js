@@ -1,5 +1,6 @@
 import { demoStaff } from "./staff";
 import { toast } from "./toast";
+import { bizApi } from "../../server";
 
 // Owner-only screen: which staff can sign in to the panel and what they may do there.
 // Demo only: changes live until the page is reloaded.
@@ -100,6 +101,14 @@ function seed() {
   });
 }
 
+// A staff member who has never been given panel access.
+const newPerson = (s) => {
+  const preset = presetFor(s.role) ?? presets.at(-1);
+  return { id: s.id, name: s.name, role: s.role, photo: s.photo, access: false, perms: { ...preset.perms }, actions: { ...preset.actions } };
+};
+// What is saved: no e-mail or password (those live in the login accounts).
+const toSave = (people) => people.map(({ email, newPassword, hasPassword, invited, ...p }) => p);
+
 export default function permissions() {
   const people = seed();
   return {
@@ -110,6 +119,40 @@ export default function permissions() {
     people,
     selectedId: people.find((p) => p.access)?.id ?? people[0].id,
     saved: JSON.stringify(people),
+    online: false,
+    saving: false,
+
+    // People come from the saved staff list; their access from the saved permissions;
+    // their e-mail and whether a password is set from the login accounts.
+    async init() {
+      try {
+        const [team, perms, logins] = await Promise.all([
+          bizApi("/team"),
+          bizApi("/docs/permissions").catch((err) => (err.status === 404 ? { people: [] } : Promise.reject(err))),
+          bizApi("/staff-logins"),
+        ]);
+        const staff = team.staff.length ? team.staff : demoStaff;
+        this.people = staff.map((s) => {
+          const savedPerson = perms.people.find((p) => String(p.id) === String(s.id));
+          const login = logins.find((l) => String(l.staffId) === String(s.id));
+          return {
+            ...newPerson(s),
+            ...savedPerson,
+            name: s.name,
+            role: s.role,
+            photo: s.photo,
+            email: login?.email ?? "",
+            hasPassword: !!login?.hasPassword,
+            newPassword: "",
+          };
+        });
+        this.selectedId = this.people.find((p) => p.access)?.id ?? this.people[0]?.id;
+        this.saved = JSON.stringify(this.people);
+        this.online = true;
+      } catch {
+        // no server (or no permission): the demo list
+      }
+    },
 
     get isOwner() {
       return this.$store.session.isOwner;
@@ -150,17 +193,38 @@ export default function permissions() {
     toggleAccess() {
       const p = this.person;
       p.access = !p.access;
-      if (p.access && !p.email) p.email = `${slug(p.name)}@beecafe.com.tr`;
+      if (p.access && !p.email) p.email = `${slug(p.name)}@${this.$store.session.business?.slug ?? "beecafe"}.com.tr`;
     },
-    invite() {
+    async save() {
       const p = this.person;
-      if (!/^\S+@\S+\.\S+$/.test(p.email)) return toast("Geçerli bir e-posta adresi girin.", "error", "E-posta eksik");
-      p.invited = true;
-      toast(`${p.email} adresine giriş daveti gönderildi.`, "success", "Davet gönderildi");
-    },
-    save() {
-      this.saved = JSON.stringify(this.people);
-      toast(`${this.person.name} için yetkiler güncellendi.`, "success", "Yetkiler kaydedildi");
+      if (p.access && !/^\S+@\S+\.\S+$/.test(p.email)) return toast("Geçerli bir giriş e-postası girin.", "error", "E-posta eksik");
+      if (p.newPassword && p.newPassword.length < 8) return toast("Parola en az 8 karakter olmalı.", "error", "Parola kısa");
+      if (!this.online) {
+        this.saved = JSON.stringify(this.people);
+        return toast(`${p.name} için yetkiler güncellendi.`, "success", "Yetkiler kaydedildi");
+      }
+      this.saving = true;
+      try {
+        await bizApi("/docs/permissions", { method: "PUT", body: { people: toSave(this.people) } });
+        if (p.access && p.email) {
+          const login = await bizApi("/staff-logins", {
+            method: "POST",
+            body: { staffId: p.id, name: p.name, email: p.email, password: p.newPassword || undefined },
+          });
+          p.hasPassword = login.hasPassword;
+          p.newPassword = "";
+        }
+        this.saved = JSON.stringify(this.people);
+        toast(
+          p.access && !p.hasPassword ? `${p.name} için parola belirlenmedi; giriş yapamaz.` : `${p.name} için yetkiler güncellendi.`,
+          p.access && !p.hasPassword ? "error" : "success",
+          "Yetkiler kaydedildi",
+        );
+      } catch (err) {
+        toast(err.message, "error", "Kaydedilemedi");
+      } finally {
+        this.saving = false;
+      }
     },
     reset() {
       const before = JSON.parse(this.saved);

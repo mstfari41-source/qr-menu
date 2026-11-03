@@ -1,3 +1,4 @@
+import { businessUrl } from "../../routes";
 import { loadNotes, saveNotes, remindAt } from "./notes-store";
 
 // Checks calendar notes on every panel page and shows a pop-up when a
@@ -38,7 +39,7 @@ function showReminder(note) {
         <div class="mt-3 flex gap-2">
           <button type="button" data-act="done" class="rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-600">Tamamlandı</button>
           <button type="button" data-act="close" class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">Kapat</button>
-          <a href="calendar.html" class="ms-auto self-center text-xs font-medium text-brand-500 hover:underline">Takvimde aç</a>
+          <a href="${businessUrl("takvim")}" class="ms-auto self-center text-xs font-medium text-brand-500 hover:underline">Takvimde aç</a>
         </div>
       </div>
     </div>`;
@@ -61,7 +62,7 @@ function showReminder(note) {
     type: "reminder",
     title: note.title,
     text: [when, note.note].filter(Boolean).join(" · "),
-    link: "calendar.html",
+    link: businessUrl("takvim"),
   });
 
   // Also show a system notification when the browser allows it (works in a background tab).

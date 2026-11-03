@@ -1,0 +1,2039 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>MA Coffee</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <!--
+  FOTOĞRAFLAR
+  Bu dosyanın yanına "images" adında bir klasör aç ve fotoğrafları şu adlarla koy (.jpg):
+
+  Logo:        images/logo.jpg
+  Kategoriler: images/kahvalti.jpg, kahve.jpg, burger.jpg, pizza.jpg, tatli.jpg, icecek.jpg
+  Ürünler:     aşağıdaki PRODUCTS listesindeki id değeri = dosya adı
+               (örnek: images/kahvalti-menemen.jpg)
+
+  Fotoğraf yoksa o alanda ürünün baş harfi görünür, sayfa bozulmaz.
+  Menü sayfasına masa numarası eklemek için: index.html?masa=5
+  Dili adresten seçmek için: index.html?dil=en  (tr, en, de, ru)
+-->
+    <style>
+      :root {
+        --ink: #1f1f1f;
+        --muted: #8a8a8a;
+        --line: #ececec;
+        --soft: #f6f6f6;
+        --accent: #f08a24;
+        --accent-soft: #fff3e6;
+        --star: #ff9500;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: #f1f1f1;
+        color: var(--ink);
+        font-family:
+          "Urbanist",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+      button {
+        font-family: inherit;
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      #app {
+        max-width: 430px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background: #fff;
+        padding-bottom: 160px;
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 16px 14px;
+      }
+      .top .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .top h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .top small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex: none;
+      }
+      .ibtn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: #fff;
+        display: grid;
+        place-items: center;
+        position: relative;
+        cursor: pointer;
+        flex: none;
+      }
+      .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        display: grid;
+        place-items: center;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-align: center;
+        position: relative;
+        margin: 0 0 14px;
+        padding: 28px 16px 4px;
+      }
+      .brand .tools {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+      }
+      .welcome {
+        margin: 0 16px 12px;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .brand .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.15;
+      }
+      .brand small {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .blogo {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex: none;
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+      .blogo.ph {
+        font-size: 32px;
+      }
+
+      .sec {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 16px 12px;
+      }
+      #app.v-home {
+        background: #fafafa;
+      }
+      .v-home .list {
+        background: #fff;
+        margin: 0 16px;
+        padding: 0 14px;
+        border-radius: 18px;
+      }
+      .cats {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 16px;
+        margin-bottom: 24px;
+      }
+      .card {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 80px;
+        border: 0;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+        cursor: pointer;
+        text-align: left;
+        padding: 0;
+        box-shadow: 0 4px 12px rgba(80, 50, 20, 0.12);
+      }
+      .cimg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 64%;
+        height: 100%;
+        object-fit: cover;
+        -webkit-mask-image: linear-gradient(to right, transparent, #000 60%);
+        mask-image: linear-gradient(to right, transparent, #000 60%);
+      }
+      .card .txt {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        padding: 0 18px;
+        max-width: 64%;
+      }
+      .card b {
+        display: block;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      .card small {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .stories {
+        display: flex;
+        gap: 10px;
+        padding: 0 16px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .stories::-webkit-scrollbar {
+        display: none;
+      }
+      .story {
+        flex: none;
+        width: 60px;
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        scroll-snap-align: start;
+        text-align: center;
+      }
+      .ring {
+        display: block;
+        width: 60px;
+        height: 60px;
+        padding: 3px;
+        border-radius: 50%;
+        border: 2px solid var(--accent);
+        margin-bottom: 6px;
+      }
+      .story.seen .ring {
+        border-color: #c9bfb4;
+      }
+      .simg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .simg.ph {
+        font-size: 18px;
+      }
+      .sname {
+        display: block;
+        font-size: 11px;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .chips {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 0 16px 4px;
+        margin-bottom: 10px;
+      }
+      .chip {
+        flex: none;
+        height: 38px;
+        padding: 0 18px;
+        border-radius: 19px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .chip.on {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .list {
+        padding: 0 16px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .row:last-child {
+        border-bottom: 0;
+      }
+      .rimg {
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        object-fit: cover;
+        flex: none;
+      }
+      .rinfo {
+        flex: 1;
+        min-width: 0;
+      }
+      .rinfo b {
+        display: block;
+        font-weight: 500;
+        font-size: 15px;
+      }
+      .rinfo small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin: 2px 0 4px;
+      }
+      .meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+      .star {
+        color: var(--star);
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .qty {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+      }
+      .qty .n {
+        min-width: 14px;
+        text-align: center;
+      }
+      .qb {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: #fff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        padding: 0;
+      }
+      .qb.add {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      .ph {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 22px;
+      }
+      .cimg.ph {
+        font-size: 30px;
+      }
+
+      .sum {
+        margin: 8px 16px 0;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+      .sum div {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        color: var(--muted);
+      }
+      .sum .t {
+        color: var(--ink);
+        font-size: 18px;
+        font-weight: 600;
+        padding-top: 10px;
+      }
+      .cta {
+        display: block;
+        width: calc(100% - 32px);
+        margin: 18px 16px 0;
+        height: 52px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .cta.ghost {
+        background: #fff;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .empty {
+        padding: 48px 24px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .empty p {
+        margin: 0 0 6px;
+        color: var(--ink);
+        font-size: 17px;
+        font-weight: 500;
+      }
+      .empty .cta {
+        width: 100%;
+        margin: 22px 0 0;
+      }
+
+      .bar {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: max(12px, env(safe-area-inset-bottom));
+        width: calc(min(430px, 100%) - 24px);
+        height: 54px;
+        background: var(--ink);
+        color: #fff;
+        border: 0;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .bar b {
+        font-weight: 600;
+      }
+
+      .nocart .qty,
+      .nocart [data-act="popadd"],
+      .nocart [data-act="dtadd"],
+      .noratings .star,
+      .nostories .stories,
+      .nodaily .feat {
+        display: none !important;
+      }
+      .feat {
+        margin: 0 16px 24px;
+        background: #fff;
+        border: 1.5px solid var(--accent);
+        border-radius: 18px;
+        padding: 12px 14px 4px;
+        box-shadow: 0 4px 12px rgba(80, 50, 20, 0.12);
+      }
+      .fhead {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .fhead b {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+      .feat .row {
+        border-bottom: 0;
+        padding: 10px 0 8px;
+      }
+
+      .ov {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        background: rgba(30, 18, 8, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .sheet {
+        position: relative;
+        width: min(380px, 100%);
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        background: #fff;
+        border-radius: 24px;
+        padding: 14px 14px 18px;
+        box-shadow: 0 12px 40px rgba(30, 18, 8, 0.3);
+        animation: pop 0.25s ease-out;
+      }
+      .puimg {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 16px;
+        display: block;
+        margin-bottom: 14px;
+      }
+      .puimg.ph {
+        font-size: 48px;
+      }
+      .xbtn {
+        position: absolute;
+        top: 22px;
+        right: 22px;
+        z-index: 1;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 0;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      }
+      .pwhy {
+        margin: 0 4px 4px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+      .sheet h2 {
+        margin: 0 4px 10px;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .pinfo {
+        margin: 0 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .pinfo b {
+        font-weight: 500;
+        font-size: 16px;
+      }
+      .pdesc {
+        margin: 2px 4px 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sheet .cta {
+        width: calc(100% - 8px);
+        margin: 16px 4px 0;
+      }
+      @keyframes pop {
+        from {
+          transform: scale(0.94);
+          opacity: 0;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sheet {
+          animation: none;
+        }
+      }
+
+      .tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+      }
+      .lang {
+        position: relative;
+      }
+      .flag {
+        display: block;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex: none;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+      }
+      .flag svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .lbtn {
+        padding: 0;
+      }
+      .lmenu {
+        position: absolute;
+        right: 0;
+        top: 48px;
+        z-index: 5;
+        min-width: 176px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 6px;
+        box-shadow: 0 8px 28px rgba(30, 18, 8, 0.22);
+      }
+      .lopt {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 10px;
+        border: 0;
+        background: none;
+        border-radius: 12px;
+        font-size: 15px;
+        cursor: pointer;
+        text-align: left;
+      }
+      .lopt.on {
+        background: var(--accent-soft);
+      }
+      .lopt .flag {
+        width: 20px;
+        height: 20px;
+      }
+
+      .waiter {
+        position: fixed;
+        z-index: 6;
+        bottom: calc(16px + env(safe-area-inset-bottom));
+        right: max(16px, calc((100vw - 430px) / 2 + 16px));
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--accent);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(240, 138, 36, 0.45);
+      }
+      .cartfab {
+        position: fixed;
+        z-index: 6;
+        bottom: calc(84px + env(safe-area-inset-bottom));
+        right: max(16px, calc((100vw - 430px) / 2 + 16px));
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--ink);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+      }
+      .cartfab svg {
+        width: 24px;
+        height: 24px;
+      }
+      .cartfab .badge {
+        top: -3px;
+        right: -3px;
+        border: 2px solid #fff;
+        box-sizing: content-box;
+      }
+      .row {
+        cursor: pointer;
+      }
+      .dsec {
+        margin: 18px 4px 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+      .dtxt {
+        margin: 6px 4px 0;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .ings {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 8px 4px 0;
+      }
+      .ing {
+        background: var(--accent-soft);
+        color: #8a4b0d;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .wov {
+        padding: 20px 20px 20vh;
+      }
+      .wsheet {
+        width: min(320px, 100%);
+        box-sizing: border-box;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 22px;
+        padding: 26px 22px 22px;
+        text-align: center;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.32);
+      }
+      .wsheet .wico {
+        margin: 0 auto 12px;
+        color: var(--accent);
+        line-height: 0;
+      }
+      .wsheet .wico svg {
+        width: 34px;
+        height: 34px;
+      }
+      .wsheet .xbtn {
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+        box-shadow: none;
+      }
+      .wq {
+        margin: 0 0 20px;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.45;
+      }
+      .wsheet .wbig {
+        display: block;
+        width: auto;
+        min-width: 170px;
+        height: 44px;
+        margin: 0 auto;
+        padding: 0 28px;
+        border-radius: 14px;
+        font-size: 15px;
+        font-weight: 600;
+        box-shadow: none;
+      }
+      .toast {
+        position: fixed;
+        z-index: 12;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(320px, calc(100% - 48px));
+        box-sizing: border-box;
+        background: var(--ink);
+        color: #fff;
+        padding: 22px 22px 20px;
+        border-radius: 22px;
+        font-size: 15px;
+        line-height: 1.4;
+        text-align: center;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.32);
+        pointer-events: none;
+      }
+      .toast .tick {
+        display: block;
+        margin: 0 auto 10px;
+        color: var(--accent);
+      }
+      .toast b {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script>
+      const CATS = [
+        { id: "kahvalti", n: "Kahvaltı", s: "Güne taze bir başlangıç" },
+        { id: "kahve", n: "Kahve", s: "Sıcak ve soğuk seçenekler" },
+        { id: "burger", n: "Burger", s: "El yapımı köfteli burgerler" },
+        { id: "pizza", n: "Pizza", s: "Elde açılmış hamur, bol malzeme" },
+        { id: "tatli", n: "Tatlı", s: "Tatlı bir mola için" },
+        { id: "icecek", n: "İçecek", s: "Serinleten seçenekler" },
+      ];
+
+      const PRODUCTS = [
+        {
+          id: "kahvalti-serpme",
+          c: "kahvalti",
+          n: "Serpme kahvaltı",
+          d: "2 kişilik, sınırsız çay",
+          p: 650,
+          r: 4.9,
+        },
+        {
+          id: "kahvalti-menemen",
+          c: "kahvalti",
+          n: "Menemen",
+          d: "Domates, biber, peynir",
+          p: 170,
+          r: 4.7,
+        },
+        {
+          id: "kahvalti-sucuklu",
+          c: "kahvalti",
+          n: "Sucuklu yumurta",
+          d: "Tereyağında, sıcak servis",
+          p: 185,
+          r: 4.6,
+        },
+
+        {
+          id: "kahve-latte",
+          c: "kahve",
+          n: "Latte",
+          d: "Çift shot espresso, sıcak süt",
+          p: 95,
+          r: 4.9,
+          pop: 1,
+        },
+        {
+          id: "kahve-americano",
+          c: "kahve",
+          n: "Americano",
+          d: "Yumuşak içimli filtre",
+          p: 80,
+          r: 4.5,
+        },
+        { id: "kahve-turk", c: "kahve", n: "Türk kahvesi", d: "Közde, lokum ile", p: 70, r: 4.8 },
+
+        {
+          id: "burger-smash",
+          c: "burger",
+          n: "Smash burger",
+          d: "Çift köfte, cheddar, turşu",
+          p: 240,
+          r: 4.8,
+          pop: 1,
+        },
+        {
+          id: "burger-aci",
+          c: "burger",
+          n: "Acılı burger",
+          d: "Jalapeño, acı sos",
+          p: 255,
+          r: 4.6,
+        },
+        {
+          id: "burger-tavuk",
+          c: "burger",
+          n: "Tavuk burger",
+          d: "Çıtır tavuk, marul, mayonez",
+          p: 215,
+          r: 4.4,
+        },
+
+        {
+          id: "pizza-margherita",
+          c: "pizza",
+          n: "Margherita",
+          d: "Domates, mozzarella, fesleğen",
+          p: 210,
+          r: 4.7,
+          pop: 1,
+        },
+        {
+          id: "pizza-karisik",
+          c: "pizza",
+          n: "Karışık pizza",
+          d: "Mantar, biber, zeytin, sosis",
+          p: 245,
+          r: 4.5,
+        },
+        {
+          id: "pizza-sucuklu",
+          c: "pizza",
+          n: "Sucuklu pizza",
+          d: "Sucuk, kaşar, közlenmiş biber",
+          p: 235,
+          r: 4.6,
+        },
+
+        {
+          id: "tatli-kunefe",
+          c: "tatli",
+          n: "Fıstıklı künefe",
+          d: "Sıcak servis, kaymak ile",
+          p: 220,
+          r: 4.9,
+          pop: 1,
+        },
+        {
+          id: "tatli-cheesecake",
+          c: "tatli",
+          n: "San Sebastian",
+          d: "Yumuşak iç, karamel sos",
+          p: 190,
+          r: 4.8,
+        },
+        {
+          id: "tatli-sutlac",
+          c: "tatli",
+          n: "Fırın sütlaç",
+          d: "Üzeri kızarmış, geleneksel",
+          p: 130,
+          r: 4.5,
+        },
+
+        {
+          id: "icecek-limonata",
+          c: "icecek",
+          n: "Ev yapımı limonata",
+          d: "Taze nane, buz",
+          p: 85,
+          r: 4.6,
+        },
+        { id: "icecek-ayran", c: "icecek", n: "Ayran", d: "Bakır kasede, köpüklü", p: 35, r: 4.3 },
+        {
+          id: "icecek-soguk-cay",
+          c: "icecek",
+          n: "Soğuk çay",
+          d: "Şeftali veya limon",
+          p: 60,
+          r: 4.2,
+        },
+      ];
+
+      const BRAND = { name: "MA Coffee", logo: "" }; // işletme adı ve logosu (süper panelden gelir)
+      const QP_START = new URLSearchParams(location.search);
+      // Panelden gelen ayarlar (Menü Ayarları, Canlı Servis, Ana Sayfa kartları)
+      const SET = { waiter: true, cart: true, ratings: true, stories: true, daily: true, cooldown: 60 };
+      // masa numarası sayfaya yazıldığı için yalnızca harf, rakam ve - kabul edilir
+      const TABLE =
+        (new URLSearchParams(location.search).get("masa") || "")
+          .replace(/[^\p{L}\p{N}-]/gu, "")
+          .slice(0, 10) || "12";
+
+      // Canlı servis sunucusu (panel/server/index.mjs): siparişler ve garson çağrıları
+      // işletme paneline (Canlı Servis) ve garsonların telefonlarına anında düşer.
+      // İşletme: ?isletme=beecafe (varsayılan beecafe). Sunucu bu bilgisayarda 3000 portunda.
+      const BUSINESS = (QP_START.get("isletme") || "beecafe").replace(/[^a-z0-9-]/g, "");
+      // Menü panel sunucusundan açılır (/m/?isletme=…) ve aynı adresteki API'yi kullanır.
+      // Yalnızca eski usul ayrı bir sunucudan (8000 portu) açılırsa bilgisayarın 3000 portuna gidilir.
+      const SERVER = location.port === "8000" ? `${location.protocol}//${location.hostname}:3000` : location.origin;
+      const API = `${SERVER}/api/${BUSINESS}`;
+      async function post(path, body) {
+        const res = await fetch(API + path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gönderilemedi");
+        return res.json();
+      }
+      const callWaiter = () => post("/calls", { table: TABLE });
+      const sendOrder = (lines) => post("/orders", { table: TABLE, lines });
+
+      const I = {
+        bell: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"/><path d="M5 18a7 7 0 0 1 14 0"/><path d="M12 11V8"/><path d="M10 8h4"/></svg>',
+        back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>',
+        bag: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+        close:
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+        plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+        minus:
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+        star: '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>',
+      };
+
+      const S = {
+        v: "home",
+        c: CATS[0].id,
+        lang: "tr",
+        lm: false,
+        toast: "",
+        waitUntil: 0,
+        sp: null,
+        seen: {},
+      };
+      let cart = {};
+      try {
+        cart = JSON.parse(localStorage.getItem("cart") || "{}");
+      } catch (e) {}
+      const save = () => {
+        try {
+          localStorage.setItem("cart", JSON.stringify(cart));
+        } catch (e) {}
+      };
+      const TL = (n) => n.toLocaleString("tr-TR") + " ₺";
+      const count = () => Object.values(cart).reduce((a, b) => a + b, 0);
+      const total = () => PRODUCTS.reduce((s, p) => s + (cart[p.id] || 0) * p.p, 0);
+      const byId = (id) => PRODUCTS.find((p) => p.id === id);
+      for (const id in cart) if (!byId(id) || !(cart[id] > 0)) delete cart[id]; // menüden kalkmış ürünleri sepetten at
+
+      /* ===== ÖNERİ AYARLARI (işletme buradan yönetir) ===== */
+      const CONFIG = {
+        focus: ["tatli-kunefe"], // bugün satışını artırmak istediğin ürün(ler)
+        focusBonus: 4, // öne çıkarma gücü: büyük sayı = daha kesin öne çıkar
+        margin: {
+          // kâr marjı 1-5 (yazılmayan ürün 3 sayılır)
+          "tatli-kunefe": 5,
+          "tatli-cheesecake": 5,
+          "kahve-latte": 5,
+          "icecek-limonata": 5,
+          "burger-smash": 4,
+        },
+        slots: {
+          // hangi kategori günün hangi saatinde uygun
+          kahvalti: ["sabah"],
+          kahve: ["sabah", "ogle", "aksam"],
+          burger: ["ogle", "aksam"],
+          pizza: ["ogle", "aksam"],
+          tatli: ["ogle", "aksam", "gece"],
+          icecek: ["ogle", "aksam"],
+        },
+        popup: true, // QR okutulunca açılan öneri penceresi
+        stories: [
+          // üstteki hikaye şeridi: öne çıkarmak istediğin ürünler (en fazla 10, bu sırayla)
+          "tatli-kunefe",
+          "burger-smash",
+          "pizza-margherita",
+          "kahve-latte",
+          "kahvalti-serpme",
+          "tatli-cheesecake",
+          "kahvalti-menemen",
+          "icecek-limonata",
+          "pizza-sucuklu",
+          "kahve-turk",
+        ],
+      };
+
+      /* Test için adres parametreleri: ?saat=19  ?odak=pizza-margherita  ?popup=0 */
+      const QP = new URLSearchParams(location.search);
+      if (QP.get("odak")) CONFIG.focus = QP.get("odak").split(",");
+      const hour = QP.get("saat") !== null ? Number(QP.get("saat")) : new Date().getHours();
+      const slot =
+        hour >= 5 && hour < 11
+          ? "sabah"
+          : hour < 16 && hour >= 11
+            ? "ogle"
+            : hour >= 16 && hour < 22
+              ? "aksam"
+              : "gece";
+
+      const fits = (cid) => (CONFIG.slots[cid] || []).includes(slot);
+
+      function dayJitter(id) {
+        // her gün değişen küçük fark: aynı ürün hep çıkmasın
+        const d = new Date();
+        const s = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + id;
+        let h = 0;
+        for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 1000;
+        return h / 1000;
+      }
+
+      function score(p) {
+        let s = p.r; // müşteri puanı
+        s += fits(p.c) ? 2 : -3; // saate uygunluk
+        if (CONFIG.focus.includes(p.id)) s += CONFIG.focusBonus; // bugünün hedef ürünü
+        s += ((CONFIG.margin[p.id] || 3) - 3) * 0.5; // kâr marjı
+        if (p.pop) s += 0.5; // popüler ürün
+        s += dayJitter(p.id); // günlük çeşitlilik
+        return s;
+      }
+
+      function reason(p) {
+        if (CONFIG.focus.includes(p.id)) return T("focus");
+        if (fits(p.c)) return T(slot);
+        return T("best");
+      }
+
+      const ranked = () => PRODUCTS.slice().sort((a, b) => score(b) - score(a));
+      const pick = (skipCart) => ranked().find((p) => !(skipCart && cart[p.id]));
+      const catsOrdered = () =>
+        CATS.slice().sort((a, b) => (fits(b.id) ? 1 : 0) - (fits(a.id) ? 1 : 0));
+
+      /* ===== DİLLER (bayraklı seçici) ===== */
+      const LANGS = [
+        { id: "tr", n: "Türkçe" },
+        { id: "en", n: "English" },
+        { id: "de", n: "Deutsch" },
+        { id: "ru", n: "Русский" },
+      ];
+
+      const UI = {
+        tr: {
+          welcome: "Hoş geldiniz, Masa {t}",
+          cats: "Kategoriler",
+          popular: "Popüler",
+          daily: "Günün önerisi",
+          spot: "Öne çıkan lezzet",
+          tryq: "Bunu denemek ister misiniz?",
+          add: "Sepete ekle",
+          close: "Kapat",
+          cart: "Sepet",
+          back: "Geri",
+          mycart: "Sepetim",
+          items: "ürün",
+          count: "Ürün sayısı",
+          total: "Toplam",
+          order: "Siparişi gönder",
+          tomenu: "Menüye dön",
+          empty: "Sepetin boş",
+          emptyd: "Menüden ürün ekleyerek başlayabilirsin.",
+          done: "Siparişiniz alındı",
+          doned: "Masa {t} için hazırlanıyor.",
+          waiter: "Garson çağır",
+          waitq: "{t} numaralı masaya garson çağırmak istiyor musunuz?",
+          waitok: "Garson çağrıldı, birazdan masanıza gelecek.",
+          waitwait: "Garson zaten çağrıldı.",
+          senderr: "Gönderilemedi. Lütfen tekrar deneyin ya da garsona haber verin.",
+          lang: "Dil",
+          about: "Hakkında",
+          ingr: "İçindekiler",
+          dec: "Azalt",
+          inc: "Ekle",
+          sabah: "Güne güzel başlamak için",
+          ogle: "Öğle molası için",
+          aksam: "Akşam keyfi için",
+          gece: "Günü tatlı kapatmak için",
+          best: "En çok beğenilenlerden",
+          focus: "Bugünün öne çıkan lezzeti",
+        },
+        en: {
+          welcome: "Welcome, Table {t}",
+          cats: "Categories",
+          popular: "Popular",
+          daily: "Today's pick",
+          spot: "Featured dish",
+          tryq: "Would you like to try this?",
+          add: "Add to cart",
+          close: "Close",
+          cart: "Cart",
+          back: "Back",
+          mycart: "My cart",
+          items: "items",
+          count: "Items",
+          total: "Total",
+          order: "Send order",
+          tomenu: "Back to menu",
+          empty: "Your cart is empty",
+          emptyd: "Add items from the menu to get started.",
+          done: "Order received",
+          doned: "Being prepared for Table {t}.",
+          waiter: "Call waiter",
+          waitq: "Do you want to call a waiter to Table {t}?",
+          waitok: "Waiter called. Someone will be at your table shortly.",
+          waitwait: "Your waiter has already been called.",
+          senderr: "Could not be sent. Please try again or tell a waiter.",
+          lang: "Language",
+          about: "About",
+          ingr: "Ingredients",
+          dec: "Remove one",
+          inc: "Add one",
+          sabah: "To start your day well",
+          ogle: "For a lunch break",
+          aksam: "For an evening treat",
+          gece: "To end the day sweetly",
+          best: "Among our most loved",
+          focus: "Today's featured dish",
+        },
+        de: {
+          welcome: "Willkommen, Tisch {t}",
+          cats: "Kategorien",
+          popular: "Beliebt",
+          daily: "Empfehlung des Tages",
+          spot: "Unser Highlight",
+          tryq: "Möchten Sie das probieren?",
+          add: "In den Warenkorb",
+          close: "Schließen",
+          cart: "Warenkorb",
+          back: "Zurück",
+          mycart: "Mein Warenkorb",
+          items: "Artikel",
+          count: "Artikel",
+          total: "Gesamt",
+          order: "Bestellung senden",
+          tomenu: "Zurück zur Speisekarte",
+          empty: "Ihr Warenkorb ist leer",
+          emptyd: "Fügen Sie Gerichte aus der Speisekarte hinzu.",
+          done: "Bestellung erhalten",
+          doned: "Wird für Tisch {t} zubereitet.",
+          waiter: "Kellner rufen",
+          waitq: "Möchten Sie einen Kellner an Tisch {t} rufen?",
+          waitok: "Kellner gerufen. Er kommt gleich an Ihren Tisch.",
+          waitwait: "Der Kellner wurde bereits gerufen.",
+          senderr: "Konnte nicht gesendet werden. Bitte erneut versuchen oder dem Kellner Bescheid geben.",
+          lang: "Sprache",
+          about: "Beschreibung",
+          ingr: "Zutaten",
+          dec: "Weniger",
+          inc: "Mehr",
+          sabah: "Für einen guten Start in den Tag",
+          ogle: "Für die Mittagspause",
+          aksam: "Für den Abend",
+          gece: "Für einen süßen Tagesausklang",
+          best: "Eines unserer beliebtesten Gerichte",
+          focus: "Highlight des Tages",
+        },
+        ru: {
+          welcome: "Добро пожаловать, стол {t}",
+          cats: "Категории",
+          popular: "Популярное",
+          daily: "Рекомендация дня",
+          spot: "Хит дня",
+          tryq: "Хотите попробовать?",
+          add: "В корзину",
+          close: "Закрыть",
+          cart: "Корзина",
+          back: "Назад",
+          mycart: "Моя корзина",
+          items: "поз.",
+          count: "Позиций",
+          total: "Итого",
+          order: "Отправить заказ",
+          tomenu: "Вернуться в меню",
+          empty: "Корзина пуста",
+          emptyd: "Добавьте блюда из меню, чтобы начать.",
+          done: "Заказ принят",
+          doned: "Готовится для стола {t}.",
+          waiter: "Позвать официанта",
+          waitq: "Вызвать официанта к столу {t}?",
+          waitok: "Официант вызван. Он скоро подойдёт к вашему столу.",
+          waitwait: "Официант уже вызван.",
+          senderr: "Не удалось отправить. Попробуйте ещё раз или скажите официанту.",
+          lang: "Язык",
+          about: "О блюде",
+          ingr: "Состав",
+          dec: "Меньше",
+          inc: "Больше",
+          sabah: "Для хорошего начала дня",
+          ogle: "Для обеденного перерыва",
+          aksam: "Для приятного вечера",
+          gece: "Чтобы сладко завершить день",
+          best: "Одно из самых любимых блюд",
+          focus: "Хит дня",
+        },
+      };
+
+      /* Kategori adları ve açıklamaları (Türkçesi CATS listesinde) */
+      const CT = {
+        en: {
+          kahvalti: ["Breakfast", "A fresh start to the day"],
+          kahve: ["Coffee", "Hot and cold options"],
+          burger: ["Burgers", "Handmade patty burgers"],
+          pizza: ["Pizza", "Hand-stretched dough, generous toppings"],
+          tatli: ["Desserts", "For a sweet break"],
+          icecek: ["Drinks", "Refreshing choices"],
+        },
+        de: {
+          kahvalti: ["Frühstück", "Frischer Start in den Tag"],
+          kahve: ["Kaffee", "Heiße und kalte Getränke"],
+          burger: ["Burger", "Hausgemachte Burger"],
+          pizza: ["Pizza", "Handgeformter Teig, reichlich Belag"],
+          tatli: ["Dessert", "Für eine süße Pause"],
+          icecek: ["Getränke", "Erfrischende Auswahl"],
+        },
+        ru: {
+          kahvalti: ["Завтрак", "Свежее начало дня"],
+          kahve: ["Кофе", "Горячие и холодные напитки"],
+          burger: ["Бургеры", "Бургеры ручной работы"],
+          pizza: ["Пицца", "Тесто ручной раскатки, много начинки"],
+          tatli: ["Десерты", "Для сладкой паузы"],
+          icecek: ["Напитки", "Освежающий выбор"],
+        },
+      };
+
+      /* Ürün adları ve açıklamaları (Türkçesi PRODUCTS listesinde) */
+      const PT = {
+        en: {
+          "kahvalti-serpme": ["Turkish breakfast spread", "For 2 people, unlimited tea"],
+          "kahvalti-menemen": ["Menemen", "Tomato, pepper, cheese"],
+          "kahvalti-sucuklu": ["Eggs with sucuk", "In butter, served hot"],
+          "kahve-latte": ["Latte", "Double espresso, steamed milk"],
+          "kahve-americano": ["Americano", "Smooth filter coffee"],
+          "kahve-turk": ["Turkish coffee", "Brewed on embers, with Turkish delight"],
+          "burger-smash": ["Smash burger", "Double patty, cheddar, pickles"],
+          "burger-aci": ["Spicy burger", "Jalapeño, hot sauce"],
+          "burger-tavuk": ["Chicken burger", "Crispy chicken, lettuce, mayo"],
+          "pizza-margherita": ["Margherita", "Tomato, mozzarella, basil"],
+          "pizza-karisik": ["Mixed pizza", "Mushroom, pepper, olives, sausage"],
+          "pizza-sucuklu": ["Sucuk pizza", "Sucuk, kashar cheese, roasted pepper"],
+          "tatli-kunefe": ["Pistachio künefe", "Served hot, with clotted cream"],
+          "tatli-cheesecake": ["San Sebastian cheesecake", "Soft centre, caramel sauce"],
+          "tatli-sutlac": ["Baked rice pudding", "Caramelised top, traditional"],
+          "icecek-limonata": ["Homemade lemonade", "Fresh mint, ice"],
+          "icecek-ayran": ["Ayran", "In a copper bowl, frothy"],
+          "icecek-soguk-cay": ["Iced tea", "Peach or lemon"],
+        },
+        de: {
+          "kahvalti-serpme": [
+            "Türkisches Frühstück (Serpme)",
+            "Für 2 Personen, Tee so viel Sie möchten",
+          ],
+          "kahvalti-menemen": ["Menemen", "Tomaten, Paprika, Käse"],
+          "kahvalti-sucuklu": ["Eier mit Sucuk", "In Butter gebraten, heiß serviert"],
+          "kahve-latte": ["Latte", "Doppelter Espresso, heiße Milch"],
+          "kahve-americano": ["Americano", "Milder Filterkaffee"],
+          "kahve-turk": ["Türkischer Kaffee", "Auf Glut gebrüht, mit Lokum"],
+          "burger-smash": ["Smash Burger", "Doppeltes Patty, Cheddar, Gewürzgurken"],
+          "burger-aci": ["Scharfer Burger", "Jalapeño, scharfe Soße"],
+          "burger-tavuk": ["Chicken Burger", "Knuspriges Hähnchen, Salat, Mayo"],
+          "pizza-margherita": ["Margherita", "Tomaten, Mozzarella, Basilikum"],
+          "pizza-karisik": ["Pizza Mista", "Pilze, Paprika, Oliven, Wurst"],
+          "pizza-sucuklu": ["Sucuk-Pizza", "Sucuk, Kaşar-Käse, geröstete Paprika"],
+          "tatli-kunefe": ["Künefe mit Pistazien", "Heiß serviert, mit Kaymak"],
+          "tatli-cheesecake": ["San-Sebastián-Käsekuchen", "Weicher Kern, Karamellsoße"],
+          "tatli-sutlac": [
+            "Gebackener Milchreis (Sütlaç)",
+            "Karamellisierte Oberfläche, traditionell",
+          ],
+          "icecek-limonata": ["Hausgemachte Limonade", "Frische Minze, Eis"],
+          "icecek-ayran": ["Ayran", "In der Kupferschale, schaumig"],
+          "icecek-soguk-cay": ["Eistee", "Pfirsich oder Zitrone"],
+        },
+        ru: {
+          "kahvalti-serpme": ["Турецкий завтрак «серпме»", "На двоих, чай без ограничений"],
+          "kahvalti-menemen": ["Менемен", "Помидоры, перец, сыр"],
+          "kahvalti-sucuklu": ["Яичница с суджуком", "На сливочном масле, подаётся горячей"],
+          "kahve-latte": ["Латте", "Двойной эспрессо, горячее молоко"],
+          "kahve-americano": ["Американо", "Мягкий фильтр-кофе"],
+          "kahve-turk": ["Турецкий кофе", "Сварен на углях, с рахат-лукумом"],
+          "burger-smash": ["Смэш-бургер", "Две котлеты, чеддер, маринованные огурцы"],
+          "burger-aci": ["Острый бургер", "Халапеньо, острый соус"],
+          "burger-tavuk": ["Куриный бургер", "Хрустящая курица, салат, майонез"],
+          "pizza-margherita": ["Маргарита", "Томаты, моцарелла, базилик"],
+          "pizza-karisik": ["Пицца ассорти", "Грибы, перец, оливки, колбаски"],
+          "pizza-sucuklu": ["Пицца с суджуком", "Суджук, сыр кашар, печёный перец"],
+          "tatli-kunefe": ["Кюнефе с фисташками", "Подаётся горячим, с каймаком"],
+          "tatli-cheesecake": ["Чизкейк «Сан-Себастьян»", "Нежная сердцевина, карамельный соус"],
+          "tatli-sutlac": [
+            "Запечённый рисовый пудинг",
+            "Румяная корочка, по традиционному рецепту",
+          ],
+          "icecek-limonata": ["Домашний лимонад", "Свежая мята, лёд"],
+          "icecek-ayran": ["Айран", "В медной чаше, с пенкой"],
+          "icecek-soguk-cay": ["Холодный чай", "Персик или лимон"],
+        },
+      };
+
+      const T = (k) => (UI[S.lang][k] ?? UI.tr[k]).replace("{t}", TABLE);
+      const pn = (p) => (PT[S.lang] && PT[S.lang][p.id] ? PT[S.lang][p.id][0] : p.n);
+      const pd = (p) => (PT[S.lang] && PT[S.lang][p.id] ? PT[S.lang][p.id][1] : p.d);
+      const cn = (c) => (CT[S.lang] && CT[S.lang][c.id] ? CT[S.lang][c.id][0] : c.n);
+      const cs = (c) => (CT[S.lang] && CT[S.lang][c.id] ? CT[S.lang][c.id][1] : c.s);
+
+      const starPts = (cx, cy, R, r) =>
+        Array.from({ length: 10 }, (_, i) => {
+          const a = Math.PI + (i * Math.PI) / 5,
+            q = i % 2 ? r : R;
+          return (cx + q * Math.cos(a)).toFixed(2) + "," + (cy + q * Math.sin(a)).toFixed(2);
+        }).join(" ");
+      const FLAGS = {
+        tr: `<rect width="30" height="20" fill="#E30A17"/><circle cx="12.8" cy="10" r="5" fill="#fff"/><circle cx="14.2" cy="10" r="4" fill="#E30A17"/><polygon fill="#fff" points="${starPts(19.2, 10, 2.5, 1)}"/>`,
+        en: `<rect width="30" height="20" fill="#012169"/><path d="M0 0L30 20M30 0L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0L30 20M30 0L0 20" stroke="#C8102E" stroke-width="1.6"/><path d="M15 0V20M0 10H30" stroke="#fff" stroke-width="6"/><path d="M15 0V20M0 10H30" stroke="#C8102E" stroke-width="3.4"/>`,
+        de: `<rect width="30" height="6.67" fill="#000"/><rect y="6.67" width="30" height="6.67" fill="#DD0000"/><rect y="13.33" width="30" height="6.67" fill="#FFCE00"/>`,
+        ru: `<rect width="30" height="6.67" fill="#fff"/><rect y="6.67" width="30" height="6.67" fill="#0039A6"/><rect y="13.33" width="30" height="6.67" fill="#D52B1E"/>`,
+      };
+      const flag = (id) =>
+        `<span class="flag"><svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${FLAGS[id]}</svg></span>`;
+
+      const savedLang = (() => {
+        try {
+          return localStorage.getItem("lang");
+        } catch (err) {
+          return null;
+        }
+      })();
+      const wantLang = QP.get("dil") || savedLang;
+      S.lang = LANGS.some((l) => l.id === wantLang) ? wantLang : "tr";
+      document.documentElement.lang = S.lang;
+
+      function img(src, alt, cls) {
+        return `<img class="${cls}" src="${src}" alt="${alt}" loading="lazy" onerror="ph(this)">`;
+      }
+      function ph(el) {
+        let h = 0;
+        for (const ch of el.alt) h = (h * 31 + ch.charCodeAt(0)) % 360;
+        const d = document.createElement("div");
+        d.className = el.className + " ph";
+        d.textContent = el.alt.charAt(0).toLocaleUpperCase(document.documentElement.lang || "tr");
+        d.style.background = `hsl(${h},60%,90%)`;
+        d.style.color = `hsl(${h},45%,32%)`;
+        el.replaceWith(d);
+      }
+
+      function cartBtn() {
+        const n = count();
+        return `<button class="ibtn" data-act="go" data-v="cart" aria-label="${T("cart")}">${I.bag}${n ? `<span class="badge">${n}</span>` : ""}</button>`;
+      }
+      function langUI() {
+        const cur = LANGS.find((l) => l.id === S.lang);
+        return `<div class="lang">
+    <button class="ibtn lbtn" data-act="lang" aria-label="${T("lang")}" aria-haspopup="true" aria-expanded="${S.lm}">${flag(cur.id)}</button>
+    ${S.lm ? `<div class="lmenu" role="menu">${LANGS.map((l) => `<button class="lopt${l.id === S.lang ? " on" : ""}" role="menuitem" data-act="setlang" data-l="${l.id}">${flag(l.id)}<span>${l.n}</span></button>`).join("")}</div>` : ""}
+  </div>`;
+      }
+      const tools = () => `<div class="tools">${langUI()}</div>`;
+      function topBack(title) {
+        return `<div class="top"><button class="ibtn" data-act="go" data-v="home" aria-label="${T("back")}">${I.back}</button><div class="grow"><h1>${title}</h1></div>${tools()}</div>`;
+      }
+
+      function row(p) {
+        const q = cart[p.id] || 0;
+        return `<div class="row" data-act="detail" data-id="${p.id}">
+    ${img(pimg(p), pn(p), "rimg")}
+    <div class="rinfo"><b>${pn(p)}</b><small>${pd(p)}</small>
+      <div class="meta"><span class="star">${I.star}${p.r.toFixed(1)}</span><span>${TL(p.p)}</span></div>
+    </div>
+    <div class="qty">
+      ${q ? `<button class="qb" data-act="sub" data-id="${p.id}" aria-label="${T("dec")}">${I.minus}</button><span class="n">${q}</span>` : ""}
+      <button class="qb add" data-act="add" data-id="${p.id}" aria-label="${T("inc")}">${I.plus}</button>
+    </div>
+  </div>`;
+      }
+
+      function homeResults() {
+        return `
+    <div class="stories">${CONFIG.stories
+      .map(byId)
+      .filter(Boolean)
+      .slice(0, 10)
+      .map(
+        (p) => `
+      <button class="story${S.seen[p.id] ? " seen" : ""}" data-act="story" data-id="${p.id}">
+        <span class="ring">${img(pimg(p), pn(p), "simg")}</span>
+        <span class="sname">${pn(p)}</span>
+      </button>`,
+      )
+      .join("")}
+    </div>
+    <div class="feat">
+      <div class="fhead"><b>${T("daily")}</b><span>${reason(FEAT)}</span></div>
+      ${row(FEAT)}
+    </div>
+    <h2 class="sec">${T("cats")}</h2>
+    <div class="cats">${catsOrdered()
+      .map(
+        (c) => `
+      <button class="card" data-act="go" data-v="list" data-c="${c.id}">
+        ${img(c.img || "images/" + c.id + ".jpg", cn(c), "cimg")}<span class="txt"><b>${cn(c)}</b><small>${cs(c)}</small></span>
+      </button>`,
+      )
+      .join("")}
+    </div>`;
+      }
+
+      function viewHome() {
+        return `
+    <div class="brand">
+      ${img(BRAND.logo || "images/logo.png", BRAND.name, "blogo")}
+      <h1>${BRAND.name}</h1>
+      ${tools()}
+    </div>
+    <p class="welcome">${T("welcome")}</p>
+    <div id="res">${homeResults()}</div>`;
+      }
+
+      function viewList() {
+        const cat = CATS.find((c) => c.id === S.c);
+        return `${topBack(cn(cat))}
+    <div class="chips">${CATS.map((c) => `<button class="chip${c.id === S.c ? " on" : ""}" data-act="go" data-v="list" data-c="${c.id}">${cn(c)}</button>`).join("")}</div>
+    <div class="list">${PRODUCTS.filter((p) => p.c === S.c)
+      .map(row)
+      .join("")}</div>`;
+      }
+
+      function viewCart() {
+        const ids = Object.keys(cart);
+        if (!ids.length) {
+          return `${topBack(T("mycart"))}<div class="empty"><p>${T("empty")}</p>${T("emptyd")}<button class="cta" data-act="go" data-v="home">${T("tomenu")}</button></div>`;
+        }
+        return `${topBack(T("mycart"))}
+    <div class="list">${ids.map((id) => row(byId(id))).join("")}</div>
+    <div class="sum">
+      <div><span>${T("count")}</span><span>${count()}</span></div>
+      <div class="t"><span>${T("total")}</span><span>${TL(total())}</span></div>
+    </div>
+    <button class="cta" data-act="order">${T("order")}</button>
+    <button class="cta ghost" data-act="go" data-v="home">${T("tomenu")}</button>`;
+      }
+
+      function viewDone() {
+        return `<div class="empty" style="padding-top:96px"><p>${T("done")}</p>${T("doned")}
+    <button class="cta" data-act="go" data-v="home">${T("tomenu")}</button></div>`;
+      }
+
+      function popup() {
+        const sp = S.sp ? byId(S.sp) : null;
+        const p = sp || (S.pop ? POP : null);
+        if (!p) return "";
+        const cat = CATS.find((c) => c.id === p.c);
+        return `<div class="ov" data-act="popclose">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pt">
+      <button class="xbtn" data-act="popclose" aria-label="${T("close")}">${I.close}</button>
+      ${img(pimg(p), pn(p), "puimg")}
+      <p class="pwhy">${sp ? cn(cat) : T("spot")}</p>
+      <h2 id="pt">${sp ? pn(p) : T("tryq")}</h2>
+      <div class="pinfo">${sp ? "" : `<b>${pn(p)}</b>`}<b>${TL(p.p)}</b></div>
+      <p class="pdesc">${pd(p)}</p>
+      <button class="cta" data-act="popadd" data-id="${p.id}">${T("add")}</button>
+    </div>
+  </div>`;
+      }
+
+      function waiterPopup() {
+        if (!S.wc) return "";
+        return `<div class="ov wov" data-act="waitclose">
+    <div class="sheet wsheet" role="dialog" aria-modal="true" aria-labelledby="wq">
+      <button class="xbtn" data-act="waitclose" aria-label="${T("close")}">${I.close}</button>
+      <div class="wico">${I.bell}</div>
+      <p class="wq" id="wq">${T("waitq")}</p>
+      <button class="cta wbig" data-act="waiter">${T("waiter")}</button>
+    </div>
+  </div>`;
+      }
+
+      /* Ürün detay penceresi: id: [Türkçe anlatım, İngilizce anlatım, içerik anahtarları]
+   (Almanca ve Rusça pencerede anlatım İngilizce gösterilir, içerik listesi 4 dilde çevrilidir) */
+      const ING = {
+        tea: ["Çay", "Tea", "Tee", "Чай"],
+        egg: ["Yumurta", "Egg", "Ei", "Яйцо"],
+        tomato: ["Domates", "Tomato", "Tomate", "Помидор"],
+        pepper: ["Biber", "Pepper", "Paprika", "Перец"],
+        cheese: ["Peynir", "Cheese", "Käse", "Сыр"],
+        butter: ["Tereyağı", "Butter", "Butter", "Масло"],
+        sucuk: ["Sucuk", "Sucuk sausage", "Sucuk-Wurst", "Суджук"],
+        olive: ["Zeytin", "Olives", "Oliven", "Оливки"],
+        honey: ["Bal", "Honey", "Honig", "Мёд"],
+        jam: ["Reçel", "Jam", "Marmelade", "Джем"],
+        cream: ["Kaymak", "Clotted cream", "Kaymak", "Каймак"],
+        cucumber: ["Salatalık", "Cucumber", "Gurke", "Огурец"],
+        milk: ["Süt", "Milk", "Milch", "Молоко"],
+        espresso: ["Espresso", "Espresso", "Espresso", "Эспрессо"],
+        water: ["Su", "Water", "Wasser", "Вода"],
+        filter: ["Filtre kahve", "Filter coffee", "Filterkaffee", "Фильтр-кофе"],
+        ground: [
+          "İnce çekilmiş kahve",
+          "Finely ground coffee",
+          "Fein gemahlener Kaffee",
+          "Тонкий помол кофе",
+        ],
+        delight: ["Lokum", "Turkish delight", "Lokum", "Лукум"],
+        patty: ["Dana köfte", "Beef patty", "Rindfleisch-Patty", "Говяжья котлета"],
+        cheddar: ["Cheddar", "Cheddar", "Cheddar", "Чеддер"],
+        pickle: ["Turşu", "Pickles", "Gewürzgurke", "Маринованные огурцы"],
+        bun: ["Brioche ekmek", "Brioche bun", "Brioche-Brötchen", "Булочка бриошь"],
+        lettuce: ["Marul", "Lettuce", "Salat", "Салат"],
+        jalapeno: ["Jalapeño", "Jalapeño", "Jalapeño", "Халапеньо"],
+        hotsauce: ["Acı sos", "Hot sauce", "Scharfe Soße", "Острый соус"],
+        chicken: ["Çıtır tavuk", "Crispy chicken", "Knuspriges Hähnchen", "Хрустящая курица"],
+        mayo: ["Mayonez", "Mayonnaise", "Mayonnaise", "Майонез"],
+        mozz: ["Mozzarella", "Mozzarella", "Mozzarella", "Моцарелла"],
+        basil: ["Fesleğen", "Basil", "Basilikum", "Базилик"],
+        dough: ["İnce hamur", "Thin dough", "Dünner Teig", "Тонкое тесто"],
+        mushroom: ["Mantar", "Mushrooms", "Pilze", "Грибы"],
+        sausage: ["Sosis", "Sausage", "Wurst", "Сосиски"],
+        kashar: ["Kaşar peyniri", "Kashar cheese", "Kaşar-Käse", "Сыр кашар"],
+        kadayif: ["Tel kadayıf", "Kadayif pastry", "Kadayif-Teig", "Кадаиф"],
+        pistachio: ["Antep fıstığı", "Pistachio", "Pistazien", "Фисташки"],
+        syrup: ["Şerbet", "Sugar syrup", "Zuckersirup", "Сироп"],
+        creamcheese: ["Krem peynir", "Cream cheese", "Frischkäse", "Сливочный сыр"],
+        fcream: ["Taze krema", "Fresh cream", "Frische Sahne", "Свежие сливки"],
+        caramel: ["Karamel sos", "Caramel sauce", "Karamellsoße", "Карамельный соус"],
+        rice: ["Pirinç", "Rice", "Reis", "Рис"],
+        sugar: ["Şeker", "Sugar", "Zucker", "Сахар"],
+        mint: ["Taze nane", "Fresh mint", "Frische Minze", "Свежая мята"],
+        lemon: ["Limon", "Lemon", "Zitrone", "Лимон"],
+        ice: ["Buz", "Ice", "Eis", "Лёд"],
+        yogurt: ["Yoğurt", "Yogurt", "Joghurt", "Йогурт"],
+        salt: ["Tuz", "Salt", "Salz", "Соль"],
+        peach: ["Şeftali", "Peach", "Pfirsich", "Персик"],
+        bread: ["Ekmek", "Bread", "Brot", "Хлеб"],
+      };
+      const DETAIL = {
+        "kahvalti-serpme": [
+          "Geleneksel Türk kahvaltısının tüm lezzetleri tek sofrada: peynir çeşitleri, zeytin, bal-kaymak, reçel, haşlanmış yumurta, domates, salatalık ve sıcak ekmek. İki kişilik servis edilir, çay sınırsızdır.",
+          "All the flavours of a traditional Turkish breakfast on one table: cheeses, olives, honey with clotted cream, jam, boiled eggs, fresh vegetables and warm bread. Serves two, with unlimited tea.",
+          "cheese olive honey cream jam egg tomato cucumber bread tea",
+        ],
+        "kahvalti-menemen": [
+          "Tereyağında yavaşça pişirilen domates ve biberin üzerine yumurta kırılarak hazırlanan klasik Türk kahvaltısı. Sıcak tavada, yanında ekmekle gelir.",
+          "A classic Turkish breakfast of eggs gently cooked with tomatoes and peppers in butter. Served in the hot pan with bread.",
+          "tomato pepper egg cheese butter bread",
+        ],
+        "kahvalti-sucuklu": [
+          "Tereyağında kızartılmış baharatlı sucuk dilimlerinin üzerine yumurta kırılır. Sıcak servis edilir, yanında ekmek bulunur.",
+          "Spicy sucuk slices fried in butter and topped with eggs. Served hot with bread.",
+          "egg sucuk butter bread",
+        ],
+        "kahve-latte": [
+          "Çift shot espresso ile buharla ısıtılmış sütün yumuşak bir uyumu. Üzerinde ince bir süt köpüğü bulunur.",
+          "A smooth blend of a double-shot espresso and steamed milk, finished with a thin layer of milk foam.",
+          "espresso milk",
+        ],
+        "kahve-americano": [
+          "Yumuşak içimli, hafif gövdeli filtre kahve. Gün boyu içilebilecek sade bir seçenek.",
+          "A smooth, light-bodied filter coffee. A simple choice for any time of day.",
+          "filter water",
+        ],
+        "kahve-turk": [
+          "İnce çekilmiş kahve, közde cezvede pişirilir. Yanında bir parça lokum ile servis edilir.",
+          "Finely ground coffee brewed in a cezve over embers, served with a piece of Turkish delight.",
+          "ground water delight",
+        ],
+        "burger-smash": [
+          "Sıcak plakada ezilerek kızartılan iki köfte, eritilmiş cheddar ve turşu brioche ekmeğinde buluşur.",
+          "Two patties smashed on a hot griddle, with melted cheddar and pickles in a brioche bun.",
+          "patty cheddar pickle bun",
+        ],
+        "burger-aci": [
+          "Jalapeño ve acı sosla hazırlanan, acıyı sevenler için baharatlı burger.",
+          "A spicy burger for heat lovers, made with jalapeños and hot sauce.",
+          "patty jalapeno hotsauce cheddar bun",
+        ],
+        "burger-tavuk": [
+          "Çıtır kaplamalı tavuk göğsü, taze marul ve mayonezle yumuşak ekmekte servis edilir.",
+          "Crispy-coated chicken breast with fresh lettuce and mayonnaise in a soft bun.",
+          "chicken lettuce mayo bun",
+        ],
+        "pizza-margherita": [
+          "İnce hamur üzerine domates sosu, mozzarella ve taze fesleğen. İtalyan pizzanın sade ve klasik hali.",
+          "Thin dough topped with tomato sauce, mozzarella and fresh basil, the simple Italian classic.",
+          "dough tomato mozz basil",
+        ],
+        "pizza-karisik": [
+          "Mantar, biber, zeytin ve sosisle hazırlanan, bol malzemeli pizza.",
+          "A generously topped pizza with mushrooms, peppers, olives and sausage.",
+          "dough tomato cheese mushroom pepper olive sausage",
+        ],
+        "pizza-sucuklu": [
+          "Sucuk dilimleri, kaşar peyniri ve közlenmiş biberle hazırlanan, Türk damak tadına uygun pizza.",
+          "A pizza with sucuk slices, kashar cheese and roasted peppers.",
+          "dough sucuk kashar pepper",
+        ],
+        "tatli-kunefe": [
+          "İnce tel kadayıf arasına peynir konulup kızartılır, sıcak şerbetle buluşturulur ve Antep fıstığı ile süslenir. Kaymakla sıcak servis edilir.",
+          "Crispy shredded kadayif pastry filled with cheese, soaked in syrup and topped with pistachios. Served hot with clotted cream.",
+          "kadayif cheese syrup pistachio cream",
+        ],
+        "tatli-cheesecake": [
+          "Yüksek ısıda pişirilen, üstü yanık, içi akışkan ve yumuşak İspanyol usulü cheesecake. Karamel sos ile gelir.",
+          "Spanish-style baked cheesecake with a burnt top and a soft, creamy centre, served with caramel sauce.",
+          "creamcheese egg fcream sugar caramel",
+        ],
+        "tatli-sutlac": [
+          "Pirinç ve sütle ağır ağır pişirilir, fırında üzeri kızartılır. Geleneksel tarifle hazırlanır.",
+          "Rice and milk slowly cooked and baked until the top turns golden, made to the traditional recipe.",
+          "milk rice sugar",
+        ],
+        "icecek-limonata": [
+          "Taze sıkılmış limon, nane ve buzla her gün ev yapımı hazırlanır.",
+          "Made fresh daily from squeezed lemons, mint and ice.",
+          "lemon mint sugar ice water",
+        ],
+        "icecek-ayran": [
+          "Yoğurt, su ve tuzla hazırlanan geleneksel içecek, bakır kasede köpüklü servis edilir.",
+          "A traditional drink of yogurt, water and salt, served frothy in a copper bowl.",
+          "yogurt water salt",
+        ],
+        "icecek-soguk-cay": [
+          "Demlenmiş çayın şeftali veya limon aromasıyla soğutulmasıyla hazırlanır.",
+          "Brewed tea chilled with peach or lemon flavour.",
+          "tea peach lemon ice",
+        ],
+      };
+      const LI = { tr: 0, en: 1, de: 2, ru: 3 };
+
+      function detailPopup() {
+        const p = S.dt ? byId(S.dt) : null;
+        if (!p) return "";
+        const D = DETAIL[p.id];
+        const txt = D ? (S.lang === "tr" ? D[0] : D[1]) : pd(p);
+        const li = LI[S.lang] ?? 1;
+        const chips = D
+          ? D[2]
+              .split(" ")
+              .map((k) => `<span class="ing">${ING[k][li]}</span>`)
+              .join("")
+          : "";
+        return `<div class="ov" data-act="dtclose">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dt">
+      <button class="xbtn" data-act="dtclose" aria-label="${T("close")}">${I.close}</button>
+      ${img(pimg(p), pn(p), "puimg")}
+      <h2 id="dt">${pn(p)}</h2>
+      <div class="pinfo"><span class="star">${I.star}${p.r.toFixed(1)}</span><b>${TL(p.p)}</b></div>
+      <p class="dsec">${T("about")}</p>
+      <p class="dtxt">${txt}</p>
+      ${chips ? `<p class="dsec">${T("ingr")}</p><div class="ings">${chips}</div>` : ""}
+      <button class="cta" data-act="dtadd" data-id="${p.id}">${T("add")}</button>
+    </div>
+  </div>`;
+      }
+
+      function render() {
+        const view = { home: viewHome, list: viewList, cart: viewCart, done: viewDone }[S.v]();
+        const n = count();
+        const cartFab =
+          S.v === "home" || S.v === "list"
+            ? `<button class="cartfab" data-act="go" data-v="cart" aria-label="${T("cart")}" title="${T("cart")}">${I.bag}${n ? `<span class="badge">${n}</span>` : ""}</button>`
+            : "";
+        const waiter = `<button class="waiter" data-act="waiterask" aria-label="${T("waiter")}" title="${T("waiter")}">${I.bell}</button>`;
+        const toast = S.toast
+          ? `<div class="toast" role="status"><svg class="tick" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>${S.toast}</div>`
+          : "";
+        const app = document.getElementById("app");
+        // Panelde kapatılan özellikler (Menü Ayarları / Canlı Servis) gizlenir.
+        app.className = ["v-" + S.v, SET.cart ? "" : "nocart", SET.ratings ? "" : "noratings", SET.stories ? "" : "nostories", SET.daily ? "" : "nodaily"].join(" ");
+        app.innerHTML = view + (SET.cart ? cartFab : "") + (SET.waiter ? waiter : "") + toast + popup() + detailPopup() + waiterPopup();
+        const open = S.pop || S.sp || S.wc || S.dt;
+        document.body.style.overflow = open ? "hidden" : "";
+        if (open) app.querySelector(".sheet .cta, .sheet button")?.focus();
+      }
+
+      function keep(fn) {
+        const y = window.scrollY;
+        fn();
+        window.scrollTo(0, y);
+      }
+
+      let toastTimer;
+      function showToast(msg) {
+        S.toast = msg;
+        keep(render);
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          S.toast = "";
+          keep(render);
+        }, 3500);
+      }
+
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest("[data-act]");
+        if (S.lm && !e.target.closest(".lang")) {
+          S.lm = false;
+          if (!t) {
+            keep(render);
+            return;
+          }
+        }
+        if (!t) return;
+        const a = t.dataset.act,
+          id = t.dataset.id;
+        if (t.classList.contains("ov") && e.target.closest(".sheet")) return;
+        if (a === "popclose") {
+          S.pop = false;
+          S.sp = null;
+          keep(render);
+          return;
+        }
+        if (a === "story") {
+          S.sp = id;
+          S.seen[id] = 1;
+          keep(render);
+          return;
+        }
+        if (a === "lang") {
+          S.lm = !S.lm;
+          keep(render);
+          return;
+        }
+        if (a === "setlang") {
+          S.lang = t.dataset.l;
+          S.lm = false;
+          try {
+            localStorage.setItem("lang", S.lang);
+          } catch (err) {}
+          document.documentElement.lang = S.lang;
+          keep(render);
+          return;
+        }
+        if (a === "detail") {
+          S.dt = id;
+          keep(render);
+          return;
+        }
+        if (a === "dtclose") {
+          S.dt = null;
+          keep(render);
+          return;
+        }
+        if (a === "waiterask") {
+          S.wc = true;
+          keep(render);
+          return;
+        }
+        if (a === "waitclose") {
+          S.wc = false;
+          keep(render);
+          return;
+        }
+        if (a === "waiter") {
+          S.wc = false;
+          if (Date.now() < S.waitUntil) {
+            showToast(T("waitwait"));
+            return;
+          }
+          callWaiter()
+            .then(() => {
+              S.waitUntil = Date.now() + SET.cooldown * 1000;
+              showToast(T("waitok"));
+            })
+            .catch(() => showToast(T("senderr")));
+          return;
+        }
+        if (a === "order") {
+          // The cart is emptied only once the order has reached the server.
+          const lines = Object.entries(cart).map(([pid, qty]) => {
+            const p = byId(pid);
+            // Fiyatı sunucu menüden hesaplar; ad ve fiyat yalnızca sunucusuz demo içindir.
+            return { id: pid, name: p.n, qty, price: p.p };
+          });
+          t.disabled = true;
+          sendOrder(lines)
+            .then(() => {
+              cart = {};
+              S.v = "home";
+              save();
+              render();
+              window.scrollTo(0, 0);
+              showToast(`<b>${T("done")}</b>${T("doned")}`);
+            })
+            .catch(() => {
+              t.disabled = false;
+              showToast(T("senderr"));
+            });
+          return;
+        }
+        if (a === "go") {
+          S.v = t.dataset.v;
+          if (t.dataset.c) S.c = t.dataset.c;
+          render();
+          window.scrollTo(0, 0);
+          return;
+        }
+        const y = window.scrollY;
+        if (a === "add") cart[id] = (cart[id] || 0) + 1;
+        if (a === "dtadd") {
+          cart[id] = (cart[id] || 0) + 1;
+          S.dt = null;
+        }
+        if (a === "popadd") {
+          cart[id] = (cart[id] || 0) + 1;
+          S.pop = false;
+          S.sp = null;
+        }
+        if (a === "sub") {
+          cart[id] = (cart[id] || 0) - 1;
+          if (cart[id] <= 0) delete cart[id];
+        }
+        save();
+        render();
+        window.scrollTo(0, y);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        if (S.wc) {
+          S.wc = false;
+          keep(render);
+        } else if (S.dt) {
+          S.dt = null;
+          keep(render);
+        } else if (S.pop || S.sp) {
+          S.pop = false;
+          S.sp = null;
+          keep(render);
+        } else if (S.lm) {
+          S.lm = false;
+          keep(render);
+        }
+      });
+
+      /* İki ayrı içerik:
+   Öne çıkan lezzet = işletmenin bugün satmak istediği ürün (açılış penceresi)
+   Günün önerisi    = algoritmanın seçtiği farklı bir ürün (ana ekrandaki kart) */
+      function spotlight(skipCart) {
+        const pool = PRODUCTS.filter((p) => CONFIG.focus.includes(p.id));
+        return (pool.length ? pool : PRODUCTS)
+          .slice()
+          .sort((a, b) => score(b) - score(a))
+          .find((p) => !(skipCart && cart[p.id]));
+      }
+      /* Menü işletme panelinden gelir (Menü sayfası). Sunucuya ulaşılamazsa
+   bu dosyadaki menü gösterilir. */
+      function applyMenu(m) {
+        const products = (m.products || []).filter((p) => p.active !== false);
+        if (!m.categories?.length || !products.length) return;
+        if (m.brand?.name) BRAND.name = m.brand.name;
+        CATS.splice(0, CATS.length, ...m.categories.map((c) => ({ id: c.id, n: c.name, s: c.subtitle || "" })));
+        PRODUCTS.splice(
+          0,
+          PRODUCTS.length,
+          ...products
+            .filter((p) => CATS.some((c) => c.id === p.category))
+            .map((p) => ({ id: p.id, c: p.category, n: p.name, d: p.description || "", p: Number(p.price) || 0, r: Number(p.rating) || 0, img: upImg(p.image) })),
+        );
+        CATS.forEach((c) => (c.img = upImg(m.categories.find((x) => x.id === c.id)?.image)));
+        for (const lang of ["en", "de", "ru"]) {
+          CT[lang] = CT[lang] || {};
+          PT[lang] = PT[lang] || {};
+          m.categories.forEach((c) => {
+            const t = c.i18n?.[lang];
+            if (t?.name) CT[lang][c.id] = [t.name, t.subtitle || ""];
+            else delete CT[lang][c.id];
+          });
+          products.forEach((p) => {
+            const t = p.i18n?.[lang];
+            if (t?.name) PT[lang][p.id] = [t.name, t.description || ""];
+            else delete PT[lang][p.id];
+          });
+        }
+        products.forEach((p) => {
+          if (p.detail?.tr) DETAIL[p.id] = [p.detail.tr, p.detail.en || p.detail.tr, (p.ingredients || []).join(" ")];
+        });
+        // Silinen ürünler sepetten, öne çıkanlardan ve hikayelerden düşer.
+        const has = (id) => PRODUCTS.some((p) => p.id === id);
+        Object.keys(cart).forEach((id) => has(id) || delete cart[id]);
+        CONFIG.focus = CONFIG.focus.filter(has);
+        CONFIG.stories = CONFIG.stories.filter(has);
+        S.c = CATS[0].id;
+        document.title = BRAND.name;
+      }
+
+      // Panelde yüklenen fotoğraflar sunucudan (3000 portu) gelir; diğerleri images/<kod>.jpg
+      const API_ORIGIN = SERVER;
+      const upImg = (src) => (src && src.startsWith("/api/") ? API_ORIGIN + src : "");
+      const pimg = (p) => p.img || "images/" + p.id + ".jpg";
+
+      // Menü Ayarları, Story ve Ana Sayfa kartlarındaki seçimler
+      function applySettings(settings, story, picks, profile) {
+        if (profile) {
+          BRAND.name = profile.name || BRAND.name;
+          BRAND.logo = upImg(profile.logo);
+          document.title = BRAND.name;
+          if (profile.status === "suspended") S.closed = true;
+        }
+        if (settings) {
+          SET.waiter = settings.features?.waiter !== false;
+          SET.cart = settings.features?.cart !== false;
+          SET.ratings = settings.ratings !== false;
+          SET.stories = settings.stories !== false;
+          SET.cooldown = Number(settings.waiterCooldown) || 60;
+          if (/^#[0-9a-f]{6}$/i.test(settings.accent || "")) document.documentElement.style.setProperty("--accent", settings.accent);
+          const on = (settings.languages || []).filter((l) => l.on).map((l) => l.id);
+          if (on.length) {
+            LANGS.splice(0, LANGS.length, ...LANGS.filter((l) => on.includes(l.id)));
+            const want = QP.get("dil") || savedLang || settings.defaultLang;
+            S.lang = on.includes(want) ? want : on.includes(settings.defaultLang) ? settings.defaultLang : on[0];
+            document.documentElement.lang = S.lang;
+          }
+        }
+        const has = (id) => PRODUCTS.some((p) => p.id === id);
+        if (story?.ids?.length) CONFIG.stories = story.ids.filter(has);
+        if (picks) {
+          if (picks.featured) {
+            CONFIG.popup = picks.featured.shown !== false;
+            if (has(picks.featured.resolved)) CONFIG.focus = [picks.featured.resolved];
+          }
+          if (picks.daily) {
+            SET.daily = picks.daily.shown !== false;
+            if (has(picks.daily.resolved)) S.dailyId = picks.daily.resolved;
+          }
+        }
+      }
+
+      let SPOT, FEAT, POP;
+      function start() {
+        if (S.closed) {
+          document.getElementById("app").innerHTML = `<div class="empty" style="padding-top:120px"><p>${BRAND.name}</p>Menü şu an kullanılamıyor.</div>`;
+          return;
+        }
+        SPOT = spotlight(false);
+        FEAT = (S.dailyId && byId(S.dailyId)) || ranked().find((p) => p.id !== SPOT?.id && !CONFIG.focus.includes(p.id));
+        POP = CONFIG.popup && QP.get("popup") !== "0" ? spotlight(true) || null : null;
+        S.pop = !!POP;
+        render();
+      }
+      // Menü ve ayarlar birlikte gelir; sunucuya 3 saniyede ulaşılamazsa bu dosyadaki menü açılır.
+      const menuWait = new AbortController();
+      setTimeout(() => menuWait.abort(), 3000);
+      const getJson = (path) =>
+        fetch(API + path, { cache: "no-store", signal: menuWait.signal })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null);
+      Promise.all([getJson("/menu"), getJson("/docs/settings"), getJson("/docs/story"), getJson("/docs/picks"), getJson("/profile")])
+        .then(([m, settings, story, picks, profile]) => {
+          if (m) applyMenu(m);
+          applySettings(settings, story, picks, profile);
+        })
+        .catch(() => {})
+        .finally(start);
+    </script>
+  </body>
+</html>

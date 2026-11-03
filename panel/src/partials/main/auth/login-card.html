@@ -44,12 +44,7 @@
       <h1 class="text-xl font-semibold" :class="kind === 'super' ? 'text-white' : 'text-gray-800 dark:text-white/90'" x-text="title"></h1>
       <p x-show="subtitle" class="mt-1.5 text-sm text-gray-500 dark:text-gray-400" :class="kind === 'super' && 'text-gray-400'" x-text="subtitle"></p>
 
-      <!-- Reset link sent -->
-      <div x-show="mode === 'sent'" class="mt-5 rounded-xl bg-green-50 p-4 text-sm text-green-700 dark:bg-green-500/10 dark:text-green-400">
-        <b class="font-semibold" x-text="email"></b> adresine parola sıfırlama bağlantısı gönderildi. Gelen kutunuzu kontrol edin.
-      </div>
-
-      <form x-show="mode !== 'sent'" @submit.prevent="submit()" class="mt-6 space-y-5" novalidate>
+      <form x-show="mode === 'login'" @submit.prevent="submit()" class="mt-6 space-y-5" novalidate>
         <div>
           <label for="login-email" class="mb-1.5 block text-sm font-medium" :class="kind === 'super' ? 'text-gray-300' : 'text-gray-700 dark:text-gray-300'">E-posta</label>
           <input
@@ -90,11 +85,6 @@
           </div>
         </div>
 
-        <label x-show="mode === 'login'" class="flex cursor-pointer items-center gap-2.5 text-sm" :class="kind === 'super' ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'">
-          <input type="checkbox" x-model="remember" class="h-4 w-4 accent-brand-500" />
-          Beni hatırla
-        </label>
-
         <p x-show="error" x-text="error" class="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"></p>
 
         <button
@@ -103,7 +93,7 @@
           class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-500 text-sm font-semibold text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-70"
         >
           <svg x-show="loading" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
-          <span x-text="mode === 'forgot' ? 'Bağlantı Gönder' : loading ? 'Giriş yapılıyor…' : 'Giriş Yap'"></span>
+          <span x-text="loading ? 'Giriş yapılıyor…' : 'Giriş Yap'"></span>
         </button>
       </form>
 

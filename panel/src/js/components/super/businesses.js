@@ -1,7 +1,8 @@
 // Businesses on the platform, as the super panel manages them.
 // Name, logo, owner and billing details live here and only the super panel edits them;
 // the business panel shows them read-only. Demo only: nothing is saved yet.
-export const MENU_HOST = "menu.arimedya.com/";
+// Shown until the real menu address is known (see qrMenuUrl in src/js/server.js).
+export const MENU_HOST = "…/m/?isletme=";
 
 export const packages = [
   { id: "starter", name: "Başlangıç", price: 499, tables: 10 },

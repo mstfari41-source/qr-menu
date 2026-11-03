@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#101828" />
+    <title>Garson Ekranı</title>
+  </head>
+  <!-- A waiter's own screen, opened with their personal link (?g=<key>): no panel menus -->
+  <body
+    data-area="waiter"
+    x-data="{ page: 'waiterLink', 'loaded': true, 'darkMode': false, 'sidebarToggle': false }"
+    x-init="
+         darkMode = JSON.parse(localStorage.getItem('darkMode')) ?? false;
+         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+    :class="{'dark bg-gray-950': darkMode === true}"
+    class="bg-gray-100"
+  >
+    <include src="./partials/common/preloader.html"></include>
+
+    <main class="min-h-screen px-3 py-4 sm:py-8">
+      <include src="./partials/main/business/waiter-screen.html" />
+    </main>
+  </body>
+</html>

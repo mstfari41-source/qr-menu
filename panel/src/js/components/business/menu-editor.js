@@ -2,8 +2,14 @@ import { categories, products, languages, formatPrice } from "./menu-data";
 import { CT, PT, ING, DETAIL } from "./menu-translations";
 import { toast } from "./toast";
 import { confirmDialog } from "./confirm-dialog";
+import { currentBusiness } from "../../routes";
+import { bizApi, upload } from "../../server";
+import { demoBusinesses } from "../super/businesses";
 
-// Demo only: changes live in memory and reset on page reload.
+// The menu lives on the server (server/index.mjs) and the QR menu reads it from there.
+// Every change is saved shortly after it is made. Without the server the editor still
+// works on demo data, but nothing is saved.
+const SAVE_DELAY = 700;
 const LANG_INDEX = { tr: 0, en: 1, de: 2, ru: 3 };
 const otherLangs = languages.filter((l) => l.id !== "tr");
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -74,6 +80,66 @@ export default function menuEditor() {
     ingredients: clone(ING),
     filter: "all",
     search: "",
+
+    saveState: "loading", // loading | saving | saved | offline | error
+    saveTimer: null,
+
+    async init() {
+      try {
+        const menu = await bizApi("/menu");
+        this.categories = menu.categories;
+        this.products = menu.products;
+        this.saveState = "saved";
+      } catch (err) {
+        if (err.status === 0) return (this.saveState = "offline");
+        // First time: the demo menu becomes this business's menu.
+        if (err.status === 404) await this.saveNow();
+      }
+      this.$watch("categories", () => this.scheduleSave());
+      this.$watch("products", () => this.scheduleSave());
+    },
+    // Staff with view-only access may look around; their changes are not saved.
+    get readOnly() {
+      return !this.$store.session.can("menu", "edit");
+    },
+    scheduleSave() {
+      clearTimeout(this.saveTimer);
+      if (this.readOnly) return (this.saveState = "readonly");
+      this.saveState = "saving";
+      this.saveTimer = setTimeout(() => this.saveNow(), SAVE_DELAY);
+    },
+    async saveNow() {
+      this.saveState = "saving";
+      const brand = demoBusinesses.find((b) => b.slug === currentBusiness()) ?? demoBusinesses[0];
+      try {
+        await bizApi("/menu", {
+          method: "PUT",
+          body: { brand: { name: brand.name }, categories: this.categories, products: this.products },
+        });
+        this.saveState = "saved";
+      } catch (err) {
+        this.saveState = "error";
+        toast(err.message, "error", "Menü kaydedilemedi");
+        // Permission problems will not fix themselves; only retry when the server was away.
+        if (err.status === 0) this.saveTimer = setTimeout(() => this.saveNow(), 5000);
+      }
+    },
+    // Pictures are uploaded to the server right away; the product keeps their address.
+    async uploadImage(event, target) {
+      const file = event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      if (this.saveState === "offline") return (target.image = URL.createObjectURL(file));
+      this.uploading = true;
+      try {
+        target.image = await upload(file);
+      } catch (err) {
+        toast(err.message, "error", "Fotoğraf yüklenemedi");
+      } finally {
+        this.uploading = false;
+      }
+    },
+    uploading: false,
 
     // Product modal
     isModalOpen: false,
@@ -153,8 +219,7 @@ export default function menuEditor() {
       this.isModalOpen = true;
     },
     pickImage(event) {
-      const file = event.target.files[0];
-      if (file) this.form.image = URL.createObjectURL(file);
+      return this.uploadImage(event, this.form);
     },
     save() {
       const price = Number(this.form.price);
@@ -211,8 +276,7 @@ export default function menuEditor() {
       this.isCategoryOpen = true;
     },
     pickCategoryImage(event) {
-      const file = event.target.files[0];
-      if (file) this.catForm.image = URL.createObjectURL(file);
+      return this.uploadImage(event, this.catForm);
     },
     saveCategory() {
       const name = this.catForm.name.trim();

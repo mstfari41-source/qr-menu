@@ -1,3 +1,5 @@
+import { waiterUrl } from "../../routes";
+import { syncDoc, upload } from "../../server";
 import { TABLE_COUNT } from "./sales-data";
 import { toast } from "./toast";
 import { confirmDialog } from "./confirm-dialog";
@@ -18,13 +20,18 @@ const channels = [
 const photo = (n) => `images/user/user-${String(n).padStart(2, "0")}.jpg`;
 
 export const demoStaff = [
-  { id: 1, name: "Elif Kaya", role: "Garson", phone: "+90 532 111 11 11", photo: photo(17), shift: "sabah", onShift: true, tables: [1, 2, 3, 4], notify: true, channel: "app" },
-  { id: 2, name: "Burak Demir", role: "Garson", phone: "+90 532 222 22 22", photo: photo(2), shift: "sabah", onShift: true, tables: [5, 6, 7, 8], notify: true, channel: "both" },
-  { id: 3, name: "Zeynep Arslan", role: "Garson", phone: "+90 532 333 33 33", photo: photo(18), shift: "aksam", onShift: false, tables: [9, 10, 11, 12], notify: true, channel: "app" },
-  { id: 4, name: "Can Öztürk", role: "Barista", phone: "+90 532 444 44 44", photo: photo(3), shift: "tam", onShift: true, tables: [], notify: false, channel: "app" },
-  { id: 5, name: "Mert Yıldız", role: "Mutfak", phone: "+90 532 555 55 55", photo: photo(4), shift: "tam", onShift: true, tables: [], notify: false, channel: "app" },
-  { id: 6, name: "Ayşe Çelik", role: "Müdür", phone: "+90 532 666 66 66", photo: photo(19), shift: "tam", onShift: true, tables: [], notify: true, channel: "app" },
+  { id: 1, key: "k7m2qa", name: "Elif Kaya", role: "Garson", phone: "+90 532 111 11 11", photo: photo(17), shift: "sabah", onShift: true, tables: [1, 2, 3, 4], notify: true, channel: "app" },
+  { id: 2, key: "p4x9td", name: "Burak Demir", role: "Garson", phone: "+90 532 222 22 22", photo: photo(2), shift: "sabah", onShift: true, tables: [5, 6, 7, 8], notify: true, channel: "both" },
+  { id: 3, key: "r8c3wn", name: "Zeynep Arslan", role: "Garson", phone: "+90 532 333 33 33", photo: photo(18), shift: "aksam", onShift: false, tables: [9, 10, 11, 12], notify: true, channel: "app" },
+  { id: 4, key: "b2v6hs", name: "Can Öztürk", role: "Barista", phone: "+90 532 444 44 44", photo: photo(3), shift: "tam", onShift: true, tables: [], notify: false, channel: "app" },
+  { id: 5, key: "m5j8ze", name: "Mert Yıldız", role: "Mutfak", phone: "+90 532 555 55 55", photo: photo(4), shift: "tam", onShift: true, tables: [], notify: false, channel: "app" },
+  { id: 6, key: "a9f1uy", name: "Ayşe Çelik", role: "Müdür", phone: "+90 532 666 66 66", photo: photo(19), shift: "tam", onShift: true, tables: [], notify: true, channel: "app" },
 ];
+
+// Personal waiter-screen link: /beecafe/garson/elif-kaya-k7m2qa. The key at the end is
+// hard to guess, so a waiter cannot open a colleague's screen by typing their name.
+const newKey = () => Math.random().toString(36).slice(2, 8);
+export const waiterLink = (person) => location.origin + waiterUrl(person);
 
 const emptyForm = () => ({
   id: null,
@@ -55,6 +62,12 @@ export default function staff() {
     isModalOpen: false,
     form: emptyForm(),
     error: "",
+    docState: "loading",
+
+    // Saved on the server; the first visit saves the demo staff as the starting list.
+    init() {
+      syncDoc(this, "staff", ["staff", "routing"]);
+    },
 
     get visible() {
       return this.staff.filter((s) => !this.roleFilter || s.role === this.roleFilter);
@@ -118,9 +131,39 @@ export default function staff() {
       this.error = "";
       this.isModalOpen = true;
     },
-    pickPhoto(event) {
+    link: waiterLink,
+    async copyLink(person) {
+      try {
+        await navigator.clipboard.writeText(waiterLink(person));
+        toast(`${person.name} bağlantısı kopyalandı. WhatsApp ile gönderebilirsiniz.`, "success", "Kopyalandı");
+      } catch {
+        toast("Kopyalanamadı; bağlantıyı seçip elle kopyalayın.", "error", "Kopyalanamadı");
+      }
+    },
+    // A lost phone or a waiter who left: the old link stops working.
+    async renewLink(person) {
+      const ok = await confirmDialog({
+        title: "Bağlantı yenilensin mi?",
+        item: person.name,
+        message: "için yeni bir garson ekranı bağlantısı oluşturulacak.",
+        warning: "Eski bağlantı artık açılmaz; yenisini garsona göndermeniz gerekir.",
+        confirmText: "Evet, yenile",
+        icon: "power",
+      });
+      if (!ok) return;
+      person.key = newKey();
+      toast(`${person.name} için yeni bağlantı hazır.`, "success", "Bağlantı yenilendi");
+    },
+    async pickPhoto(event) {
       const file = event.target.files[0];
-      if (file) this.form.photo = URL.createObjectURL(file);
+      event.target.value = "";
+      if (!file) return;
+      if (this.docState === "offline") return (this.form.photo = URL.createObjectURL(file));
+      try {
+        this.form.photo = await upload(file);
+      } catch (err) {
+        toast(err.message, "error", "Fotoğraf yüklenemedi");
+      }
     },
     save() {
       if (!this.form.name.trim()) return (this.error = "Ad soyad boş olamaz.");
@@ -132,6 +175,7 @@ export default function staff() {
         toast(`${item.name} bilgileri güncellendi.`);
       } else {
         item.id = Date.now();
+        item.key = newKey();
         this.staff.push(item);
         toast(`${item.name} personel listesine eklendi.`, "success", "Personel eklendi");
       }

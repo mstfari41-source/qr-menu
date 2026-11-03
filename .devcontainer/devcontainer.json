@@ -1,0 +1,18 @@
+{
+  // GitHub Codespaces: a temporary test server for the panel, the QR menu and the API.
+  // In the repository this folder sits at the top, next to the "panel" folder.
+  "name": "QR Menü Paneli (test sunucusu)",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+
+  // Once, when the codespace is created: install packages and build the panel.
+  "postCreateCommand": "cd panel && npm ci && npm run build",
+
+  // Every time the codespace starts: run the panel server in the background (port 3000).
+  // Its log: /tmp/panel-sunucusu.log. First sign-in details: panel/server/data/ilk-giris.txt
+  "postStartCommand": "cd panel && (setsid nohup npm run server > /tmp/panel-sunucusu.log 2>&1 &)",
+
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "Panel ve QR menü", "onAutoForward": "notify" }
+  }
+}

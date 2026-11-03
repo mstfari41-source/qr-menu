@@ -1,3 +1,4 @@
+import { businessUrl } from "../../routes";
 // General notifications for the header bell (not orders / waiter calls —
 // those live on Canlı Servis). Demo items are seeded; calendar reminders are
 // added when they fire. "Read" state is remembered in this browser.
@@ -23,11 +24,11 @@ function loadRead() {
 function demoNotices() {
   const now = Date.now();
   return [
-    { id: "n-stock-kunefe", type: "stock", title: "Fıstıklı künefe tükendi", text: "Ürün menüde \"Tükendi\" olarak görünüyor.", time: now - 25 * MIN, link: "menu.html" },
-    { id: "n-ai-daily", type: "ai", title: "Günün Önerisi güncellendi", text: "Yapay zekâ akşam saatleri için Latte'yi seçti.", time: now - 70 * MIN, link: "index.html" },
-    { id: "n-report-day", type: "report", title: "Dünün satış raporu hazır", text: "Ciro geçen haftanın aynı gününe göre %12 arttı.", time: now - 3 * 60 * MIN, link: "satislar.html" },
-    { id: "n-sub-renew", type: "system", title: "Abonelik yenilemesi yaklaşıyor", text: "Paketinizin yenilenmesine 5 gün kaldı.", time: now - 20 * 60 * MIN, link: "profile.html" },
-    { id: "n-system-update", type: "system", title: "Panel güncellendi", text: "Yeni Canlı Servis ekranı kullanıma açıldı.", time: now - 26 * 60 * MIN, link: "canli-servis.html" },
+    { id: "n-stock-kunefe", type: "stock", title: "Fıstıklı künefe tükendi", text: "Ürün menüde \"Tükendi\" olarak görünüyor.", time: now - 25 * MIN, link: businessUrl("menu") },
+    { id: "n-ai-daily", type: "ai", title: "Günün Önerisi güncellendi", text: "Yapay zekâ akşam saatleri için Latte'yi seçti.", time: now - 70 * MIN, link: businessUrl() },
+    { id: "n-report-day", type: "report", title: "Dünün satış raporu hazır", text: "Ciro geçen haftanın aynı gününe göre %12 arttı.", time: now - 3 * 60 * MIN, link: businessUrl("satislar") },
+    { id: "n-sub-renew", type: "system", title: "Abonelik yenilemesi yaklaşıyor", text: "Paketinizin yenilenmesine 5 gün kaldı.", time: now - 20 * 60 * MIN, link: businessUrl("profil") },
+    { id: "n-system-update", type: "system", title: "Panel güncellendi", text: "Yeni Canlı Servis ekranı kullanıma açıldı.", time: now - 26 * 60 * MIN, link: businessUrl("canli-servis") },
   ];
 }
 

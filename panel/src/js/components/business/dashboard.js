@@ -1,6 +1,7 @@
 import ApexCharts from "apexcharts";
 import { formatPrice } from "./menu-data";
-import { completedSales, between, daysAgo, startOfDay, sum } from "./sales-data";
+import { completedSales, between, daysAgo, startOfDay, sum, loadSales } from "./sales-data";
+import { syncDoc } from "../../server";
 import { statKinds, statIcon } from "./stat-styles";
 
 const MONTHS = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
@@ -21,7 +22,8 @@ function samePeriodBefore(from, prevFrom) {
   return new Date(prevFrom.getTime() + (Date.now() - from.getTime()));
 }
 
-export default function dashboard() {
+// Figures for the stat cards, from the sales loaded so far (demo or real).
+function figures() {
   const today = startOfDay(new Date());
   const yesterday = daysAgo(1);
   const todaySales = between(today, new Date(Date.now() + 1));
@@ -30,18 +32,10 @@ export default function dashboard() {
   const [prevFrom] = monthRange(-1);
   const monthSales = between(monthFrom, monthTo);
   const prevMonthSales = between(prevFrom, samePeriodBefore(monthFrom, prevFrom));
-  // Chart instances stay outside Alpine's reactive state.
-  const charts = {};
   const avg = (list) => (list.length ? Math.round(sum(list) / list.length) : 0);
-
   return {
-    formatPrice,
-    statKinds,
-    statIcon,
-    // Default target: last month's revenue + 10%, rounded up to 10.000 ₺.
-    target: Math.ceil((sum(between(prevFrom, monthFrom)) * 1.1) / 10000) * 10000,
-    range: "7",
-
+    monthSales,
+    lastMonthRevenue: sum(between(prevFrom, monthFrom)),
     metrics: [
       { label: "Bugünkü ciro", value: formatPrice(sum(todaySales)), change: change(sum(todaySales), sum(yesterdaySales)), note: "düne göre", kind: "revenue" },
       { label: "Bugünkü sipariş", value: todaySales.length, change: change(todaySales.length, yesterdaySales.length), note: "düne göre", kind: "orders" },
@@ -50,13 +44,35 @@ export default function dashboard() {
     ],
     monthRevenue: sum(monthSales),
     todayRevenue: sum(todaySales),
+  };
+}
+
+export default function dashboard() {
+  let f = figures();
+  // Chart instances stay outside Alpine's reactive state.
+  const charts = {};
+
+  return {
+    formatPrice,
+    statKinds,
+    statIcon,
+    // Default target: last month's revenue + 10%, rounded up to 10.000 ₺ (saved once changed).
+    target: Math.ceil((f.lastMonthRevenue * 1.1) / 10000) * 10000 || 50000,
+    range: "7",
+    metrics: f.metrics,
+    monthRevenue: f.monthRevenue,
+    todayRevenue: f.todayRevenue,
+    // real orders from the server, or the demo sales
+    realData: false,
+    salesVersion: 0,
 
     get progress() {
       return this.target > 0 ? Math.min(100, Math.round((this.monthRevenue / this.target) * 1000) / 10) : 0;
     },
     get topProducts() {
+      this.salesVersion; // recompute when real sales arrive
       const totals = {};
-      for (const s of monthSales) {
+      for (const s of f.monthSales) {
         for (const l of s.lines) {
           totals[l.id] ??= { name: l.name, qty: 0, revenue: 0 };
           totals[l.id].qty += l.qty;
@@ -68,7 +84,17 @@ export default function dashboard() {
       return list.map((p) => ({ ...p, share: Math.round((p.qty / max) * 100) }));
     },
 
-    init() {
+    async init() {
+      // Real sales replace the demo ones before anything is drawn.
+      this.realData = await loadSales();
+      if (this.realData) {
+        f = figures();
+        Object.assign(this, { metrics: f.metrics, monthRevenue: f.monthRevenue, todayRevenue: f.todayRevenue });
+        // Default target from the real last month (a saved target replaces it below).
+        this.target = Math.ceil((f.lastMonthRevenue * 1.1) / 10000) * 10000 || 50000;
+        this.salesVersion++;
+        syncDoc(this, "target", ["target"]);
+      }
       this.$nextTick(() => {
         this.renderMonthly();
         this.renderTarget();

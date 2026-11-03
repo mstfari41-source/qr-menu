@@ -1,6 +1,7 @@
 import { toast } from "./toast";
+import { syncDoc } from "../../server";
 
-// Social media links shown on the QR menu. Demo only: nothing is saved.
+// Social media links shown on the QR menu, saved on the server.
 const networks = [
   { id: "instagram", name: "Instagram", placeholder: "https://instagram.com/kullaniciadi" },
   { id: "facebook", name: "Facebook", placeholder: "https://facebook.com/sayfaadi" },
@@ -20,11 +21,16 @@ export default function socialLinks() {
       x: "",
       tiktok: "",
       youtube: "",
-      maps: "https://maps.google.com/?q=MA+Coffee",
+      maps: "https://maps.google.com/?q=BeeCafe",
       website: "",
     },
     editing: false,
     form: {},
+    docState: "loading",
+
+    init() {
+      syncDoc(this, "social", ["links"]);
+    },
     errors: {},
 
     startEdit() {

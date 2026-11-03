@@ -1,5 +1,5 @@
 <!-- Super panel sidebar: the platform owner's own navigation -->
-<a class="sr-only" href="#main-content">skip to the main content</a>
+<a class="sr-only" href="#main-content" @click.prevent="document.getElementById('main-content')?.scrollIntoView()">skip to the main content</a>
 <div
   x-cloak
   x-show="sidebarToggle"
@@ -18,7 +18,7 @@
 >
   <!-- Platform logo -->
   <div class="flex items-center gap-3 py-6" :class="sidebarToggle ? 'xl:justify-center' : ''">
-    <a href="super-isletmeler.html" class="flex items-center gap-3">
+    <a href="/super/isletmeler" class="flex items-center gap-3">
       <img class="size-12 shrink-0 rounded-xl object-contain dark:bg-white dark:p-0.5" src="./images/logo/ari-medya.png" alt="ARI Medya" />
       <span :class="sidebarToggle ? 'xl:hidden' : ''">
         <span class="block text-base font-semibold text-gray-800 dark:text-white/90">ARI Medya</span>
@@ -32,7 +32,7 @@
     <ul class="mb-6 flex flex-col gap-1">
       <li>
         <a
-          href="super-isletmeler.html"
+          href="/super/isletmeler"
           class="group menu-item"
           :class="['superBusinesses', 'superBusiness'].includes(page) ? 'menu-item-active' : 'menu-item-inactive'"
         >
@@ -51,7 +51,7 @@
     <h3 class="mb-3 text-xs leading-5 text-gray-400 uppercase" :class="sidebarToggle ? 'xl:hidden' : ''">Geçiş</h3>
     <ul class="flex flex-col gap-1">
       <li>
-        <a href="index.html" class="group menu-item menu-item-inactive">
+        <a :href="$store.nav.to('')" class="group menu-item menu-item-inactive">
           <svg class="menu-item-icon-inactive" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5M10 16l4-4-4-4M14 12H4" />
           </svg>

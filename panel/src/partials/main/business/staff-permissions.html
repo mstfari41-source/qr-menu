@@ -93,30 +93,37 @@
         <div x-show="person.access" class="space-y-6 p-5 sm:p-6">
           <!-- Sign-in -->
           <div>
-            <label for="perm-email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Giriş e-postası</label>
-            <div class="flex flex-col gap-3 sm:flex-row">
-              <input
-                id="perm-email"
-                type="email"
-                x-model.trim="person.email"
-                @input="person.invited = false"
-                placeholder="ornek@isletme.com"
-                class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-              />
-              <span x-show="person.invited" class="inline-flex h-11 shrink-0 items-center gap-1.5 px-2 text-sm font-medium text-green-600 dark:text-green-500">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7" /></svg>
-                Davet gönderildi
-              </span>
-              <button
-                x-show="!person.invited"
-                type="button"
-                @click="invite()"
-                class="inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-brand-50 px-4 text-sm font-medium text-brand-600 ring-1 ring-brand-200 ring-inset hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30"
-              >
-                Davet gönder
-              </button>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label for="perm-email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Giriş e-postası</label>
+                <input
+                  id="perm-email"
+                  type="email"
+                  autocomplete="off"
+                  x-model.trim="person.email"
+                  placeholder="ornek@isletme.com"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                />
+              </div>
+              <div>
+                <label for="perm-password" class="mb-1.5 flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span x-text="person.hasPassword ? 'Yeni parola (isteğe bağlı)' : 'Parola'"></span>
+                  <span x-show="person.hasPassword" class="inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-500">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7" /></svg>
+                    Parola tanımlı
+                  </span>
+                </label>
+                <input
+                  id="perm-password"
+                  type="password"
+                  autocomplete="new-password"
+                  x-model="person.newPassword"
+                  :placeholder="person.hasPassword ? 'Değiştirmek için yazın' : 'En az 8 karakter'"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                />
+              </div>
             </div>
-            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">Personel bu adrese gelen bağlantıyla kendi parolasını belirler.</p>
+            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">Personel bu e-posta ve parolayla işletme giriş ekranından girer. Parolayı ona siz iletin; ilk girişten sonra Profil'den değiştirebilir.</p>
           </div>
 
           <!-- Presets -->

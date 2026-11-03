@@ -1,5 +1,6 @@
-import { products, margin } from "./menu-data";
+import { margin } from "./menu-data";
 import { toast } from "./toast";
+import { syncDoc } from "../../server";
 
 const MAX_STORIES = 10;
 
@@ -10,7 +11,7 @@ const defaultStories = [
 ];
 
 // Automatic mode: popular and high-margin products first.
-function autoStories() {
+function autoStories(products) {
   const score = (p) => (margin[p.id] ?? 3) + (p.popular ? 2 : 0);
   return [...products]
     .sort((a, b) => score(b) - score(a))
@@ -24,15 +25,23 @@ export default function storyEditor() {
     auto: true,
     manual: [...defaultStories],
     search: "",
+    docState: "loading",
 
+    // Saved on the server with the resulting list, which the QR menu shows as is.
+    init() {
+      syncDoc(this, "story", ["auto", "manual"], { extra: () => ({ ids: this.selected.map((p) => p.id) }) });
+    },
+    get products() {
+      return this.$store.catalog.products;
+    },
     get selected() {
-      const ids = this.auto ? autoStories() : this.manual;
-      return ids.map((id) => products.find((p) => p.id === id)).filter(Boolean);
+      const ids = this.auto ? autoStories(this.products) : this.manual;
+      return ids.map((id) => this.products.find((p) => p.id === id)).filter(Boolean);
     },
     get available() {
       const q = this.search.trim().toLocaleLowerCase("tr");
       const ids = this.selected.map((p) => p.id);
-      return products.filter(
+      return this.products.filter(
         (p) => !ids.includes(p.id) && (!q || p.name.toLocaleLowerCase("tr").includes(q)),
       );
     },
@@ -43,12 +52,12 @@ export default function storyEditor() {
     add(id) {
       if (this.auto || this.isFull) return;
       this.manual.push(id);
-      toast(`${products.find((p) => p.id === id).name} story'lere eklendi.`, "success", "Story eklendi");
+      toast(`${this.products.find((p) => p.id === id)?.name} story'lere eklendi.`, "success", "Story eklendi");
     },
     remove(id) {
       if (this.auto) return;
       this.manual = this.manual.filter((x) => x !== id);
-      toast(`${products.find((p) => p.id === id).name} story'lerden çıkarıldı.`, "danger", "Story çıkarıldı");
+      toast(`${this.products.find((p) => p.id === id)?.name} story'lerden çıkarıldı.`, "danger", "Story çıkarıldı");
     },
     move(index, step) {
       const to = index + step;

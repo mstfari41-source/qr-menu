@@ -1,7 +1,8 @@
 import { categories, products, margin, dayParts, slots, formatPrice } from "./menu-data";
 import { toast } from "./toast";
+import { syncDoc } from "../../server";
 
-// Rules and weights the automatic (AI) picks follow. Demo only: nothing is saved yet.
+// Rules and weights the automatic (AI) picks follow, saved on the server.
 const clone = (o) => JSON.parse(JSON.stringify(o));
 
 const factorList = [
@@ -69,6 +70,11 @@ export default function aiSettings() {
     // Simulated conditions for the preview card.
     sim: { hour: new Date().getHours(), temp: 18, rain: false, crowd: 45, age: "25-34" },
 
+    // Saved on the server shortly after every change.
+    init() {
+      syncDoc(this, "ai", ["enabled", "strategy", "factors", "weather", "crowd", "age", "preference", "parts", "slots", "limits"]);
+    },
+
     // --- helpers ---
     toggleIn(list, id) {
       const i = list.indexOf(id);
@@ -93,7 +99,7 @@ export default function aiSettings() {
       return ([...sorted].reverse().find((p) => hour >= p.from) ?? sorted.at(-1)).id;
     },
     save() {
-      toast("Yapay zekâ ayarları kaydedildi (demo).");
+      toast("Yapay zekâ ayarları kaydedildi.");
     },
 
     // --- simulation ---

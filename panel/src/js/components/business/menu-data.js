@@ -71,6 +71,6 @@ export const languages = [
 ];
 
 // Customer menu address used by "Menüyü görüntüle" (local demo server).
-export const MENU_URL = "http://localhost:8000/";
+export const MENU_URL = "http://localhost:3000/m/?isletme=beecafe";
 
 export const formatPrice = (n) =>`${n.toLocaleString("tr-TR")} ₺`;

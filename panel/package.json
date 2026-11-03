@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack serve --open --config webpack.config.js",
+    "server": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning server/index.mjs",
     "build": "webpack --config webpack.config.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

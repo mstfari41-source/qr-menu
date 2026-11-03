@@ -1,6 +1,6 @@
 // Calendar notes with optional reminders.
-// Demo: kept in this browser's localStorage so notes survive page changes;
-// a real server will replace this when the panel is connected.
+import { bizApi } from "../../server";
+
 const KEY = "panel-notes";
 
 export const noteColors = [
@@ -37,22 +37,54 @@ function demoNotes() {
 }
 
 export function loadNotes() {
+  if (cache) return cache;
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) return (cache = JSON.parse(raw));
   } catch {
     // storage unavailable: fall back to demo notes
   }
-  const notes = demoNotes();
-  saveNotes(notes, false);
-  return notes;
+  cache = demoNotes();
+  return cache;
+}
+
+// Notes are shared by everyone in the business: kept on the server, with this browser's
+// copy (localStorage) only as the fallback when the server is not running.
+let cache = null;
+let online = false;
+let timer;
+
+export async function initNotes() {
+  try {
+    cache = (await bizApi("/docs/notes")).notes;
+    online = true;
+  } catch (err) {
+    if (err.status === 404) {
+      // A business's calendar starts empty (this browser's demo notes belong to no one).
+      online = true;
+      cache = [];
+      await bizApi("/docs/notes", { method: "PUT", body: { notes: cache } }).catch(() => {});
+    }
+  }
+  window.dispatchEvent(new CustomEvent("notes-changed"));
 }
 
 export function saveNotes(notes, announce = true) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(notes));
-  } catch {
-    // storage unavailable: notes live only for this page
+  cache = notes;
+  if (online) {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      bizApi("/docs/notes", { method: "PUT", body: { notes: cache } }).catch((err) => {
+        // Staff without the calendar permission still get reminders; their marks stay local.
+        if (err.status !== 403) window.dispatchEvent(new CustomEvent("save-failed", { detail: err.message }));
+      });
+    }, 300);
+  } else {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(notes));
+    } catch {
+      // storage unavailable: notes live only for this page
+    }
   }
   if (announce) window.dispatchEvent(new CustomEvent("notes-changed"));
 }

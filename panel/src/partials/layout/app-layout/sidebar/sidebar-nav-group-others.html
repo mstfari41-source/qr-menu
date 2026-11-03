@@ -320,7 +320,7 @@
         >
           <li>
             <a
-              href="signin.html"
+              :href="$store.nav.to('giris')"
               class="group menu-dropdown-item"
               :class="page === 'signin' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
               x-text="$t('sidebar.items.signIn')"

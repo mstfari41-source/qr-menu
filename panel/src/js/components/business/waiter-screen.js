@@ -1,3 +1,5 @@
+import { lastPart, slugify } from "../../routes";
+import { bizApi, setWaiterKey } from "../../server";
 import { demoStaff } from "./staff";
 import { confirmDialog } from "./confirm-dialog";
 import { categories, products } from "./menu-data";
@@ -5,17 +7,58 @@ import { toast } from "./toast";
 
 // Phone-first screen for a waiter: their tables' waiter calls and orders,
 // with big buttons to answer a call, confirm an order and mark it delivered.
-// Lives inside the panel for now; it will become a separate app later.
-const waiters = demoStaff.filter((s) => s.role === "Garson");
+
+// Each waiter opens the screen with a personal link (/beecafe/garson/elif-kaya-k7m2qa)
+// and sees only themself; the name is for reading, the key after it signs them in.
+// Without a key (the panel's own menu item) a picker lets the manager switch waiters.
+const fromPath = /\/garson\/[^/]+$/.test(location.pathname);
+const linkKey = fromPath ? lastPart().split("-").pop() : new URLSearchParams(location.search).get("g");
+const linkName = fromPath ? lastPart().split("-").slice(0, -1).join("-") : null;
+// Every request from this page carries the link's key (set before anything loads).
+if (linkKey) setWaiterKey(linkKey);
 
 export default function waiterScreen() {
   return {
-    waiters,
-    meId: waiters[0]?.id,
+    personal: !!linkKey,
+    badLink: false,
+    meData: null, // the waiter behind the personal link
+    meId: null,
     allTables: false,
 
-    // "Sipariş Al" sheet
+    // "Sipariş Al" sheet: the saved menu from the server, or the demo menu without it
     categories,
+    products,
+    async init() {
+      if (linkKey) await this.checkLink();
+      else this.meId = this.waiters[0]?.id;
+      this.$watch("$store.team.staff", () => this.meId ?? (this.meId = this.waiters[0]?.id));
+      try {
+        const menu = await bizApi("/menu");
+        this.categories = menu.categories;
+        this.products = menu.products.filter((p) => p.active !== false);
+        this.orderCategory = this.categories[0]?.id;
+      } catch {
+        // no saved menu or no server: keep the demo menu
+      }
+    },
+    // Name and key must belong to the same waiter.
+    async checkLink() {
+      try {
+        const me = await bizApi("/waiter/me");
+        if (linkName !== null && slugify(me.name) !== linkName) throw new Error();
+        this.meData = me;
+      } catch (err) {
+        if (err.status === 0) {
+          // no server: the demo staff list
+          const demo = demoStaff.find((w) => w.key === linkKey && (linkName === null || slugify(w.name) === linkName));
+          if (demo) return (this.meData = { ...demo });
+        }
+        this.badLink = true;
+      }
+    },
+    get waiters() {
+      return this.$store.team.waiters;
+    },
     sheetOpen: false,
     orderTable: null,
     orderCategory: categories[0].id,
@@ -25,7 +68,7 @@ export default function waiterScreen() {
     breakAsk: null,
 
     get me() {
-      return waiters.find((w) => w.id === this.meId);
+      return this.personal ? this.meData : this.waiters.find((w) => w.id === this.meId);
     },
     get live() {
       return this.$store.live;
@@ -56,20 +99,24 @@ export default function waiterScreen() {
     toggleBreak() {
       if (this.me) this.breakAsk = this.onBreak ? "end" : "start";
     },
-    confirmBreak() {
+    async confirmBreak() {
       const me = this.me;
       this.breakAsk = null;
       if (!me) return;
-      if (me.breakSince) {
-        me.breakSince = null;
-        toast("Çağrılar yeniden sana geliyor.", "success", "Mola bitti");
-      } else {
-        me.breakSince = Date.now();
-        toast("Masalarının çağrıları diğer garsonlara yönlendiriliyor.", "off", "Moladasın");
-      }
+      const onBreak = !me.breakSince;
+      // The waiter's own link saves the break, so every screen routes calls accordingly.
+      if (this.personal && this.$store.live.online) {
+        try {
+          me.breakSince = (await bizApi("/waiter/me", { method: "PATCH", body: { onBreak } })).breakSince;
+        } catch (err) {
+          return toast(err.message, "error", "Kaydedilemedi");
+        }
+      } else me.breakSince = onBreak ? Date.now() : null;
+      if (onBreak) toast("Masalarının çağrıları diğer garsonlara yönlendiriliyor.", "off", "Moladasın");
+      else toast("Çağrılar yeniden sana geliyor.", "success", "Mola bitti");
     },
 
-    // "Geliyorum" answers and closes the call in one tap.
+    // "İlgileniyor" answers and closes the call in one tap.
     answer(call) {
       this.live.finishCall(call, this.me?.name);
     },
@@ -97,10 +144,10 @@ export default function waiterScreen() {
       return [...mine, ...all.filter((n) => !mine.includes(n))];
     },
     get categoryProducts() {
-      return products.filter((p) => p.category === this.orderCategory);
+      return this.products.filter((p) => p.category === this.orderCategory);
     },
     get cartLines() {
-      return products
+      return this.products
         .filter((p) => this.cart[p.id])
         .map((p) => ({ id: p.id, name: p.name, qty: this.cart[p.id], price: p.price }));
     },
@@ -125,7 +172,7 @@ export default function waiterScreen() {
     },
     openOrder() {
       this.orderTable = this.me?.tables[0] ?? null;
-      this.orderCategory = categories[0].id;
+      this.orderCategory = this.categories[0]?.id;
       this.cart = {};
       this.orderNote = "";
       this.sheetOpen = true;

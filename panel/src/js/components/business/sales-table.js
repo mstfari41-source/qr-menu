@@ -1,5 +1,5 @@
 import { formatPrice } from "./menu-data";
-import { sales } from "./sales-data";
+import { sales, loadSales } from "./sales-data";
 import { statKinds, statIcon } from "./stat-styles";
 
 const HOUR = 60 * 60 * 1000;
@@ -53,10 +53,16 @@ export default function salesTable() {
       return this.filtered.slice(start, start + this.perPage);
     },
 
-    init() {
+    // Real orders from the server replace the demo sales (when the server is running).
+    realData: false,
+    async init() {
       ["search", "range", "table", "payment"].forEach((key) =>
         this.$watch(key, () => (this.page = 1)),
       );
+      if (await loadSales()) {
+        this.sales = [...sales];
+        this.realData = true;
+      }
     },
     formatPrice,
     formatDate(d) {

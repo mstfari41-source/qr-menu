@@ -477,6 +477,14 @@
         font-weight: 600;
       }
 
+      .nocart .qty,
+      .nocart [data-act="popadd"],
+      .nocart [data-act="dtadd"],
+      .noratings .star,
+      .nostories .stories,
+      .nodaily .feat {
+        display: none !important;
+      }
       .feat {
         margin: 0 16px 24px;
         background: #fff;
@@ -961,24 +969,35 @@
         },
       ];
 
-      const BRAND = { name: "MA Coffee" }; // işletme adı (logo: images/logo.jpg)
+      const BRAND = { name: "MA Coffee", logo: "" }; // işletme adı ve logosu (süper panelden gelir)
+      const QP_START = new URLSearchParams(location.search);
+      // Panelden gelen ayarlar (Menü Ayarları, Canlı Servis, Ana Sayfa kartları)
+      const SET = { waiter: true, cart: true, ratings: true, stories: true, daily: true, cooldown: 60 };
       // masa numarası sayfaya yazıldığı için yalnızca harf, rakam ve - kabul edilir
       const TABLE =
         (new URLSearchParams(location.search).get("masa") || "")
           .replace(/[^\p{L}\p{N}-]/gu, "")
           .slice(0, 10) || "12";
 
-      const WAITER_URL = ""; // sunucu adresin varsa buraya yaz: "Garson çağır" bu adrese gönderilir
-      function callWaiter() {
-        if (!WAITER_URL) return;
-        try {
-          fetch(WAITER_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ table: TABLE, time: new Date().toISOString() }),
-          }).catch(() => {});
-        } catch (err) {}
+      // Canlı servis sunucusu (panel/server/index.mjs): siparişler ve garson çağrıları
+      // işletme paneline (Canlı Servis) ve garsonların telefonlarına anında düşer.
+      // İşletme: ?isletme=beecafe (varsayılan beecafe). Sunucu bu bilgisayarda 3000 portunda.
+      const BUSINESS = (QP_START.get("isletme") || "beecafe").replace(/[^a-z0-9-]/g, "");
+      // Menü panel sunucusundan açılır (/m/?isletme=…) ve aynı adresteki API'yi kullanır.
+      // Yalnızca eski usul ayrı bir sunucudan (8000 portu) açılırsa bilgisayarın 3000 portuna gidilir.
+      const SERVER = location.port === "8000" ? `${location.protocol}//${location.hostname}:3000` : location.origin;
+      const API = `${SERVER}/api/${BUSINESS}`;
+      async function post(path, body) {
+        const res = await fetch(API + path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gönderilemedi");
+        return res.json();
       }
+      const callWaiter = () => post("/calls", { table: TABLE });
+      const sendOrder = (lines) => post("/orders", { table: TABLE, lines });
 
       const I = {
         bell: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"/><path d="M5 18a7 7 0 0 1 14 0"/><path d="M12 11V8"/><path d="M10 8h4"/></svg>',
@@ -1133,6 +1152,7 @@
           waitq: "{t} numaralı masaya garson çağırmak istiyor musunuz?",
           waitok: "Garson çağrıldı, birazdan masanıza gelecek.",
           waitwait: "Garson zaten çağrıldı.",
+          senderr: "Gönderilemedi. Lütfen tekrar deneyin ya da garsona haber verin.",
           lang: "Dil",
           about: "Hakkında",
           ingr: "İçindekiler",
@@ -1170,6 +1190,7 @@
           waitq: "Do you want to call a waiter to Table {t}?",
           waitok: "Waiter called. Someone will be at your table shortly.",
           waitwait: "Your waiter has already been called.",
+          senderr: "Could not be sent. Please try again or tell a waiter.",
           lang: "Language",
           about: "About",
           ingr: "Ingredients",
@@ -1207,6 +1228,7 @@
           waitq: "Möchten Sie einen Kellner an Tisch {t} rufen?",
           waitok: "Kellner gerufen. Er kommt gleich an Ihren Tisch.",
           waitwait: "Der Kellner wurde bereits gerufen.",
+          senderr: "Konnte nicht gesendet werden. Bitte erneut versuchen oder dem Kellner Bescheid geben.",
           lang: "Sprache",
           about: "Beschreibung",
           ingr: "Zutaten",
@@ -1244,6 +1266,7 @@
           waitq: "Вызвать официанта к столу {t}?",
           waitok: "Официант вызван. Он скоро подойдёт к вашему столу.",
           waitwait: "Официант уже вызван.",
+          senderr: "Не удалось отправить. Попробуйте ещё раз или скажите официанту.",
           lang: "Язык",
           about: "О блюде",
           ingr: "Состав",
@@ -1424,7 +1447,7 @@
       function row(p) {
         const q = cart[p.id] || 0;
         return `<div class="row" data-act="detail" data-id="${p.id}">
-    ${img("images/" + p.id + ".jpg", pn(p), "rimg")}
+    ${img(pimg(p), pn(p), "rimg")}
     <div class="rinfo"><b>${pn(p)}</b><small>${pd(p)}</small>
       <div class="meta"><span class="star">${I.star}${p.r.toFixed(1)}</span><span>${TL(p.p)}</span></div>
     </div>
@@ -1444,7 +1467,7 @@
       .map(
         (p) => `
       <button class="story${S.seen[p.id] ? " seen" : ""}" data-act="story" data-id="${p.id}">
-        <span class="ring">${img("images/" + p.id + ".jpg", pn(p), "simg")}</span>
+        <span class="ring">${img(pimg(p), pn(p), "simg")}</span>
         <span class="sname">${pn(p)}</span>
       </button>`,
       )
@@ -1459,7 +1482,7 @@
       .map(
         (c) => `
       <button class="card" data-act="go" data-v="list" data-c="${c.id}">
-        ${img("images/" + c.id + ".jpg", cn(c), "cimg")}<span class="txt"><b>${cn(c)}</b><small>${cs(c)}</small></span>
+        ${img(c.img || "images/" + c.id + ".jpg", cn(c), "cimg")}<span class="txt"><b>${cn(c)}</b><small>${cs(c)}</small></span>
       </button>`,
       )
       .join("")}
@@ -1469,7 +1492,7 @@
       function viewHome() {
         return `
     <div class="brand">
-      ${img("images/logo.png", BRAND.name, "blogo")}
+      ${img(BRAND.logo || "images/logo.png", BRAND.name, "blogo")}
       <h1>${BRAND.name}</h1>
       ${tools()}
     </div>
@@ -1514,7 +1537,7 @@
         return `<div class="ov" data-act="popclose">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pt">
       <button class="xbtn" data-act="popclose" aria-label="${T("close")}">${I.close}</button>
-      ${img("images/" + p.id + ".jpg", pn(p), "puimg")}
+      ${img(pimg(p), pn(p), "puimg")}
       <p class="pwhy">${sp ? cn(cat) : T("spot")}</p>
       <h2 id="pt">${sp ? pn(p) : T("tryq")}</h2>
       <div class="pinfo">${sp ? "" : `<b>${pn(p)}</b>`}<b>${TL(p.p)}</b></div>
@@ -1702,7 +1725,7 @@
         return `<div class="ov" data-act="dtclose">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dt">
       <button class="xbtn" data-act="dtclose" aria-label="${T("close")}">${I.close}</button>
-      ${img("images/" + p.id + ".jpg", pn(p), "puimg")}
+      ${img(pimg(p), pn(p), "puimg")}
       <h2 id="dt">${pn(p)}</h2>
       <div class="pinfo"><span class="star">${I.star}${p.r.toFixed(1)}</span><b>${TL(p.p)}</b></div>
       <p class="dsec">${T("about")}</p>
@@ -1725,11 +1748,12 @@
           ? `<div class="toast" role="status"><svg class="tick" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>${S.toast}</div>`
           : "";
         const app = document.getElementById("app");
-        app.className = "v-" + S.v;
-        app.innerHTML = view + cartFab + waiter + toast + popup() + detailPopup() + waiterPopup();
+        // Panelde kapatılan özellikler (Menü Ayarları / Canlı Servis) gizlenir.
+        app.className = ["v-" + S.v, SET.cart ? "" : "nocart", SET.ratings ? "" : "noratings", SET.stories ? "" : "nostories", SET.daily ? "" : "nodaily"].join(" ");
+        app.innerHTML = view + (SET.cart ? cartFab : "") + (SET.waiter ? waiter : "") + toast + popup() + detailPopup() + waiterPopup();
         const open = S.pop || S.sp || S.wc || S.dt;
         document.body.style.overflow = open ? "hidden" : "";
-        if (open) app.querySelector(".sheet .cta").focus();
+        if (open) app.querySelector(".sheet .cta, .sheet button")?.focus();
       }
 
       function keep(fn) {
@@ -1815,9 +1839,35 @@
             showToast(T("waitwait"));
             return;
           }
-          S.waitUntil = Date.now() + 60000;
-          callWaiter();
-          showToast(T("waitok"));
+          callWaiter()
+            .then(() => {
+              S.waitUntil = Date.now() + SET.cooldown * 1000;
+              showToast(T("waitok"));
+            })
+            .catch(() => showToast(T("senderr")));
+          return;
+        }
+        if (a === "order") {
+          // The cart is emptied only once the order has reached the server.
+          const lines = Object.entries(cart).map(([pid, qty]) => {
+            const p = byId(pid);
+            // Fiyatı sunucu menüden hesaplar; ad ve fiyat yalnızca sunucusuz demo içindir.
+            return { id: pid, name: p.n, qty, price: p.p };
+          });
+          t.disabled = true;
+          sendOrder(lines)
+            .then(() => {
+              cart = {};
+              S.v = "home";
+              save();
+              render();
+              window.scrollTo(0, 0);
+              showToast(`<b>${T("done")}</b>${T("doned")}`);
+            })
+            .catch(() => {
+              t.disabled = false;
+              showToast(T("senderr"));
+            });
           return;
         }
         if (a === "go") {
@@ -1842,14 +1892,9 @@
           cart[id] = (cart[id] || 0) - 1;
           if (cart[id] <= 0) delete cart[id];
         }
-        if (a === "order") {
-          cart = {};
-          S.v = "home";
-        }
         save();
         render();
-        window.scrollTo(0, a === "order" ? 0 : y);
-        if (a === "order") showToast(`<b>${T("done")}</b>${T("doned")}`);
+        window.scrollTo(0, y);
       });
 
       document.addEventListener("keydown", (e) => {
@@ -1880,12 +1925,115 @@
           .sort((a, b) => score(b) - score(a))
           .find((p) => !(skipCart && cart[p.id]));
       }
-      const SPOT = spotlight(false);
-      const FEAT = ranked().find((p) => p.id !== SPOT.id && !CONFIG.focus.includes(p.id));
-      const POP = CONFIG.popup && QP.get("popup") !== "0" ? spotlight(true) || null : null;
-      S.pop = !!POP;
+      /* Menü işletme panelinden gelir (Menü sayfası). Sunucuya ulaşılamazsa
+   bu dosyadaki menü gösterilir. */
+      function applyMenu(m) {
+        const products = (m.products || []).filter((p) => p.active !== false);
+        if (!m.categories?.length || !products.length) return;
+        if (m.brand?.name) BRAND.name = m.brand.name;
+        CATS.splice(0, CATS.length, ...m.categories.map((c) => ({ id: c.id, n: c.name, s: c.subtitle || "" })));
+        PRODUCTS.splice(
+          0,
+          PRODUCTS.length,
+          ...products
+            .filter((p) => CATS.some((c) => c.id === p.category))
+            .map((p) => ({ id: p.id, c: p.category, n: p.name, d: p.description || "", p: Number(p.price) || 0, r: Number(p.rating) || 0, img: upImg(p.image) })),
+        );
+        CATS.forEach((c) => (c.img = upImg(m.categories.find((x) => x.id === c.id)?.image)));
+        for (const lang of ["en", "de", "ru"]) {
+          CT[lang] = CT[lang] || {};
+          PT[lang] = PT[lang] || {};
+          m.categories.forEach((c) => {
+            const t = c.i18n?.[lang];
+            if (t?.name) CT[lang][c.id] = [t.name, t.subtitle || ""];
+            else delete CT[lang][c.id];
+          });
+          products.forEach((p) => {
+            const t = p.i18n?.[lang];
+            if (t?.name) PT[lang][p.id] = [t.name, t.description || ""];
+            else delete PT[lang][p.id];
+          });
+        }
+        products.forEach((p) => {
+          if (p.detail?.tr) DETAIL[p.id] = [p.detail.tr, p.detail.en || p.detail.tr, (p.ingredients || []).join(" ")];
+        });
+        // Silinen ürünler sepetten, öne çıkanlardan ve hikayelerden düşer.
+        const has = (id) => PRODUCTS.some((p) => p.id === id);
+        Object.keys(cart).forEach((id) => has(id) || delete cart[id]);
+        CONFIG.focus = CONFIG.focus.filter(has);
+        CONFIG.stories = CONFIG.stories.filter(has);
+        S.c = CATS[0].id;
+        document.title = BRAND.name;
+      }
 
-      render();
+      // Panelde yüklenen fotoğraflar sunucudan (3000 portu) gelir; diğerleri images/<kod>.jpg
+      const API_ORIGIN = SERVER;
+      const upImg = (src) => (src && src.startsWith("/api/") ? API_ORIGIN + src : "");
+      const pimg = (p) => p.img || "images/" + p.id + ".jpg";
+
+      // Menü Ayarları, Story ve Ana Sayfa kartlarındaki seçimler
+      function applySettings(settings, story, picks, profile) {
+        if (profile) {
+          BRAND.name = profile.name || BRAND.name;
+          BRAND.logo = upImg(profile.logo);
+          document.title = BRAND.name;
+          if (profile.status === "suspended") S.closed = true;
+        }
+        if (settings) {
+          SET.waiter = settings.features?.waiter !== false;
+          SET.cart = settings.features?.cart !== false;
+          SET.ratings = settings.ratings !== false;
+          SET.stories = settings.stories !== false;
+          SET.cooldown = Number(settings.waiterCooldown) || 60;
+          if (/^#[0-9a-f]{6}$/i.test(settings.accent || "")) document.documentElement.style.setProperty("--accent", settings.accent);
+          const on = (settings.languages || []).filter((l) => l.on).map((l) => l.id);
+          if (on.length) {
+            LANGS.splice(0, LANGS.length, ...LANGS.filter((l) => on.includes(l.id)));
+            const want = QP.get("dil") || savedLang || settings.defaultLang;
+            S.lang = on.includes(want) ? want : on.includes(settings.defaultLang) ? settings.defaultLang : on[0];
+            document.documentElement.lang = S.lang;
+          }
+        }
+        const has = (id) => PRODUCTS.some((p) => p.id === id);
+        if (story?.ids?.length) CONFIG.stories = story.ids.filter(has);
+        if (picks) {
+          if (picks.featured) {
+            CONFIG.popup = picks.featured.shown !== false;
+            if (has(picks.featured.resolved)) CONFIG.focus = [picks.featured.resolved];
+          }
+          if (picks.daily) {
+            SET.daily = picks.daily.shown !== false;
+            if (has(picks.daily.resolved)) S.dailyId = picks.daily.resolved;
+          }
+        }
+      }
+
+      let SPOT, FEAT, POP;
+      function start() {
+        if (S.closed) {
+          document.getElementById("app").innerHTML = `<div class="empty" style="padding-top:120px"><p>${BRAND.name}</p>Menü şu an kullanılamıyor.</div>`;
+          return;
+        }
+        SPOT = spotlight(false);
+        FEAT = (S.dailyId && byId(S.dailyId)) || ranked().find((p) => p.id !== SPOT?.id && !CONFIG.focus.includes(p.id));
+        POP = CONFIG.popup && QP.get("popup") !== "0" ? spotlight(true) || null : null;
+        S.pop = !!POP;
+        render();
+      }
+      // Menü ve ayarlar birlikte gelir; sunucuya 3 saniyede ulaşılamazsa bu dosyadaki menü açılır.
+      const menuWait = new AbortController();
+      setTimeout(() => menuWait.abort(), 3000);
+      const getJson = (path) =>
+        fetch(API + path, { cache: "no-store", signal: menuWait.signal })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null);
+      Promise.all([getJson("/menu"), getJson("/docs/settings"), getJson("/docs/story"), getJson("/docs/picks"), getJson("/profile")])
+        .then(([m, settings, story, picks, profile]) => {
+          if (m) applyMenu(m);
+          applySettings(settings, story, picks, profile);
+        })
+        .catch(() => {})
+        .finally(start);
     </script>
   </body>
 </html>

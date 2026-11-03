@@ -2,10 +2,11 @@ import { products } from "./menu-data";
 import { demoStaff } from "./staff";
 import { TABLE_COUNT } from "./sales-data";
 import { toast } from "./toast";
+import { currentBusiness } from "../../routes";
+import { bizApi, withKey } from "../../server";
 
-// Live orders and waiter calls coming from the QR menu.
-// Demo: seeded on page load and a new order / call is simulated now and then,
-// so the screens look alive. The real version will receive them from the server.
+// Live orders and waiter calls from the QR menu and the waiters, shared through the server.
+// Without the server: demo data, with a new order or call simulated now and then.
 const MIN = 60 * 1000;
 const SIMULATE_EVERY = 45 * 1000;
 const ESCALATE_AFTER = 5 * MIN;
@@ -60,7 +61,8 @@ function makeCall(status, minutesAgo, table = randomTable()) {
 
 // Waiters who receive a table's call: its on-shift owner, otherwise every on-shift waiter.
 function ownersFor(table) {
-  const waiters = demoStaff.filter((s) => s.role === "Garson" && s.onShift && s.notify && !s.breakSince);
+  const staff = window.Alpine?.store("team")?.staff ?? demoStaff;
+  const waiters = staff.filter((s) => s.role === "Garson" && s.onShift && s.notify && !s.breakSince);
   const owners = waiters.filter((s) => s.tables.includes(table));
   return owners.length ? owners : waiters;
 }
@@ -86,14 +88,35 @@ function seed() {
   return { orders, calls };
 }
 
-export function registerLiveStore(Alpine) {
-  const { orders, calls } = seed();
+// --- live service server (server/index.mjs), reached through the dev server's /api proxy ---
+const API = `/api/${currentBusiness()}`;
+const api = (path, method = "GET", body) => bizApi(path, { method, body });
+const failed = (err) => toast(err.message, "error", "İşlem yapılamadı");
 
+// `simulate: false` keeps live service off, e.g. on sign-in screens and in the super panel.
+// Otherwise the store connects to the server; when the server is not running it falls
+// back to demo data and simulated traffic, so the panel can still be shown.
+export function registerLiveStore(Alpine, { simulate = true } = {}) {
   Alpine.store("live", {
     steps: orderSteps,
-    orders,
-    calls,
+    orders: [],
+    calls: [],
     now: Date.now(),
+    // true while orders and calls come from the server (shared by every screen)
+    online: false,
+
+    // Insert or refresh a server order/call; cancelled orders leave the board.
+    upsert(list, item) {
+      const items = this[list];
+      const i = items.findIndex((x) => x.id === item.id);
+      if (list === "orders" && item.status === "cancelled") {
+        if (i !== -1) items.splice(i, 1);
+        return false;
+      }
+      if (i === -1) items.push(item);
+      else Object.assign(items[i], item);
+      return i === -1;
+    },
 
     // --- orders ---
     ordersBy(status) {
@@ -105,17 +128,35 @@ export function registerLiveStore(Alpine) {
     get activeOrderCount() {
       return this.orders.filter((o) => ["new", "preparing"].includes(o.status)).length;
     },
-    advanceOrder(order) {
+    async advanceOrder(order) {
       const step = orderSteps.find((s) => s.id === order.status);
       if (!step?.next) return;
-      order.status = step.next;
-      order.updatedAt = Date.now();
       const label = orderSteps.find((s) => s.id === step.next).name;
+      if (this.online) {
+        try {
+          this.upsert("orders", await api(`/orders/${order.id}`, "PATCH", { status: step.next }));
+        } catch (err) {
+          return failed(err);
+        }
+      } else {
+        order.status = step.next;
+        order.updatedAt = Date.now();
+      }
       toast(`#${order.no} · Masa ${order.table} → ${label}`, "success", "Sipariş güncellendi");
     },
     // Order a waiter takes at the table without a call ("çağrı dışı sipariş").
     // It skips confirmation and goes straight to the kitchen.
-    addWaiterOrder({ table, lines, note, waiter }) {
+    async addWaiterOrder({ table, lines, note, waiter }) {
+      if (this.online) {
+        try {
+          const order = await api("/orders", "POST", { table, lines, note, waiter });
+          this.upsert("orders", order);
+          toast(`#${order.no} · Masa ${table} mutfağa iletildi.`, "success", "Sipariş alındı");
+          return order;
+        } catch (err) {
+          return failed(err);
+        }
+      }
       const createdAt = Date.now();
       const order = {
         id: `o${++orderNo}`,
@@ -133,8 +174,15 @@ export function registerLiveStore(Alpine) {
       toast(`#${order.no} · Masa ${table} mutfağa iletildi.`, "success", "Sipariş alındı");
       return order;
     },
-    cancelOrder(order) {
-      this.orders = this.orders.filter((o) => o !== order);
+    async cancelOrder(order) {
+      if (this.online) {
+        try {
+          await api(`/orders/${order.id}`, "PATCH", { status: "cancelled" });
+        } catch (err) {
+          return failed(err);
+        }
+      }
+      this.orders = this.orders.filter((o) => o.id !== order.id);
       toast(`#${order.no} · Masa ${order.table} siparişi iptal edildi.`, "danger", "Sipariş iptal edildi");
     },
 
@@ -159,17 +207,35 @@ export function registerLiveStore(Alpine) {
     isEscalated(call) {
       return call.status === "waiting" && this.now - call.createdAt > ESCALATE_AFTER;
     },
-    takeCall(call, by) {
-      call.status = "handling";
-      call.handledBy = by || ownersFor(call.table)[0]?.name || "Garson";
-      call.answeredAt = Date.now();
+    async takeCall(call, by) {
+      by = by || ownersFor(call.table)[0]?.name || "Garson";
+      if (this.online) {
+        try {
+          this.upsert("calls", await api(`/calls/${call.id}`, "PATCH", { status: "handling", by }));
+        } catch (err) {
+          return failed(err);
+        }
+      } else {
+        call.status = "handling";
+        call.handledBy = by;
+        call.answeredAt = Date.now();
+      }
       toast(`Masa ${call.table} çağrısıyla ${call.handledBy} ilgileniyor.`, "success", "Çağrı alındı");
     },
-    finishCall(call, by) {
-      if (!call.answeredAt) call.answeredAt = Date.now();
-      if (!call.handledBy) call.handledBy = by || ownersFor(call.table)[0]?.name || "Garson";
-      call.status = "done";
-      call.doneAt = Date.now();
+    async finishCall(call, by) {
+      by = by || ownersFor(call.table)[0]?.name || "Garson";
+      if (this.online) {
+        try {
+          this.upsert("calls", await api(`/calls/${call.id}`, "PATCH", { status: "done", by }));
+        } catch (err) {
+          return failed(err);
+        }
+      } else {
+        if (!call.answeredAt) call.answeredAt = Date.now();
+        if (!call.handledBy) call.handledBy = by;
+        call.status = "done";
+        call.doneAt = Date.now();
+      }
       toast(`Masa ${call.table} çağrısı tamamlandı.`, "success", "Çağrı tamamlandı");
     },
 
@@ -210,8 +276,46 @@ export function registerLiveStore(Alpine) {
 
   const store = Alpine.store("live");
   setInterval(() => (store.now = Date.now()), 1000);
+  if (!simulate) return;
 
-  // Demo traffic: alternate a new order and a waiter call.
+  // Demo traffic only when the server is not running at all (not when signed out).
+  connect(store).catch((err) => err.status === 0 && startDemoTraffic(store));
+}
+
+// Load today's orders and calls from the server and follow its live updates.
+async function connect(store) {
+  const load = async () => {
+    const { orders, calls } = await api("/live");
+    store.orders = orders;
+    store.calls = calls;
+  };
+  await load();
+  store.online = true;
+
+  const stream = new EventSource(withKey(`${API}/live/stream`));
+  let dropped = false;
+  stream.onerror = () => (dropped = true);
+  // After a dropped connection, reload everything missed meanwhile.
+  stream.onopen = () => {
+    if (dropped) load().catch(() => {});
+    dropped = false;
+  };
+  stream.addEventListener("order", (e) => {
+    const order = JSON.parse(e.data);
+    const isNew = store.upsert("orders", order);
+    if (isNew && order.source === "qr") toast(`#${order.no} · Masa ${order.table} · ${order.lines.length} ürün`, "order");
+  });
+  stream.addEventListener("call", (e) => {
+    const call = JSON.parse(e.data);
+    if (store.upsert("calls", call) && call.status === "waiting") toast(`Masa ${call.table} garson çağırıyor.`, "call");
+  });
+}
+
+// No server: demo data with an order or a waiter call now and then.
+function startDemoTraffic(store) {
+  const { orders, calls } = seed();
+  store.orders = orders;
+  store.calls = calls;
   let turn = 0;
   setInterval(() => {
     if (turn++ % 2 === 0) {

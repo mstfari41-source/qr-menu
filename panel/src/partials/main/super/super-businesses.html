@@ -42,7 +42,7 @@
         </select>
       </div>
       <a
-        href="super-isletme.html?id=new"
+        :href="url()"
         class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-green-50 px-4 text-sm font-medium text-green-600 ring-1 ring-green-200 ring-inset hover:bg-green-100 dark:bg-green-500/15 dark:text-green-400 dark:ring-green-500/30 dark:hover:bg-green-500/25"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
@@ -76,7 +76,7 @@
                   </template>
                   <div class="min-w-0">
                     <span class="flex items-center gap-1.5">
-                      <a :href="'super-isletme.html?id=' + b.id" class="truncate font-semibold text-gray-800 hover:text-brand-500 dark:text-white/90" x-text="b.name"></a>
+                      <a :href="url(b)" class="truncate font-semibold text-gray-800 hover:text-brand-500 dark:text-white/90" x-text="b.name"></a>
                       <span x-show="b.note" :title="b.note" class="shrink-0 cursor-help text-amber-500" aria-label="Not var">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6M8 13h8M8 17h5" /></svg>
                       </span>
@@ -103,7 +103,7 @@
               </td>
               <td class="px-6 py-3.5 text-right">
                 <a
-                  :href="'super-isletme.html?id=' + b.id"
+                  :href="url(b)"
                   class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-50 px-3 text-sm font-medium text-brand-600 ring-1 ring-brand-200 ring-inset hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30"
                 >
                   Aç
