@@ -9,7 +9,7 @@ import { categories as demoCategories, products as demoProducts } from "./compon
 const SAVE_DELAY = 700;
 
 export const settingsDefaults = () => ({
-  accent: "#f08a24",
+  accent: "#0f7b6c",
   waiterCooldown: 60,
   ratings: true,
   stories: true,

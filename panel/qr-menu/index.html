@@ -29,8 +29,10 @@
         --muted: #8a8a8a;
         --line: #ececec;
         --soft: #f6f6f6;
-        --accent: #f08a24;
-        --accent-soft: #fff3e6;
+        --accent: #0f7b6c;
+        /* Panelden başka renk seçilirse açık ve koyu tonu ondan türer */
+        --accent-soft: color-mix(in srgb, var(--accent) 12%, #fff);
+        --accent-ink: color-mix(in srgb, var(--accent) 72%, #000);
         --star: #ff9500;
       }
       * {
@@ -60,6 +62,11 @@
       :focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
+      }
+      /* Menü içeriği biraz daha küçük. Açılan pencereler ve sabit butonlar küçültülmez,
+         böylece her tarayıcıda ekranın doğru yerinde kalırlar. */
+      .zm {
+        zoom: 0.9;
       }
       #app {
         max-width: 430px;
@@ -126,19 +133,10 @@
 
       .brand {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
         gap: 12px;
-        text-align: center;
-        position: relative;
-        margin: 0 0 14px;
-        padding: 28px 16px 4px;
-      }
-      .brand .tools {
-        position: absolute;
-        top: 16px;
-        right: 16px;
+        margin: 0 0 6px;
+        padding: 16px 16px 4px;
       }
       .welcome {
         margin: 0 16px 12px;
@@ -151,8 +149,13 @@
         min-width: 0;
       }
       .brand h1 {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         margin: 0;
-        font-size: 24px;
+        font-size: 20px;
         font-weight: 600;
         line-height: 1.15;
       }
@@ -163,15 +166,17 @@
         font-size: 13px;
       }
       .blogo {
-        width: 76px;
-        height: 76px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         object-fit: cover;
         flex: none;
         box-shadow: 0 0 0 3px var(--accent-soft);
       }
       .blogo.ph {
-        font-size: 32px;
+        font-size: 20px;
+        display: grid;
+        place-items: center;
       }
 
       .sec {
@@ -243,7 +248,7 @@
 
       .stories {
         display: flex;
-        gap: 10px;
+        gap: 6px;
         padding: 0 16px;
         margin-bottom: 20px;
         overflow-x: auto;
@@ -268,20 +273,732 @@
         display: block;
         width: 60px;
         height: 60px;
-        padding: 3px;
-        border-radius: 50%;
-        border: 2px solid var(--accent);
+        border-radius: 30%;
+        overflow: hidden;
         margin-bottom: 6px;
-      }
-      .story.seen .ring {
-        border-color: #c9bfb4;
       }
       .simg {
         display: block;
         width: 100%;
         height: 100%;
-        border-radius: 50%;
+        border-radius: 30%;
         object-fit: cover;
+      }
+      .ring {
+        position: relative;
+      }
+      /* Fırsat şeridi: her kart küçük bir afiş, mesaj kartın üstünde */
+      .tile {
+        flex: none;
+        width: 92px;
+        height: 132px;
+        border: 0;
+        border-radius: 18px;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        padding: 9px 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+        scroll-snap-align: start;
+      }
+      .tile .timg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.3;
+      }
+      .tile.photo .timg {
+        opacity: 1;
+      }
+      /* Fotoğrafı olmayan üründe harf yer tutucusu afişte ve kuponda gösterilmez */
+      .tile .timg.ph,
+      .cphead .cpimg.ph {
+        display: none;
+      }
+      .dimg.ph,
+      .cthumb.ph,
+      .dlimg.ph {
+        display: grid;
+        place-items: center;
+        font-size: 28px;
+      }
+      .tile.photo::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(transparent 40%, rgba(0, 0, 0, 0.72));
+      }
+      .tile > span {
+        position: relative;
+        z-index: 1;
+      }
+      .tile .tt {
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.2;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .tile .tb {
+        display: block;
+        font-weight: 800;
+        line-height: 0.95;
+      }
+      .tile .ts {
+        display: block;
+        margin-top: 3px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .tile s {
+        opacity: 0.7;
+      }
+
+      /* Fırsat destesi: kartlar üst üste, yana kaydırılır */
+      .deckov {
+        flex-direction: column;
+        gap: 14px;
+      }
+      .deck {
+        position: relative;
+        width: min(330px, 100%);
+        height: 450px;
+      }
+      .dcard {
+        position: absolute;
+        inset: 0;
+        border-radius: 24px;
+        overflow: hidden;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        padding: 18px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+        touch-action: pan-y;
+        user-select: none;
+      }
+      .dcard.b1 {
+        transform: translate(10px, 8px) rotate(3deg);
+        opacity: 0.85;
+      }
+      .dcard.b2 {
+        transform: translate(20px, 16px) rotate(6deg);
+        opacity: 0.6;
+      }
+      .dcard.front {
+        z-index: 3;
+        animation: deckin 0.25s ease-out;
+      }
+      .dcard.fly {
+        transition: transform 0.2s ease-in, opacity 0.2s ease-in;
+        opacity: 0;
+      }
+      @keyframes deckin {
+        from {
+          transform: scale(0.95);
+        }
+        to {
+          transform: none;
+        }
+      }
+      .dk {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+      .dcard h3 {
+        margin: 6px 0 0;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.1;
+      }
+      .dd {
+        margin: 6px 0 0;
+        font-size: 14px;
+        opacity: 0.85;
+      }
+      .dimg {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-top: 12px;
+        flex: none;
+      }
+      .dprice {
+        margin-top: 10px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .dprice s {
+        font-size: 15px;
+        opacity: 0.65;
+      }
+      .dprice b {
+        font-size: 30px;
+        font-weight: 800;
+      }
+      .dcta {
+        margin-top: auto;
+        height: 52px;
+        border: 0;
+        border-radius: 14px;
+        background: #fff;
+        color: var(--ink);
+        font: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        flex: none;
+      }
+      .cpair {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 18px 0 8px;
+        font-size: 28px;
+        font-weight: 800;
+        color: #f5c542;
+      }
+      .cthumb {
+        width: 90px;
+        height: 90px;
+        border-radius: 20px;
+        object-fit: cover;
+      }
+      .dsave {
+        align-self: flex-start;
+        margin-top: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #f5c542;
+        color: #2e1b17;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .dlist {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .dli {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 14px;
+        padding: 6px;
+      }
+      .dli .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .dli b {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .dli small {
+        font-size: 13px;
+        opacity: 0.85;
+      }
+      .dlimg {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex: none;
+      }
+      .dadd {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        flex: none;
+      }
+      /* Kupon: kesik çizgili, çentikli */
+      .dcard.cp {
+        background: #fff;
+        color: var(--ink);
+        padding: 0;
+      }
+      .cphead {
+        position: relative;
+        background: #e5484d;
+        color: #fff;
+        padding: 18px 18px 20px;
+        overflow: hidden;
+      }
+      .cphead .cpimg {
+        position: absolute;
+        right: -20px;
+        top: 0;
+        width: 60%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.3;
+      }
+      .cphead > span {
+        position: relative;
+        display: block;
+      }
+      .cpoff {
+        font-size: 64px;
+        font-weight: 800;
+        line-height: 1;
+        margin-top: 6px;
+      }
+      .cpname {
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .cpcut {
+        position: relative;
+        border-top: 2px dashed #e4e4e4;
+      }
+      .cpcut::before,
+      .cpcut::after {
+        content: "";
+        position: absolute;
+        top: -13px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #6d5f55;
+      }
+      .cpcut::before {
+        left: -12px;
+      }
+      .cpcut::after {
+        right: -12px;
+      }
+      .cpbody {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 16px 18px 18px;
+      }
+      .cpbody .dprice {
+        margin-top: 0;
+        justify-content: space-between;
+      }
+      .cpbody .dprice b {
+        color: #e5484d;
+      }
+      .cd {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .cd span {
+        flex: 1;
+        text-align: center;
+        background: #fdecec;
+        border-radius: 12px;
+        padding: 6px 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .cd b {
+        display: block;
+        font-size: 22px;
+        font-weight: 700;
+        color: #e5484d;
+      }
+      .cpbody .dcta {
+        background: #e5484d;
+        color: #fff;
+      }
+      .dhint {
+        margin: 8px 0 0;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .dnav {
+        display: flex;
+        gap: 6px;
+      }
+      .ddot {
+        width: 7px;
+        height: 7px;
+        padding: 0;
+        border: 0;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+      }
+      .ddot.on {
+        width: 20px;
+        background: #fff;
+      }
+      .dswipe {
+        margin: -4px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .dswipe span {
+        font-size: 18px;
+        line-height: 1;
+        animation: nudge 1.4s ease-in-out infinite;
+      }
+      .dswipe span:first-child {
+        animation-direction: reverse;
+      }
+      @keyframes nudge {
+        50% {
+          transform: translateX(3px);
+        }
+      }
+      .darrow {
+        position: absolute;
+        z-index: 5;
+        top: 50%;
+        width: 42px;
+        height: 42px;
+        margin-top: -21px;
+        border: 0;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      }
+      .darrow.prev {
+        left: -14px;
+      }
+      .darrow.next {
+        right: -14px;
+      }
+      .darrow.next svg {
+        transform: scaleX(-1);
+      }
+      /* Günün önerisi: alttan açılan sayfa */
+      /* Günün önerisi ekranın ortasında açılır */
+      .ov.bsov {
+        align-items: center;
+        padding: 16px;
+      }
+      .bsheet {
+        position: relative;
+        width: min(340px, 100%);
+        max-height: calc(100vh - 32px);
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+        animation: sheetup 0.28s ease-out;
+      }
+      @keyframes sheetup {
+        from {
+          transform: translateY(40px);
+          opacity: 0;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+      .bshero {
+        position: relative;
+        flex: none;
+      }
+      .bsimg {
+        display: block;
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+      }
+      .bsimg.ph {
+        display: grid;
+        place-items: center;
+        font-size: 56px;
+      }
+      .bsbadge {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .bsbadge svg {
+        width: 13px;
+        height: 13px;
+      }
+      .bsx {
+        position: absolute;
+        right: 14px;
+        top: 14px;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+      .bsbody {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 14px 6px;
+      }
+      .bsbody h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .bschips {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 6px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .bschips b {
+        margin-left: auto;
+        font-size: 19px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .bswhy {
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        font-size: 13px;
+      }
+      .bswhy b {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .bsabout {
+        margin: 8px 0 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #555;
+      }
+      .bsh {
+        margin: 12px 0 6px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .bsheet .sizes {
+        margin: 0;
+      }
+      .bsgoes {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        scrollbar-width: none;
+      }
+      .bsgoes::-webkit-scrollbar {
+        display: none;
+      }
+      .bsg {
+        position: relative;
+        flex: none;
+        width: 92px;
+        font-size: 12px;
+      }
+      .bsg b {
+        display: block;
+        margin-top: 6px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .bsg small {
+        color: var(--muted);
+      }
+      .bsgimg {
+        display: block;
+        width: 92px;
+        height: 68px;
+        border-radius: 14px;
+        object-fit: cover;
+      }
+      .bsgimg.ph {
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+      }
+      .bsgadd {
+        position: absolute;
+        right: 6px;
+        top: 40px;
+        width: 24px;
+        height: 24px;
+        border: 0;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--accent);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-weight: 700;
+      }
+      .bsgadd.done {
+        background: var(--accent);
+        color: #fff;
+      }
+      .bsfoot {
+        flex: none;
+        display: flex;
+        gap: 10px;
+        padding: 10px 14px 12px;
+        border-top: 1px solid var(--line);
+        background: #fff;
+      }
+      .bsqty {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 0 4px;
+      }
+      .bsqty button {
+        width: 30px;
+        height: 40px;
+        border: 0;
+        background: none;
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+      .bsqty span {
+        min-width: 18px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .bscta {
+        flex: 1;
+        height: 44px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--accent);
+        color: #fff;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      /* Günün önerisi kartı: tek kart, üstte büyük fotoğraf, koyu gövde */
+      .deck.solo {
+        height: auto;
+      }
+      .dcard.solo {
+        position: relative;
+        inset: auto;
+        padding: 0;
+        background: #17201e;
+      }
+      .solo .dsimg {
+        display: block;
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+      }
+      .solo .dsimg.ph {
+        display: grid;
+        place-items: center;
+        font-size: 56px;
+      }
+      .solo .dsbody {
+        display: flex;
+        flex-direction: column;
+        padding: 16px 18px 18px;
+      }
+      .solo .dk {
+        color: color-mix(in srgb, var(--accent) 45%, #fff);
+      }
+      .solo .dprice b {
+        color: #fff;
+      }
+      .solo .sizes {
+        margin: 12px 0 0;
+      }
+      .solo .dcta {
+        margin-top: 16px;
+        background: var(--accent);
+        color: #fff;
+      }
+      .dclose {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+      .stag {
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        padding: 1px 5px;
+        border-radius: 6px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+      .old {
+        margin-right: 5px;
+        color: var(--muted);
+        font-size: 0.75em;
+        font-weight: 400;
       }
       .simg.ph {
         font-size: 18px;
@@ -301,6 +1018,11 @@
         overflow-x: auto;
         padding: 0 16px 4px;
         margin-bottom: 10px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .chips::-webkit-scrollbar {
+        display: none;
       }
       .chip {
         flex: none;
@@ -485,13 +1207,118 @@
       .nodaily .feat {
         display: none !important;
       }
+      /* Günün önerisi: arkada bulanık büyük fotoğraf, sol üst köşede çapraz etiket */
       .feat {
+        position: relative;
         margin: 0 16px 24px;
-        background: #fff;
-        border: 1.5px solid var(--accent);
+        height: 150px;
         border-radius: 18px;
-        padding: 12px 14px 4px;
-        box-shadow: 0 4px 12px rgba(80, 50, 20, 0.12);
+        overflow: hidden;
+        background: #2e1b17;
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(80, 50, 20, 0.22);
+      }
+      .feat .fbg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: blur(5px);
+        transform: scale(1.15);
+      }
+      .feat .fbg.ph {
+        font-size: 0;
+      }
+      .feat::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(100deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.6));
+      }
+      .fribbon {
+        position: absolute;
+        z-index: 2;
+        left: 0;
+        top: 0;
+        width: 104px;
+        height: 104px;
+        background: var(--accent);
+        clip-path: polygon(0 0, 100% 0, 0 100%);
+      }
+      .fribbon span {
+        position: absolute;
+        left: -14px;
+        top: 24px;
+        width: 100px;
+        text-align: center;
+        transform: rotate(-45deg);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.15;
+      }
+      .fbody {
+        position: absolute;
+        z-index: 2;
+        left: 16px;
+        right: 70px;
+        bottom: 14px;
+      }
+      .fwhy {
+        display: block;
+        font-size: 12px;
+        opacity: 0.9;
+      }
+      .fname {
+        display: block;
+        margin-top: 2px;
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1.1;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+      }
+      .fmeta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 6px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .fmeta .old {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .fadd {
+        position: absolute;
+        z-index: 2;
+        right: 14px;
+        bottom: 14px;
+        width: 46px;
+        height: 46px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      .fadd .n {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
       }
       .fhead {
         display: flex;
@@ -523,22 +1350,22 @@
       }
       .sheet {
         position: relative;
-        width: min(380px, 100%);
+        width: min(340px, 100%);
         max-height: calc(100vh - 40px);
         overflow-y: auto;
         background: #fff;
-        border-radius: 24px;
-        padding: 14px 14px 18px;
+        border-radius: 22px;
+        padding: 12px 12px 14px;
         box-shadow: 0 12px 40px rgba(30, 18, 8, 0.3);
         animation: pop 0.25s ease-out;
       }
       .puimg {
         width: 100%;
-        height: 200px;
+        height: 160px;
         object-fit: cover;
-        border-radius: 16px;
+        border-radius: 14px;
         display: block;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
       }
       .puimg.ph {
         font-size: 48px;
@@ -566,8 +1393,8 @@
         color: var(--accent);
       }
       .sheet h2 {
-        margin: 0 4px 10px;
-        font-size: 22px;
+        margin: 0 4px 4px;
+        font-size: 19px;
         font-weight: 600;
       }
       .pinfo {
@@ -581,6 +1408,12 @@
         font-weight: 500;
         font-size: 16px;
       }
+      /* Fiyat: ürün penceresinin sağ köşesinde, büyük ve belirgin */
+      .pinfo b:last-child {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--accent);
+      }
       .pdesc {
         margin: 2px 4px 0;
         color: var(--muted);
@@ -588,7 +1421,9 @@
       }
       .sheet .cta {
         width: calc(100% - 8px);
-        margin: 16px 4px 0;
+        height: 46px;
+        margin: 14px 4px 0;
+        font-size: 15px;
       }
       @keyframes pop {
         from {
@@ -678,7 +1513,7 @@
         display: grid;
         place-items: center;
         cursor: pointer;
-        box-shadow: 0 6px 18px rgba(240, 138, 36, 0.45);
+        box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent);
       }
       .cartfab {
         position: fixed;
@@ -710,14 +1545,14 @@
         cursor: pointer;
       }
       .dsec {
-        margin: 18px 4px 0;
+        margin: 14px 4px 0;
         font-size: 13px;
         font-weight: 600;
         color: var(--accent);
       }
       .dtxt {
-        margin: 6px 4px 0;
-        font-size: 15px;
+        margin: 4px 4px 0;
+        font-size: 14px;
         line-height: 1.5;
       }
       .ings {
@@ -728,11 +1563,64 @@
       }
       .ing {
         background: var(--accent-soft);
-        color: #8a4b0d;
+        color: var(--accent-ink);
         border-radius: 999px;
         padding: 6px 12px;
         font-size: 13px;
         font-weight: 500;
+      }
+      .sizes {
+        display: flex;
+        gap: 8px;
+        margin: 8px 4px 0;
+      }
+      .size {
+        flex: 1;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 5px;
+        white-space: nowrap;
+        padding: 9px 4px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font: inherit;
+        font-size: 14px;
+        cursor: pointer;
+        text-align: center;
+      }
+      .size small {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .size.on {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .size.on small {
+        color: inherit;
+      }
+      .pnote {
+        display: block;
+        width: calc(100% - 8px);
+        height: 40px;
+        margin: 6px 4px 0;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        font: inherit;
+        font-size: 14px;
+        color: var(--ink);
+        background: #fff;
+      }
+      .pnote:focus {
+        border-color: var(--accent);
+        outline: none;
+      }
+      .rnote {
+        color: var(--accent-ink) !important;
       }
       .wov {
         padding: 20px 20px 20vh;
@@ -997,7 +1885,7 @@
         return res.json();
       }
       const callWaiter = () => post("/calls", { table: TABLE });
-      const sendOrder = (lines) => post("/orders", { table: TABLE, lines });
+      const sendOrder = (lines, note) => post("/orders", { table: TABLE, lines, note });
 
       const I = {
         bell: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"/><path d="M5 18a7 7 0 0 1 14 0"/><path d="M12 11V8"/><path d="M10 8h4"/></svg>',
@@ -1020,21 +1908,71 @@
         waitUntil: 0,
         sp: null,
         seen: {},
+        sz: "o", // detay penceresinde seçili boyut
+        note: "", // detay penceresine yazılan müşteri notu
+        deck: null, // açık fırsat kartının sırası
+        daily: null, // açık "Günün önerisi" kartı
+        dq: 1, // Günün önerisi sayfasındaki adet
       };
       let cart = {};
       try {
         cart = JSON.parse(localStorage.getItem("cart") || "{}");
       } catch (e) {}
+      // Müşteri notları sepet satırına bağlıdır: notes["ürün@boyut"] = "şekersiz"
+      let notes = {};
+      try {
+        notes = JSON.parse(localStorage.getItem("notes") || "{}");
+      } catch (e) {}
       const save = () => {
+        for (const k in notes) if (!cart[k]) delete notes[k];
         try {
           localStorage.setItem("cart", JSON.stringify(cart));
+          localStorage.setItem("notes", JSON.stringify(notes));
         } catch (e) {}
       };
+      const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
       const TL = (n) => n.toLocaleString("tr-TR") + " ₺";
+      const byId = (id) => PRODUCTS.find((p) => p.id === id) || combos().find((c) => c.id === id);
+      /* Fırsatlar şeridi (BeeCafe örnekleri). Yapay zekâ ileride bunları saate ve duruma göre seçecek.
+   Sunucu aynı indirimi ve combo fiyatını uygular (server/live.mjs). */
+      const SAMPLE = BUSINESS === "beecafe";
+      const DEALS = SAMPLE ? { "tatli-cheesecake": 30 } : {}; // ürün: yüzde indirim
+      const COMBO_DEFS = SAMPLE ? [{ id: "combo-latte-sutlac", items: ["kahve-latte", "tatli-sutlac"], p: 189 }] : [];
+      const PAIRS = { kahve: "tatli", tatli: "kahve", burger: "icecek", pizza: "icecek", kahvalti: "kahve", icecek: "burger" }; // "yanına" önerisi
+      const combos = () =>
+        COMBO_DEFS.map((c) => {
+          const items = c.items.map((id) => PRODUCTS.find((p) => p.id === id));
+          if (items.some((p) => !p)) return null;
+          const n = items.map((p) => p.n).join(" + ");
+          return { id: c.id, c: "combo", n, d: "", items, p: c.p, was: items.reduce((s, p) => s + p.p, 0), r: Math.min(...items.map((p) => p.r)), img: items[0].img || `images/${items[0].id}.jpg` };
+        }).filter(Boolean);
+      const dealPrice = (p) => (DEALS[p.id] ? Math.round((p.p * (100 - DEALS[p.id])) / 100) : p.p);
+      const oldPrice = (p) => (p.was ? p.was : DEALS[p.id] ? p.p : 0);
+      const oldTag = (p) => (oldPrice(p) ? `<s class="old">${TL(oldPrice(p))}</s>` : "");
+      /* Boyutlar: içeceklerde Küçük / Orta / Büyük. Orta menüdeki fiyattır; fark ₺ olarak eklenir.
+   Sunucu da aynı farkları uygular (server/live.mjs). Sepet anahtarı "ürün" ya da "ürün@boyut". */
+      const SIZES = [
+        { k: "k", d: -10 },
+        { k: "o", d: 0 },
+        { k: "b", d: 15 },
+      ];
+      const SIZED = ["kahve", "icecek"];
+      const sized = (p) => !!p && SIZED.includes(p.c);
+      const keyOf = (id, size) => (size ? `${id}@${size}` : id);
+      const split = (key) => {
+        const [id, size] = key.split("@");
+        return { id, size: SIZES.some((s) => s.k === size) ? size : null };
+      };
+      const priceOf = (p, size) => Math.max(dealPrice(p) + (SIZES.find((s) => s.k === size)?.d || 0), 0);
+      const inCart = (id) => Object.keys(cart).some((k) => split(k).id === id);
       const count = () => Object.values(cart).reduce((a, b) => a + b, 0);
-      const total = () => PRODUCTS.reduce((s, p) => s + (cart[p.id] || 0) * p.p, 0);
-      const byId = (id) => PRODUCTS.find((p) => p.id === id);
-      for (const id in cart) if (!byId(id) || !(cart[id] > 0)) delete cart[id]; // menüden kalkmış ürünleri sepetten at
+      const total = () =>
+        Object.entries(cart).reduce((s, [k, q]) => {
+          const { id, size } = split(k);
+          const p = byId(id);
+          return p ? s + q * priceOf(p, size) : s;
+        }, 0);
+      for (const k in cart) if (!byId(split(k).id) || !(cart[k] > 0)) delete cart[k]; // menüden kalkmış ürünleri sepetten at
 
       /* ===== ÖNERİ AYARLARI (işletme buradan yönetir) ===== */
       const CONFIG = {
@@ -1114,7 +2052,7 @@
       }
 
       const ranked = () => PRODUCTS.slice().sort((a, b) => score(b) - score(a));
-      const pick = (skipCart) => ranked().find((p) => !(skipCart && cart[p.id]));
+      const pick = (skipCart) => ranked().find((p) => !(skipCart && inCart(p.id)));
       const catsOrdered = () =>
         CATS.slice().sort((a, b) => (fits(b.id) ? 1 : 0) - (fits(a.id) ? 1 : 0));
 
@@ -1156,6 +2094,34 @@
           lang: "Dil",
           about: "Hakkında",
           ingr: "İçindekiler",
+        size: "Boyut",
+        sk: "Küçük",
+        so: "Orta",
+        sb: "Büyük",
+        note: "Notunuz",
+        noteph: "Örn. şekersiz, buzsuz, az pişmiş",
+        combo: "Menü",
+        now: "Şimdi",
+        pair: "Yanına",
+        today: "Bugüne özel",
+        coupon: "Kupon",
+        usecp: "Kuponu kullan",
+        cpnote: "Sepete indirimli fiyatla eklenir",
+        hh: "saat",
+        mm: "dakika",
+        ss: "saniye",
+        combok: "Menü fırsatı",
+        save: "{n} kazanırsın",
+        both: "Hepsini birden ekle",
+        cattime: "{c} saati",
+        kinds: "çeşit",
+        seeall: "Tümünü gör",
+        pairt: "{p} yanına çok yakışır",
+        swipe: "Diğer fırsatlar için yana kaydır",
+        offers: "Fırsatlar",
+        why: "Neden öneriyoruz",
+        goes: "Yanına iyi gider",
+        added: "Sepete eklendi",
           dec: "Azalt",
           inc: "Ekle",
           sabah: "Güne güzel başlamak için",
@@ -1194,6 +2160,34 @@
           lang: "Language",
           about: "About",
           ingr: "Ingredients",
+        size: "Size",
+        sk: "Small",
+        so: "Medium",
+        sb: "Large",
+        note: "Your note",
+        noteph: "E.g. no sugar, no ice",
+        combo: "Combo",
+        now: "Now",
+        pair: "Goes with",
+        today: "Today only",
+        coupon: "Coupon",
+        usecp: "Use coupon",
+        cpnote: "Added to your cart at the discounted price",
+        hh: "hours",
+        mm: "min",
+        ss: "sec",
+        combok: "Combo deal",
+        save: "You save {n}",
+        both: "Add them all",
+        cattime: "{c} time",
+        kinds: "items",
+        seeall: "See all",
+        pairt: "Goes great with {p}",
+        swipe: "Swipe sideways for more offers",
+        offers: "Offers",
+        why: "Why we recommend it",
+        goes: "Goes well with",
+        added: "Added to cart",
           dec: "Remove one",
           inc: "Add one",
           sabah: "To start your day well",
@@ -1232,6 +2226,34 @@
           lang: "Sprache",
           about: "Beschreibung",
           ingr: "Zutaten",
+        size: "Größe",
+        sk: "Klein",
+        so: "Mittel",
+        sb: "Groß",
+        note: "Ihre Notiz",
+        noteph: "Z. B. ohne Zucker, ohne Eis",
+        combo: "Menü",
+        now: "Jetzt",
+        pair: "Dazu",
+        today: "Nur heute",
+        coupon: "Gutschein",
+        usecp: "Gutschein einlösen",
+        cpnote: "Wird zum reduzierten Preis in den Warenkorb gelegt",
+        hh: "Std.",
+        mm: "Min.",
+        ss: "Sek.",
+        combok: "Menü-Angebot",
+        save: "Du sparst {n}",
+        both: "Alle hinzufügen",
+        cattime: "Zeit für {c}",
+        kinds: "Sorten",
+        seeall: "Alle ansehen",
+        pairt: "Passt super zu {p}",
+        swipe: "Zur Seite wischen für mehr Angebote",
+        offers: "Angebote",
+        why: "Darum empfehlen wir es",
+        goes: "Passt gut dazu",
+        added: "In den Warenkorb gelegt",
           dec: "Weniger",
           inc: "Mehr",
           sabah: "Für einen guten Start in den Tag",
@@ -1270,6 +2292,34 @@
           lang: "Язык",
           about: "О блюде",
           ingr: "Состав",
+        size: "Размер",
+        sk: "Маленький",
+        so: "Средний",
+        sb: "Большой",
+        note: "Ваш комментарий",
+        noteph: "Напр. без сахара, без льда",
+        combo: "Комбо",
+        now: "Сейчас",
+        pair: "К этому",
+        today: "Только сегодня",
+        coupon: "Купон",
+        usecp: "Использовать купон",
+        cpnote: "Добавится в корзину по сниженной цене",
+        hh: "ч",
+        mm: "мин",
+        ss: "сек",
+        combok: "Комбо-предложение",
+        save: "Экономия {n}",
+        both: "Добавить всё",
+        cattime: "Время: {c}",
+        kinds: "позиций",
+        seeall: "Смотреть все",
+        pairt: "Отлично подходит к {p}",
+        swipe: "Листайте в сторону — ещё предложения",
+        offers: "Предложения",
+        why: "Почему мы советуем",
+        goes: "Хорошо сочетается",
+        added: "Добавлено в корзину",
           dec: "Меньше",
           inc: "Больше",
           sabah: "Для хорошего начала дня",
@@ -1444,39 +2494,221 @@
         return `<div class="top"><button class="ibtn" data-act="go" data-v="home" aria-label="${T("back")}">${I.back}</button><div class="grow"><h1>${title}</h1></div>${tools()}</div>`;
       }
 
-      function row(p) {
-        const q = cart[p.id] || 0;
+      // Boyutlu ürünlerde + önce boyut seçtirir (detay penceresi); sepette her boyut ayrı satırdır.
+      function row(p, key) {
+        const pick = !key && sized(p);
+        const size = key ? split(key).size : null;
+        const q = key ? cart[key] || 0 : pick ? Object.keys(cart).reduce((s, k) => s + (split(k).id === p.id ? cart[k] : 0), 0) : cart[p.id] || 0;
+        const k = key || p.id;
         return `<div class="row" data-act="detail" data-id="${p.id}">
     ${img(pimg(p), pn(p), "rimg")}
-    <div class="rinfo"><b>${pn(p)}</b><small>${pd(p)}</small>
-      <div class="meta"><span class="star">${I.star}${p.r.toFixed(1)}</span><span>${TL(p.p)}</span></div>
+    <div class="rinfo"><b>${pn(p)}${size ? ` · ${T("s" + size)}` : ""}</b>${key && notes[key] ? `<small class="rnote">${T("note")}: ${esc(notes[key])}</small>` : `<small>${pd(p)}</small>`}
+      <div class="meta"><span class="star">${I.star}${p.r.toFixed(1)}</span><span>${oldTag(p)}${TL(priceOf(p, size))}</span></div>
     </div>
     <div class="qty">
-      ${q ? `<button class="qb" data-act="sub" data-id="${p.id}" aria-label="${T("dec")}">${I.minus}</button><span class="n">${q}</span>` : ""}
-      <button class="qb add" data-act="add" data-id="${p.id}" aria-label="${T("inc")}">${I.plus}</button>
+      ${q && !pick ? `<button class="qb" data-act="sub" data-id="${k}" aria-label="${T("dec")}">${I.minus}</button>` : ""}${q ? `<span class="n">${q}</span>` : ""}
+      <button class="qb add" data-act="${pick ? "detail" : "add"}" data-id="${k}" aria-label="${T("inc")}">${I.plus}</button>
     </div>
   </div>`;
       }
 
+      /* Fırsatlar şeridi sırası: kampanya, combo, saate uygun kategori, sepete göre "yanına",
+   sonra işletmenin seçtiği hikâye ürünleri. */
+      function offers() {
+        const out = [];
+        for (const id in DEALS) {
+          const p = PRODUCTS.find((x) => x.id === id);
+          if (p) out.push({ k: "deal", p, off: DEALS[id] });
+        }
+        combos().forEach((c) => out.push({ k: "combo", p: c }));
+        const now = catsOrdered().find((c) => fits(c.id));
+        if (now) out.push({ k: "now", cat: now });
+        const pair = pairPick();
+        if (pair) out.push({ k: "pair", p: pair.p, after: pair.after });
+        const shown = new Set(out.map((o) => o.p?.id));
+        CONFIG.stories
+          .map((id) => PRODUCTS.find((p) => p.id === id))
+          .filter((p) => p && !shown.has(p.id))
+          .forEach((p) => out.push({ k: "story", p }));
+        return out.slice(0, 10);
+      }
+      // Sepete son eklenen ürünün yanına giden kategoriden, sepette olmayan en beğenilen ürün.
+      function pairPick() {
+        const after = Object.keys(cart).map((k) => byId(split(k).id)).filter((p) => p && PAIRS[p.c]).pop();
+        if (!after) return null;
+        const p = PRODUCTS.filter((x) => x.c === PAIRS[after.c] && !inCart(x.id)).sort((a, b) => b.r - a.r)[0];
+        return p ? { p, after } : null;
+      }
+      const OFFER_BG = { deal: "#e5484d", combo: "#2e1b17", now: "var(--accent)", pair: "#0f6e56", story: "#1f1f1f" };
+      const clock = () => String(new Date().getHours()).padStart(2, "0") + ":" + String(new Date().getMinutes()).padStart(2, "0");
+      const catItems = (cat) => PRODUCTS.filter((p) => p.c === cat.id);
+
+      // Şeritteki afiş kartı
+      function tile(o, i) {
+        const bg = `style="background:${OFFER_BG[o.k]}"`;
+        const open = `data-act="offer" data-i="${i}"`;
+        if (o.k === "deal")
+          return `<button class="tile" ${bg} ${open}>${img(pimg(o.p), pn(o.p), "timg")}<span class="tt">${pn(o.p)}</span><span><span class="tb" style="font-size:34px">%${o.off}</span><span class="ts">${T("today")}</span></span></button>`;
+        if (o.k === "combo")
+          return `<button class="tile" ${bg} ${open}>${img(pimg(o.p), pn(o.p), "timg")}<span class="tt">${o.p.items.map(pn).join(" + ")}</span><span><span class="ts"><s>${TL(o.p.was)}</s></span><span class="tb" style="font-size:25px;color:#f5c542">${TL(o.p.p)}</span></span></button>`;
+        if (o.k === "now")
+          return `<button class="tile" ${bg} ${open}>${img(o.cat.img || "images/" + o.cat.id + ".jpg", cn(o.cat), "timg")}<span class="tt">${clock()}</span><span><span class="tb" style="font-size:18px">${T("cattime").replace("{c}", cn(o.cat))}</span><span class="ts">${catItems(o.cat).length} ${T("kinds")}</span></span></button>`;
+        if (o.k === "pair")
+          return `<button class="tile" ${bg} ${open}>${img(pimg(o.p), pn(o.p), "timg")}<span class="tt">${T("pair")}</span><span><span class="tb" style="font-size:16px">${pn(o.p)}</span><span class="ts">${TL(priceOf(o.p))}</span></span></button>`;
+        return `<button class="tile photo" ${bg} ${open}>${img(pimg(o.p), pn(o.p), "timg")}<span></span><span><span class="tb" style="font-size:14px;font-weight:600">${pn(o.p)}</span><span class="ts">${TL(priceOf(o.p))}</span></span></button>`;
+      }
+
+      // Kuponun geri sayımı: gün sonuna kalan süre
+      function countdown() {
+        const end = new Date();
+        end.setHours(23, 59, 59, 999);
+        const s = Math.max(0, Math.floor((end - Date.now()) / 1000));
+        const two = (v) => String(v).padStart(2, "0");
+        return `<span><b>${two(Math.floor(s / 3600))}</b>${T("hh")}</span><span><b>${two(Math.floor((s % 3600) / 60))}</b>${T("mm")}</span><span><b>${two(s % 60)}</b>${T("ss")}</span>`;
+      }
+
+      // Destedeki kart: türüne göre kendi düzeni
+      function offerCard(o) {
+        if (o.k === "deal")
+          return `<div class="dcard cp front">
+      <div class="cphead">${img(pimg(o.p), pn(o.p), "cpimg")}<span class="dk">${esc(BRAND.name)} · ${T("coupon")}</span><span class="cpoff">%${o.off}</span><span class="cpname">${pn(o.p)}</span></div>
+      <div class="cpcut"></div>
+      <div class="cpbody">
+        <div class="dprice"><s>${TL(o.p.p)}</s><b>${TL(priceOf(o.p))}</b></div>
+        <div class="cd" data-cd>${countdown()}</div>
+        <button class="dcta" data-act="offeradd" data-id="${o.p.id}">${T("usecp")}</button>
+        <p class="dhint">${T("cpnote")}</p>
+      </div>
+    </div>`;
+        if (o.k === "combo")
+          return `<div class="dcard front" style="background:${OFFER_BG.combo}">
+      <p class="dk" style="color:#f5c542">${T("combok")}</p>
+      <div class="cpair">${o.p.items.map((p) => img(pimg(p), pn(p), "cthumb")).join("<span>+</span>")}</div>
+      <h3 style="text-align:center">${o.p.items.map(pn).join(" + ")}</h3>
+      <div class="dprice" style="justify-content:center"><s>${TL(o.p.was)}</s><b style="color:#f5c542">${TL(o.p.p)}</b></div>
+      <span class="dsave" style="align-self:center">${T("save").replace("{n}", TL(o.p.was - o.p.p))}</span>
+      <button class="dcta" style="background:#f5c542;color:#2e1b17" data-act="offeradd" data-id="${o.p.id}">${T("both")}</button>
+    </div>`;
+        if (o.k === "now")
+          return `<div class="dcard front" style="background:${OFFER_BG.now}">
+      <p class="dk">${clock()}</p>
+      <h3>${T("cattime").replace("{c}", cn(o.cat))}</h3>
+      <div class="dlist">${catItems(o.cat)
+        .slice()
+        .sort((a, b) => b.r - a.r)
+        .slice(0, 3)
+        .map(
+          (p) =>
+            `<div class="dli">${img(pimg(p), pn(p), "dlimg")}<div class="grow"><b>${pn(p)}</b><small>${TL(priceOf(p))}</small></div><button class="dadd" data-act="offeradd" data-id="${p.id}" aria-label="${T("inc")}">${I.plus}</button></div>`,
+        )
+        .join("")}</div>
+      <button class="dcta" data-act="go" data-v="list" data-c="${o.cat.id}">${T("seeall")}</button>
+    </div>`;
+        const cat = CATS.find((c) => c.id === o.p.c);
+        return `<div class="dcard front" style="background:${OFFER_BG[o.k]}">
+      <p class="dk">${o.k === "pair" ? T("pairt").replace("{p}", pn(o.after)) : cat ? cn(cat) : ""}</p>
+      ${img(pimg(o.p), pn(o.p), "dimg")}
+      <h3>${pn(o.p)}</h3>
+      <p class="dd">${pd(o.p)}</p>
+      <div class="dprice"><b>${TL(priceOf(o.p))}</b></div>
+      <button class="dcta" data-act="offeradd" data-id="${o.p.id}">${T("add")}</button>
+    </div>`;
+      }
+
+      function deckPopup() {
+        if (S.deck === null) return "";
+        const list = offers();
+        if (!list.length) return "";
+        const i = Math.min(S.deck, list.length - 1);
+        const behind = [list[i + 2], list[i + 1]]
+          .map((o, n) => (o ? `<div class="dcard b${2 - n}" style="background:${OFFER_BG[o.k]}"></div>` : ""))
+          .join("");
+        return `<div class="ov deckov" data-act="deckclose">
+    <div class="deck" role="dialog" aria-modal="true" aria-label="${T("offers")}">${behind}${offerCard(list[i])}${i > 0 ? `<button class="darrow prev" data-act="deckprev" aria-label="${T("back")}">${I.back}</button>` : ""}${i < list.length - 1 ? `<button class="darrow next" data-act="decknext" aria-label="${T("offers")}">${I.back}</button>` : ""}</div>
+    <div class="dnav">${list.map((_, n) => `<button class="ddot${n === i ? " on" : ""}" data-act="deckgo" data-i="${n}" aria-label="${n + 1}"></button>`).join("")}</div>
+    ${list.length > 1 ? `<p class="dswipe"><span aria-hidden="true">‹</span>${T("swipe")}<span aria-hidden="true">›</span></p>` : ""}
+    <button class="dclose" data-act="deckclose" aria-label="${T("close")}">${I.close}</button>
+  </div>`;
+      }
+      // Günün önerisi: alttan açılan uygulama sayfası. Adet ve boyut değişince sayfa yeniden çizilmez.
+      function dailyPopup() {
+        const p = S.daily ? byId(S.daily) : null;
+        if (!p) return "";
+        const cat = CATS.find((c) => c.id === p.c);
+        const about = DETAIL[p.id] ? (S.lang === "tr" ? DETAIL[p.id][0] : DETAIL[p.id][1]) : pd(p);
+        const sizes = sized(p)
+          ? `<p class="bsh">${T("size")}</p><div class="sizes" role="radiogroup" aria-label="${T("size")}">${SIZES.map(
+              (s) =>
+                `<button class="size${s.k === S.sz ? " on" : ""}" role="radio" aria-checked="${s.k === S.sz}" data-act="size" data-s="${s.k}">${T("s" + s.k)}<small>${TL(priceOf(p, s.k))}</small></button>`,
+            ).join("")}</div>`
+          : "";
+        const goes = PRODUCTS.filter((x) => x.c === PAIRS[p.c] && x.id !== p.id)
+          .sort((a, b) => b.r - a.r)
+          .slice(0, 4);
+        return `<div class="ov bsov" data-act="dailyclose">
+    <div class="bsheet" role="dialog" aria-modal="true" aria-labelledby="dly">
+      <div class="bshero">
+        ${img(pimg(p), pn(p), "bsimg")}
+        <span class="bsbadge">${I.star} ${T("daily")}</span>
+        <button class="bsx" data-act="dailyclose" aria-label="${T("close")}">${I.close}</button>
+      </div>
+      <div class="bsbody">
+        <h2 id="dly">${pn(p)}</h2>
+        <div class="bschips"><span class="star">${I.star}${p.r.toFixed(1)}</span>${cat ? `<span>${cn(cat)}</span>` : ""}<b class="js-price">${oldTag(p)}${TL(priceOf(p, sized(p) ? S.sz : null))}</b></div>
+        <div class="bswhy"><b>${T("why")}</b>${reason(p)}</div>
+        <p class="bsabout">${about}</p>
+        ${sizes}
+        ${
+          goes.length
+            ? `<p class="bsh">${T("goes")}</p><div class="bsgoes">${goes
+                .map(
+                  (x) =>
+                    `<div class="bsg">${img(pimg(x), pn(x), "bsgimg")}<b>${pn(x)}</b><small>${TL(priceOf(x))}</small><button class="bsgadd" data-act="goesadd" data-id="${x.id}" aria-label="${T("inc")}">${I.plus}</button></div>`,
+                )
+                .join("")}</div>`
+            : ""
+        }
+      </div>
+      <div class="bsfoot">
+        <div class="bsqty"><button data-act="dq" data-d="-1" aria-label="${T("dec")}">${I.minus}</button><span class="js-qty">${S.dq}</span><button data-act="dq" data-d="1" aria-label="${T("inc")}">${I.plus}</button></div>
+        <button class="bscta" data-act="dailyadd" data-id="${p.id}">${T("add")} · <span class="js-total">${TL(priceOf(p, sized(p) ? S.sz : null) * S.dq)}</span></button>
+      </div>
+    </div>
+  </div>`;
+      }
+      // Açık Günün önerisi sayfasında fiyatı ve toplamı yerinde günceller.
+      function refreshDaily(box) {
+        const p = byId(S.daily);
+        if (!p) return;
+        const one = priceOf(p, sized(p) ? S.sz : null);
+        box.querySelectorAll(".js-qty").forEach((el) => (el.textContent = S.dq));
+        box.querySelectorAll(".js-total").forEach((el) => (el.textContent = TL(one * S.dq)));
+      }
+      function deckGo(step) {
+        const last = offers().length - 1;
+        const next = S.deck + step;
+        S.deck = next < 0 || next > last ? null : next;
+        keep(render);
+      }
+
+      function featCard(p) {
+        const q = Object.keys(cart).reduce((s, k) => s + (split(k).id === p.id ? cart[k] : 0), 0);
+        return `<div class="feat" data-act="daily" data-id="${p.id}">
+      ${img(pimg(p), pn(p), "fbg")}
+      <div class="fribbon"><span>${T("daily")}</span></div>
+      <div class="fbody">
+        <span class="fwhy">${reason(p)}</span>
+        <b class="fname">${pn(p)}</b>
+        <div class="fmeta"><span class="star">${I.star}${p.r.toFixed(1)}</span><span>${oldTag(p)}${TL(priceOf(p))}</span></div>
+      </div>
+      <button class="fadd" data-act="${sized(p) ? "daily" : "add"}" data-id="${p.id}" aria-label="${T("inc")}">${I.plus}${q ? `<span class="n">${q}</span>` : ""}</button>
+    </div>`;
+      }
+
       function homeResults() {
         return `
-    <div class="stories">${CONFIG.stories
-      .map(byId)
-      .filter(Boolean)
-      .slice(0, 10)
-      .map(
-        (p) => `
-      <button class="story${S.seen[p.id] ? " seen" : ""}" data-act="story" data-id="${p.id}">
-        <span class="ring">${img(pimg(p), pn(p), "simg")}</span>
-        <span class="sname">${pn(p)}</span>
-      </button>`,
-      )
-      .join("")}
-    </div>
-    <div class="feat">
-      <div class="fhead"><b>${T("daily")}</b><span>${reason(FEAT)}</span></div>
-      ${row(FEAT)}
-    </div>
+    <div class="stories">${offers().map(tile).join("")}</div>
+    ${featCard(FEAT)}
     <h2 class="sec">${T("cats")}</h2>
     <div class="cats">${catsOrdered()
       .map(
@@ -1505,7 +2737,7 @@
         return `${topBack(cn(cat))}
     <div class="chips">${CATS.map((c) => `<button class="chip${c.id === S.c ? " on" : ""}" data-act="go" data-v="list" data-c="${c.id}">${cn(c)}</button>`).join("")}</div>
     <div class="list">${PRODUCTS.filter((p) => p.c === S.c)
-      .map(row)
+      .map((p) => row(p))
       .join("")}</div>`;
       }
 
@@ -1515,7 +2747,7 @@
           return `${topBack(T("mycart"))}<div class="empty"><p>${T("empty")}</p>${T("emptyd")}<button class="cta" data-act="go" data-v="home">${T("tomenu")}</button></div>`;
         }
         return `${topBack(T("mycart"))}
-    <div class="list">${ids.map((id) => row(byId(id))).join("")}</div>
+    <div class="list">${ids.map((k) => row(byId(split(k).id), k)).join("")}</div>
     <div class="sum">
       <div><span>${T("count")}</span><span>${count()}</span></div>
       <div class="t"><span>${T("total")}</span><span>${TL(total())}</span></div>
@@ -1538,9 +2770,9 @@
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pt">
       <button class="xbtn" data-act="popclose" aria-label="${T("close")}">${I.close}</button>
       ${img(pimg(p), pn(p), "puimg")}
-      <p class="pwhy">${sp ? cn(cat) : T("spot")}</p>
+      <p class="pwhy">${sp ? (cat ? cn(cat) : T("combo")) : T("spot")}</p>
       <h2 id="pt">${sp ? pn(p) : T("tryq")}</h2>
-      <div class="pinfo">${sp ? "" : `<b>${pn(p)}</b>`}<b>${TL(p.p)}</b></div>
+      <div class="pinfo">${sp ? "" : `<b>${pn(p)}</b>`}<b>${oldTag(p)}${TL(priceOf(p))}</b></div>
       <p class="pdesc">${pd(p)}</p>
       <button class="cta" data-act="popadd" data-id="${p.id}">${T("add")}</button>
     </div>
@@ -1727,10 +2959,21 @@
       <button class="xbtn" data-act="dtclose" aria-label="${T("close")}">${I.close}</button>
       ${img(pimg(p), pn(p), "puimg")}
       <h2 id="dt">${pn(p)}</h2>
-      <div class="pinfo"><span class="star">${I.star}${p.r.toFixed(1)}</span><b>${TL(p.p)}</b></div>
+      <div class="pinfo"><span class="star">${I.star}${p.r.toFixed(1)}</span><b class="js-price">${oldTag(p)}${TL(priceOf(p, sized(p) ? S.sz : null))}</b></div>
+      ${
+        sized(p)
+          ? `<p class="dsec">${T("size")}</p><div class="sizes" role="radiogroup" aria-label="${T("size")}">${SIZES.map(
+              (s) =>
+                `<button class="size${s.k === S.sz ? " on" : ""}" role="radio" aria-checked="${s.k === S.sz}" data-act="size" data-s="${s.k}">${T("s" + s.k)}<small>${TL(priceOf(p, s.k))}</small></button>`,
+            ).join("")}</div>`
+          : ""
+      }
       <p class="dsec">${T("about")}</p>
       <p class="dtxt">${txt}</p>
       ${chips ? `<p class="dsec">${T("ingr")}</p><div class="ings">${chips}</div>` : ""}
+      <p class="dsec"><label for="pnote">${T("note")}</label></p>
+      <input class="pnote" id="pnote" type="text" maxlength="80" autocomplete="off" placeholder="${T("noteph")}" value="${esc(S.note)}" />
+
       <button class="cta" data-act="dtadd" data-id="${p.id}">${T("add")}</button>
     </div>
   </div>`;
@@ -1750,12 +2993,15 @@
         const app = document.getElementById("app");
         // Panelde kapatılan özellikler (Menü Ayarları / Canlı Servis) gizlenir.
         app.className = ["v-" + S.v, SET.cart ? "" : "nocart", SET.ratings ? "" : "noratings", SET.stories ? "" : "nostories", SET.daily ? "" : "nodaily"].join(" ");
-        app.innerHTML = view + (SET.cart ? cartFab : "") + (SET.waiter ? waiter : "") + toast + popup() + detailPopup() + waiterPopup();
-        const open = S.pop || S.sp || S.wc || S.dt;
+        app.innerHTML = `<div class="zm">${view}</div>` + (SET.cart ? cartFab : "") + (SET.waiter ? waiter : "") + toast + popup() + detailPopup() + waiterPopup() + deckPopup() + dailyPopup();
+        clearInterval(cdTimer);
+        if (app.querySelector("[data-cd]")) cdTimer = setInterval(() => app.querySelectorAll("[data-cd]").forEach((el) => (el.innerHTML = countdown())), 1000);
+        const open = S.pop || S.sp || S.wc || S.dt || S.daily || S.deck !== null;
         document.body.style.overflow = open ? "hidden" : "";
         if (open) app.querySelector(".sheet .cta, .sheet button")?.focus();
       }
 
+      let cdTimer;
       function keep(fn) {
         const y = window.scrollY;
         fn();
@@ -1785,7 +3031,7 @@
         if (!t) return;
         const a = t.dataset.act,
           id = t.dataset.id;
-        if (t.classList.contains("ov") && e.target.closest(".sheet")) return;
+        if (t.classList.contains("ov") && e.target.closest(".sheet, .deck, .dnav, .bsheet")) return;
         if (a === "popclose") {
           S.pop = false;
           S.sp = null;
@@ -1815,7 +3061,85 @@
         }
         if (a === "detail") {
           S.dt = id;
+          S.sz = "o";
+          S.note = "";
           keep(render);
+          return;
+        }
+        if (a === "size") {
+          // Pencere yeniden çizilmez (titremesin): yalnızca seçili düğme ve fiyat değişir.
+          S.sz = t.dataset.s;
+          const box = t.closest(".sheet, .dcard, .bsheet");
+          box.querySelectorAll(".size").forEach((b) => {
+            const on = b.dataset.s === S.sz;
+            b.classList.toggle("on", on);
+            b.setAttribute("aria-checked", String(on));
+          });
+          const p = byId(S.daily || S.dt);
+          box.querySelectorAll(".js-price").forEach((el) => (el.innerHTML = oldTag(p) + TL(priceOf(p, S.sz))));
+          if (S.daily) refreshDaily(box);
+          return;
+        }
+        if (a === "deckprev" || a === "decknext") {
+          deckGo(a === "decknext" ? 1 : -1);
+          return;
+        }
+        if (a === "daily") {
+          S.daily = id;
+          S.sz = "o";
+          S.dq = 1;
+          keep(render);
+          return;
+        }
+        if (a === "dq") {
+          S.dq = Math.min(Math.max(S.dq + Number(t.dataset.d), 1), 20);
+          refreshDaily(t.closest(".bsheet"));
+          return;
+        }
+        if (a === "goesadd") {
+          // "Yanına iyi gider" ürünü sepete girer; sayfa açık kalır, düğme onay işaretine döner.
+          const k = keyOf(id, sized(byId(id)) ? "o" : null);
+          cart[k] = (cart[k] || 0) + 1;
+          save();
+          t.classList.add("done");
+          t.innerHTML = "✓";
+          return;
+        }
+        if (a === "dailyclose") {
+          S.daily = null;
+          keep(render);
+          return;
+        }
+        if (a === "dailyadd") {
+          const k = keyOf(id, sized(byId(id)) ? S.sz : null);
+          cart[k] = (cart[k] || 0) + S.dq;
+          save();
+          S.daily = null;
+          showToast(`<b>${pn(byId(id))}</b>${T("added")}`);
+          return;
+        }
+        if (a === "offer") {
+          S.deck = Number(t.dataset.i);
+          keep(render);
+          return;
+        }
+        if (a === "deckgo") {
+          S.deck = Number(t.dataset.i);
+          keep(render);
+          return;
+        }
+        if (a === "deckclose") {
+          S.deck = null;
+          keep(render);
+          return;
+        }
+        if (a === "offeradd") {
+          // Fırsat sepete girer (içecekler orta boy), sonra sıradaki karta geçilir.
+          const k = keyOf(id, sized(byId(id)) ? "o" : null);
+          cart[k] = (cart[k] || 0) + 1;
+          save();
+          showToast(`<b>${pn(byId(id))}</b>${T("added")}`);
+          deckGo(1);
           return;
         }
         if (a === "dtclose") {
@@ -1849,15 +3173,25 @@
         }
         if (a === "order") {
           // The cart is emptied only once the order has reached the server.
-          const lines = Object.entries(cart).map(([pid, qty]) => {
+          const lines = Object.entries(cart).map(([key, qty]) => {
+            const { id: pid, size } = split(key);
             const p = byId(pid);
             // Fiyatı sunucu menüden hesaplar; ad ve fiyat yalnızca sunucusuz demo içindir.
-            return { id: pid, name: p.n, qty, price: p.p };
+            return { id: pid, size, name: size ? `${p.n} (${UI.tr["s" + size]})` : p.n, qty, price: priceOf(p, size) };
           });
+          // Ürün notları siparişin notu olur: garson ekranında ve Canlı Servis'te görünür.
+          const note = Object.entries(notes)
+            .filter(([k]) => cart[k])
+            .map(([k, n]) => {
+              const { id: pid, size } = split(k);
+              return `${size ? ` (${UI.tr["s" + size]})` : ""}: ${n}`;
+            })
+            .join(" · ");
           t.disabled = true;
-          sendOrder(lines)
+          sendOrder(lines, note)
             .then(() => {
               cart = {};
+              notes = {};
               S.v = "home";
               save();
               render();
@@ -1871,6 +3205,7 @@
           return;
         }
         if (a === "go") {
+          S.deck = null;
           S.v = t.dataset.v;
           if (t.dataset.c) S.c = t.dataset.c;
           render();
@@ -1880,11 +3215,15 @@
         const y = window.scrollY;
         if (a === "add") cart[id] = (cart[id] || 0) + 1;
         if (a === "dtadd") {
-          cart[id] = (cart[id] || 0) + 1;
+          const k = keyOf(id, sized(byId(id)) ? S.sz : null);
+          cart[k] = (cart[k] || 0) + 1;
+          const note = S.note.trim().slice(0, 80);
+          if (note && notes[k] !== note) notes[k] = notes[k] ? `${notes[k]} / ${note}` : note;
           S.dt = null;
         }
         if (a === "popadd") {
-          cart[id] = (cart[id] || 0) + 1;
+          const k = keyOf(id, sized(byId(id)) ? "o" : null);
+          cart[k] = (cart[k] || 0) + 1;
           S.pop = false;
           S.sp = null;
         }
@@ -1897,9 +3236,48 @@
         window.scrollTo(0, y);
       });
 
+      // Not, pencere yeniden çizilince (boyut seçimi) kaybolmasın.
+      document.addEventListener("input", (e) => {
+        if (e.target.id === "pnote") S.note = e.target.value;
+      });
+
+      // Destede kart parmakla yana atılır: sola sonraki, sağa önceki.
+      let drag = null;
+      document.addEventListener("pointerdown", (e) => {
+        const el = e.target.closest(".dcard.front");
+        if (!el || e.target.closest("button")) return;
+        drag = { el, x: e.clientX, dx: 0 };
+        el.setPointerCapture(e.pointerId);
+      });
+      document.addEventListener("pointermove", (e) => {
+        if (!drag) return;
+        drag.dx = e.clientX - drag.x;
+        drag.el.style.transform = `translateX(${drag.dx}px) rotate(${drag.dx / 18}deg)`;
+      });
+      document.addEventListener("pointerup", () => {
+        if (!drag) return;
+        const { el, dx } = drag;
+        drag = null;
+        if (Math.abs(dx) < 70) {
+          el.style.transform = "";
+          return;
+        }
+        el.classList.add("fly");
+        el.style.transform = `translateX(${dx < 0 ? -420 : 420}px) rotate(${dx < 0 ? -20 : 20}deg)`;
+        setTimeout(() => deckGo(dx < 0 ? 1 : -1), 180);
+      });
+
       document.addEventListener("keydown", (e) => {
+        if (S.deck !== null && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+          deckGo(e.key === "ArrowRight" ? 1 : -1);
+          return;
+        }
         if (e.key !== "Escape") return;
-        if (S.wc) {
+        if (S.deck !== null || S.daily) {
+          S.deck = null;
+          S.daily = null;
+          keep(render);
+        } else if (S.wc) {
           S.wc = false;
           keep(render);
         } else if (S.dt) {
@@ -1923,7 +3301,7 @@
         return (pool.length ? pool : PRODUCTS)
           .slice()
           .sort((a, b) => score(b) - score(a))
-          .find((p) => !(skipCart && cart[p.id]));
+          .find((p) => !(skipCart && inCart(p.id)));
       }
       /* Menü işletme panelinden gelir (Menü sayfası). Sunucuya ulaşılamazsa
    bu dosyadaki menü gösterilir. */
@@ -1959,7 +3337,7 @@
         });
         // Silinen ürünler sepetten, öne çıkanlardan ve hikayelerden düşer.
         const has = (id) => PRODUCTS.some((p) => p.id === id);
-        Object.keys(cart).forEach((id) => has(id) || delete cart[id]);
+        Object.keys(cart).forEach((k) => byId(split(k).id) || delete cart[k]);
         CONFIG.focus = CONFIG.focus.filter(has);
         CONFIG.stories = CONFIG.stories.filter(has);
         S.c = CATS[0].id;

@@ -92,6 +92,13 @@ function open(business) {
   if (getBusiness(business)?.status === "suspended") throw new HttpError(403, "Bu işletme şu an hizmet vermiyor.");
 }
 
+// Drink sizes, as on the QR menu: Orta is the menu price, the others add this many ₺.
+const SIZES = { k: { name: "Küçük", diff: -10 }, o: { name: "Orta", diff: 0 }, b: { name: "Büyük", diff: 15 } };
+const SIZED = ["kahve", "icecek"];
+// Offers strip samples on the QR menu (BeeCafe only for now): percent off a product, and combos.
+const DEALS = { beecafe: { "tatli-cheesecake": 30 } };
+const COMBOS = { beecafe: { "combo-latte-sutlac": { items: ["kahve-latte", "tatli-sutlac"], price: 189 } } };
+
 // `waiter` is the name of the waiter taking the order at the table (signed in), or null for the QR menu.
 export function createOrder(business, body, waiter) {
   open(business);
@@ -102,16 +109,30 @@ export function createOrder(business, body, waiter) {
     name: text(l.name, 120),
     qty: Math.min(Math.max(Math.trunc(Number(l.qty)) || 0, 0), 99),
     price: Math.max(Number(l.price) || 0, 0),
+    size: Object.hasOwn(SIZES, l.size) ? l.size : null,
   }));
   let valid = lines.filter((l) => (l.name || l.id) && l.qty > 0);
   // With a saved menu the server decides names and prices (a phone cannot change them).
   const menu = getMenu(business);
   if (menu) {
     const byId = new Map(menu.products.map((p) => [p.id, p]));
-    valid = valid.map((l) => {
-      const p = byId.get(l.id);
+    const deals = DEALS[business] || {};
+    const combos = COMBOS[business] || {};
+    const live = (id) => {
+      const p = byId.get(id);
       if (!p || p.active === false) throw new HttpError(409, "Menüde olmayan bir ürün var; menüyü yenileyin.");
-      return { id: p.id, name: p.name, qty: l.qty, price: p.price };
+      return p;
+    };
+    valid = valid.map((l) => {
+      if (Object.hasOwn(combos, l.id)) {
+        const c = combos[l.id];
+        return { id: l.id, name: c.items.map((id) => live(id).name).join(" + "), qty: l.qty, price: c.price };
+      }
+      const p = live(l.id);
+      const base = Object.hasOwn(deals, p.id) ? Math.round((Number(p.price) * (100 - deals[p.id])) / 100) : Number(p.price);
+      const size = SIZED.includes(p.category) && l.size ? SIZES[l.size] : null;
+      if (!size) return { id: p.id, name: p.name, qty: l.qty, price: base };
+      return { id: p.id, name: `${p.name} (${size.name})`, qty: l.qty, price: Math.max(base + size.diff, 0) };
     });
   } else valid = valid.filter((l) => l.name);
   if (!valid.length) throw new HttpError(400, "Siparişte ürün yok.");
