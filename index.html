@@ -68,6 +68,75 @@
       .zm {
         zoom: 0.9;
       }
+      /* Açılış ekranı (QR okutulunca) */
+      .splash {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink);
+      }
+      .splash img,
+      .splash .ph {
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 0 0 1px var(--line);
+        display: grid;
+        place-items: center;
+        font-size: 34px;
+      }
+      .splash b {
+        margin-top: 14px;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .splash.in img,
+      .splash.in .ph {
+        animation: splashin 0.6s ease-out both;
+      }
+      .splash.in b {
+        animation: splashfade 0.5s 0.35s both;
+      }
+      .splash.go {
+        transition: transform 0.55s cubic-bezier(0.6, 0, 0.3, 1);
+        transform: translateY(-100%);
+      }
+      @keyframes splashin {
+        from {
+          opacity: 0;
+          transform: scale(0.88);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes splashfade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .splash.in img,
+        .splash.in .ph,
+        .splash.in b {
+          animation: none;
+        }
+        .splash.go {
+          transition: opacity 0.3s;
+          transform: none;
+          opacity: 0;
+        }
+      }
       #app {
         max-width: 430px;
         margin: 0 auto;
@@ -1703,6 +1772,8 @@
     </style>
   </head>
   <body>
+    <!-- Açılış ekranı: menü yüklenirken beyaz kalır, sonra logo ve ad görünür, perde yukarı kayar -->
+    <div id="splash" class="splash" aria-hidden="true"></div>
     <div id="app"></div>
 
     <script>
@@ -3411,7 +3482,35 @@
           applySettings(settings, story, picks, profile);
         })
         .catch(() => {})
-        .finally(start);
+        .finally(() => {
+          start();
+          splash();
+        });
+
+      /* Açılış ekranı: işletmenin logosu ve adı, sonra perde yukarı kalkar.
+   Dokununca hemen geçer; aynı tarayıcıda 10 dakika içinde tekrar açılırsa gösterilmez. */
+      function splash() {
+        const el = document.getElementById("splash");
+        const key = "splash-" + BUSINESS;
+        let seen = 0;
+        try {
+          seen = Number(sessionStorage.getItem(key)) || 0;
+          sessionStorage.setItem(key, String(Date.now()));
+        } catch (e) {}
+        const lift = () => {
+          if (!el.isConnected || el.classList.contains("go")) return;
+          el.classList.add("go");
+          setTimeout(() => el.remove(), 600);
+        };
+        if (S.closed || Date.now() - seen < 10 * 60 * 1000) {
+          el.remove();
+          return;
+        }
+        el.innerHTML = `${img(BRAND.logo || "images/logo.png", BRAND.name, "")}<b>${esc(BRAND.name)}</b>`;
+        el.classList.add("in");
+        el.addEventListener("click", lift);
+        setTimeout(lift, 1700);
+      }
     </script>
   </body>
 </html>
