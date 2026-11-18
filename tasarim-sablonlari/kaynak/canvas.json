@@ -1,0 +1,25 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-18T12:00:00Z" },
+  "title": "QR Menü İşletme Şablonları",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Kafe.dc.html": { "x": -470, "y": 0, "w": 390, "h": 1040, "title": "Kafe / Pastane (mevcut)", "radius": 36 },
+    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 1040, "title": "Dönerci / Aperatif", "radius": 36 },
+    "Lokanta.dc.html": { "x": 470, "y": 0, "w": 390, "h": 1040, "title": "Lokanta / Ev yemekleri", "radius": 36 },
+    "Pizza.dc.html": { "x": 940, "y": 0, "w": 390, "h": 1040, "title": "Pizzacı", "radius": 36 },
+    "Restoran.dc.html": { "x": 1410, "y": 0, "w": 390, "h": 1040, "title": "Restoran (alakart)", "radius": 36 }
+  },
+  "order": ["Kafe.dc.html", "Main.dc.html", "Lokanta.dc.html", "Pizza.dc.html", "Restoran.dc.html"],
+  "notes": {
+    "baslik": { "x": -470, "y": -300, "text": "QR menü ailesi: ortak imza, ayrı karakter", "kind": "title1", "maxW": 2270 },
+    "notOrtak": { "x": -940, "y": 0, "w": 390, "size": "m", "fill": "gray", "text": "Ailenin ortak imzası (hepsinde aynı)\n• Urbanist yazı tipi, aynı başlık boyları\n• 18 px yuvarlak köşeler, yumuşak gölge, hap düğmeler\n• Logo + işletme adı + \"Hoş geldiniz, Masa X\"\n• İnce çizgili simgeler\n• Sağ altta yuvarlak Sepet + Garson düğmeleri\n• Ürün penceresi sırası: fotoğraf, ad, fiyat, seçenekler, not, Sepete ekle\n\nHer birine özel: renk paleti, ana sayfa düzeni, imza parçası, fotoğraf işleyişi" },
+    "notKafe": { "x": -470, "y": 1160, "w": 390, "size": "m", "fill": "teal", "text": "Kafe / Pastane — ferah ve keyifli.\n• Beyaz + petrol yeşili\n• Fırsat kartları şeridi, Günün önerisi\n• Fotoğraflar yumuşak, kategori kartlarında solarak biter" },
+    "notDoner": { "x": 0, "y": 1160, "w": 390, "size": "m", "fill": "orange", "text": "Dönerci / Aperatif — hızlı ve iştah açıcı.\n• Krem zemin, köz turuncusu, kömür siyahı\n• Ana sayfa: büyük kutulu hızlı sipariş ızgarası\n• İmza parçası: kömür renkli \"Menü yap\" şeridi\n• Fotoğraflar koyu zeminde, kontrastlı\n• Masada / Gel-al / Paket ve hazırlanma süresi" },
+    "notLokanta": { "x": 470, "y": 1160, "w": 390, "size": "m", "fill": "green", "text": "Lokanta — ev sıcaklığında, her gün değişen.\n• Bej zemin, zeytin yeşili, kiremit\n• Ana sayfa: \"Bugün ocakta\" vitrini, fotoğrafsız da şık\n• Bitti / Yeni çıktı, Yarım / Tam\n• İmza parçası: adisyon fişi gibi \"Tabağını oluştur\" kartı" },
+    "notPizza": { "x": 940, "y": 1160, "w": 390, "size": "m", "fill": "red", "text": "Pizzacı — neşeli ve oyunbaz.\n• Un beyazı, domates kırmızısı, fesleğen yeşili\n• Fotoğraflar yuvarlak kesilir\n• Ana sayfa: kaydırmalı pizza şeridi + \"Kendi pizzanı yap\"\n• İmza parçası: yarım yarım pizza dairesi, boy seçimi büyüyen dairelerle" },
+    "notRestoran": { "x": 1410, "y": 1160, "w": 390, "size": "m", "fill": "purple", "text": "Restoran — akşam havası, şık.\n• Koyu zemin, sıcak altın\n• Ana sayfa: geniş sinematik Şefin önerisi fotoğrafı\n• Menü servis sırasına göre bölüm bölüm akar\n• İmza parçası: alerjen etiketleri ve \"Yanında iyi gider\"\n• Garson çağır öne çıkar" }
+  },
+  "designSystems": []
+}

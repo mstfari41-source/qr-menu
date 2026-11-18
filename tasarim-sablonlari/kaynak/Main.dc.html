@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Dönerci menüsü</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#9A3412}a:hover{color:#7C2D12}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 1040px; box-sizing: border-box; background: #FBF4EA; font-family: Urbanist, system-ui, sans-serif; color: #241A14; position: relative; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 12px; padding: 18px 16px 4px">
+    <div style="width: 48px; height: 48px; border-radius: 24px; background: #241A14; box-shadow: 0 0 0 3px {{accentSoft}}; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 800; color: {{accent}}">U</div>
+    <span style="font-size: 20px; font-weight: 600; flex-grow: 1">Usta Dönerci</span>
+    <button aria-label="Dil seç" style="width: 40px; height: 40px; border-radius: 20px; border: 1px solid #EADFCF; background: #FFFFFF; font-size: 12px; font-weight: 600; color: #241A14">TR</button>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between; margin: 6px 16px 14px">
+    <span style="font-size: 15px; font-weight: 500; color: #6E625A">Hoş geldiniz, Masa 7</span>
+    <span style="font-size: 12px; font-weight: 700; color: {{accentInk}}; background: {{accentSoft}}; padding: 5px 10px; border-radius: 12px">~10 dk'da hazır</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin: 0 16px 14px; background: #F1E6D6; border-radius: 22px; padding: 4px">
+    <button style="height: 36px; border: 0; border-radius: 18px; background: #241A14; color: #FFFFFF; font-size: 14px; font-weight: 600">Masada</button>
+    <button style="height: 36px; border: 0; border-radius: 18px; background: transparent; color: #241A14; font-size: 14px">Gel-al</button>
+    <button style="height: 36px; border: 0; border-radius: 18px; background: transparent; color: #241A14; font-size: 14px">Paket</button>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; margin: 0 16px 20px; background: #241A14; color: #FFFFFF; border-radius: 18px; padding: 12px 12px 12px 16px; box-shadow: 0 6px 18px rgba(36,26,20,0.25)">
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+      <span style="font-size: 12px; color: #D9C8B8">Her dürüme menü fırsatı</span>
+      <span style="font-size: 17px; font-weight: 700">+ Ayran + Patates</span>
+      <span style="font-size: 13px; font-weight: 700; color: #FB923C">40 ₺ avantaj</span>
+    </div>
+    <img src="/_blob/893d171d389c0ca3b93aa1e719252f43" alt="" style="width: 58px; height: 58px; border-radius: 29px; object-fit: cover; box-shadow: 0 0 0 3px #3A2C22">
+  </div>
+
+  <div style="display: flex; align-items: baseline; justify-content: space-between; margin: 0 16px 10px">
+    <span style="font-size: 16px; font-weight: 500">Hızlı sipariş</span>
+    <span style="font-size: 12px; color: #6E625A">En çok tercih edilenler</span>
+  </div>
+  <div style="display: flex; gap: 8px; padding: 0 16px 12px; overflow: hidden">
+    <button style="height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid {{accent}}; background: {{accentSoft}}; color: {{accentInk}}; font-size: 13px; font-weight: 600; white-space: nowrap">Hepsi</button>
+    <button style="height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid #EADFCF; background: #FFFFFF; color: #241A14; font-size: 13px; white-space: nowrap">Dürümler</button>
+    <button style="height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid #EADFCF; background: #FFFFFF; color: #241A14; font-size: 13px; white-space: nowrap">Porsiyonlar</button>
+    <button style="height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid #EADFCF; background: #FFFFFF; color: #241A14; font-size: 13px; white-space: nowrap">Aperatif</button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 16px">
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="6">
+      <div style="background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 12px rgba(80,50,20,0.10); display: flex; flex-direction: column">
+        <div style="height: 92px; background: #2B1F18; display: flex; align-items: center; justify-content: center; color: #BFAE9F; font-size: 11px; position: relative">
+          <sc-if value="{{it.img}}" hint-placeholder-val="{{ false }}">
+            <img src="{{it.img}}" alt="" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; filter: contrast(1.1) saturate(1.15)">
+          </sc-if>
+          <sc-if value="{{it.noImg}}" hint-placeholder-val="{{ true }}">
+            <span>Fotoğraf</span>
+          </sc-if>
+          <sc-if value="{{it.hot}}" hint-placeholder-val="{{ false }}">
+            <span style="position: absolute; left: 8px; top: 8px; font-size: 11px; font-weight: 700; color: #FFFFFF; background: {{accent}}; padding: 3px 8px; border-radius: 10px">Çok satan</span>
+          </sc-if>
+        </div>
+        <div style="padding: 10px 10px 10px 12px; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 600">{{it.name}}</span>
+          <span style="font-size: 12px; color: #6E625A">{{it.desc}}</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px">
+            <span style="font-size: 19px; font-weight: 800">{{it.price}}</span>
+            <button aria-label="Ekle" style="width: 36px; height: 36px; border-radius: 18px; border: 0; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; right: 16px; bottom: 22px; display: flex; flex-direction: column; gap: 12px">
+    <button aria-label="Sepet, 2 ürün" style="position: relative; width: 56px; height: 56px; border-radius: 28px; border: 0; background: #241A14; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,0.25)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1 12H7z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg><span style="position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">2</span></button>
+    <button aria-label="Garson çağır" style="width: 56px; height: 56px; border-radius: 28px; border: 0; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,0.25)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17h16"></path><path d="M5 17a7 7 0 0 1 14 0"></path><path d="M12 8V6"></path></svg></button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C2410C","options":["#C2410C","#B91C1C","#A16207","#0F7B6C"]},"$preview":{"width":390,"height":1040}}'>
+class Component extends DCLogic {
+  mix(hex, amt, base) {
+    const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const a = p(hex), b = p(base);
+    return '#' + a.map((v, i) => Math.round(v * amt + b[i] * (1 - amt)).toString(16).padStart(2, '0')).join('');
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#C2410C';
+    const raw = [
+      { name: 'Et Döner Dürüm', desc: 'Lavaş, 100 g', price: '260 ₺', hot: true },
+      { name: 'Tavuk Dürüm', desc: 'Lavaş, 100 g', price: '150 ₺' },
+      { name: 'İskender', desc: 'Tereyağı, yoğurt', price: '380 ₺' },
+      { name: 'Yarım Ekmek', desc: 'Et döner, 100 g', price: '240 ₺' },
+      { name: 'Smash Burger', desc: 'Çift köfte, cheddar', price: '240 ₺', img: '/_blob/137b8fc5f60e176f2169d44a6f660a1e' },
+      { name: 'Hamburger', desc: 'Dana köfte, turşu', price: '210 ₺', img: '/_blob/3f43fc0373f8c265a8081f90537faf8e' }
+    ];
+    return {
+      accent,
+      accentSoft: this.mix(accent, 0.14, '#FFFFFF'),
+      accentInk: this.mix(accent, 0.72, '#000000'),
+      items: raw.map((it) => ({ ...it, img: it.img || '', noImg: !it.img, hot: !!it.hot }))
+    };
+  }
+}
+</script>
+</body>
+</html>

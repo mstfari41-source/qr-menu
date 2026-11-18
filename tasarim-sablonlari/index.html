@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR Menü Şablonları</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&amp;display=swap">
+<style>
+  :root { --ink: #1f1f1f; --muted: #6b6b6b; --bg: #f1efeb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: Urbanist, system-ui, sans-serif; }
+  header { max-width: 1200px; margin: 0 auto; padding: 32px 16px 8px; }
+  h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; }
+  header p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.5; max-width: 720px; }
+  .grid { display: flex; gap: 32px; overflow-x: auto; padding: 24px 16px 40px; scroll-snap-type: x proximity; }
+  figure { margin: 0; flex: none; scroll-snap-align: start; }
+  figcaption { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  figcaption small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  iframe { width: 390px; height: 1040px; border: 0; border-radius: 36px; background: #fff; box-shadow: 0 12px 32px rgba(0,0,0,0.12); margin-top: 10px; display: block; }
+  a { color: #0b594e; font-size: 13px; }
+  @media (max-width: 440px) { iframe { width: calc(100vw - 32px); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>QR menü ailesi</h1>
+  <p>Ortak imza, ayrı karakter: hepsi aynı yazı tipi, köşe yuvarlaklığı, simgeler, Sepet ve Garson düğmeleri ve ürün penceresi düzenini paylaşır; renkleri, ana sayfa düzeni ve imza parçası işletme türüne göre değişir. Bunlar tasarım taslağıdır, menünün çalışan hâli değildir.</p>
+</header>
+<div class="grid">
+  <figure><figcaption>Kafe / Pastane<small>Mevcut menü · beyaz, petrol yeşili</small></figcaption><a href="kafe.html">Tek başına aç</a><iframe src="kafe.html" title="Kafe şablonu"></iframe></figure>
+  <figure><figcaption>Dönerci / Aperatif<small>Krem, köz turuncusu, kömür siyahı</small></figcaption><a href="doner.html">Tek başına aç</a><iframe src="doner.html" title="Dönerci şablonu"></iframe></figure>
+  <figure><figcaption>Lokanta<small>Bej, zeytin yeşili, kiremit</small></figcaption><a href="lokanta.html">Tek başına aç</a><iframe src="lokanta.html" title="Lokanta şablonu"></iframe></figure>
+  <figure><figcaption>Pizzacı<small>Un beyazı, domates kırmızısı, fesleğen</small></figcaption><a href="pizza.html">Tek başına aç</a><iframe src="pizza.html" title="Pizzacı şablonu"></iframe></figure>
+  <figure><figcaption>Restoran<small>Koyu zemin, sıcak altın</small></figcaption><a href="restoran.html">Tek başına aç</a><iframe src="restoran.html" title="Restoran şablonu"></iframe></figure>
+</div>
+</body>
+</html>
